@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download as DownloadIcon, FileText, CheckCircle, Zap, Settings, ChevronDown, ChevronUp, Clock, HardDrive } from "lucide-react";
+import { Download as DownloadIcon, FileText, CheckCircle, Zap, Settings, ChevronDown, ChevronUp, Clock, HardDrive, Package } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -22,6 +22,8 @@ const Download = () => {
   const { t } = useLanguage();
   const [autoFiles, setAutoFiles] = useState<FileData[]>([]);
   const [hybridFiles, setHybridFiles] = useState<FileData[]>([]);
+  const [autoSetFiles, setAutoSetFiles] = useState<FileData[]>([]);
+  const [hybridSetFiles, setHybridSetFiles] = useState<FileData[]>([]);
   const [manualFile, setManualFile] = useState<FileData | null>(null);
   const [olderAutoOpen, setOlderAutoOpen] = useState(false);
   const [olderHybridOpen, setOlderHybridOpen] = useState(false);
@@ -52,6 +54,22 @@ const Download = () => {
         .order('created_at', { ascending: false })
         .limit(5);
 
+      // Load Auto Mode Set files
+      const { data: autoSetData } = await supabase
+        .from('files')
+        .select('*')
+        .eq('category', 'set_files')
+        .eq('ea_mode', 'auto')
+        .order('created_at', { ascending: false });
+
+      // Load Hybrid Mode Set files
+      const { data: hybridSetData } = await supabase
+        .from('files')
+        .select('*')
+        .eq('category', 'set_files')
+        .eq('ea_mode', 'hybrid')
+        .order('created_at', { ascending: false });
+
       // Load User Manual (latest document)
       const { data: manualData } = await supabase
         .from('files')
@@ -63,6 +81,8 @@ const Download = () => {
 
       if (autoData) setAutoFiles(autoData);
       if (hybridData) setHybridFiles(hybridData);
+      if (autoSetData) setAutoSetFiles(autoSetData);
+      if (hybridSetData) setHybridSetFiles(hybridSetData);
       if (manualData) setManualFile(manualData);
     } catch (error) {
       console.error('Error loading files:', error);
@@ -103,7 +123,7 @@ const Download = () => {
     t('download.requirements.item5'),
   ];
 
-  const renderLatestVersion = (file: FileData | undefined, mode: 'auto' | 'hybrid') => {
+  const renderLatestVersion = (file: FileData | undefined) => {
     if (!file) {
       return (
         <Card className="border-2 border-dashed border-muted-foreground/30">
@@ -200,6 +220,51 @@ const Download = () => {
     );
   };
 
+  const renderSetFiles = (setFiles: FileData[]) => {
+    if (setFiles.length === 0) return null;
+
+    return (
+      <div className="mt-8 pt-8 border-t">
+        <div className="flex items-center gap-2 mb-4">
+          <Package className="h-5 w-5 text-primary" />
+          <h3 className="text-lg font-semibold">{t('download.set_files.title')}</h3>
+        </div>
+        <p className="text-muted-foreground text-sm mb-4">
+          {t('download.set_files.description')}
+        </p>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {setFiles.map((file) => (
+            <Card key={file.id} className="hover:border-primary/50 transition-colors">
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium truncate">{file.file_name}</h4>
+                    {file.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                        {file.description}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                      {file.version && <span>{file.version}</span>}
+                      <span>{formatFileSize(file.file_size)}</span>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleDownload(file)}
+                  >
+                    <DownloadIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-20">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -242,8 +307,9 @@ const Download = () => {
                 </Card>
               ) : (
                 <>
-                  {renderLatestVersion(autoFiles[0], 'auto')}
+                  {renderLatestVersion(autoFiles[0])}
                   {renderOlderVersions(autoFiles, olderAutoOpen, setOlderAutoOpen)}
+                  {renderSetFiles(autoSetFiles)}
                 </>
               )}
             </TabsContent>
@@ -260,8 +326,9 @@ const Download = () => {
                 </Card>
               ) : (
                 <>
-                  {renderLatestVersion(hybridFiles[0], 'hybrid')}
+                  {renderLatestVersion(hybridFiles[0])}
                   {renderOlderVersions(hybridFiles, olderHybridOpen, setOlderHybridOpen)}
+                  {renderSetFiles(hybridSetFiles)}
                 </>
               )}
             </TabsContent>

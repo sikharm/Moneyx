@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Upload, Trash2, Download, Zap, Settings } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Upload, Trash2, Zap, Settings, FileText, Image, Video, Package, Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FileData {
   id: string;
@@ -23,15 +31,18 @@ interface FileData {
   ea_mode?: 'auto' | 'hybrid';
 }
 
+type UploadContext = {
+  category: 'ea_files' | 'set_files' | 'documents' | 'images' | 'videos';
+  ea_mode?: 'auto' | 'hybrid';
+};
+
 const FileManagement = () => {
   const [files, setFiles] = useState<FileData[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadData, setUploadData] = useState({
-    category: 'ea_files',
-    version: '',
-    description: '',
-    ea_mode: 'auto' as 'auto' | 'hybrid',
-  });
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uploadContext, setUploadContext] = useState<UploadContext | null>(null);
+  const [uploadData, setUploadData] = useState({ version: '', description: '' });
+  const [mediaExpanded, setMediaExpanded] = useState(false);
 
   useEffect(() => {
     loadFiles();
@@ -46,15 +57,21 @@ const FileManagement = () => {
     if (data) setFiles(data);
   };
 
+  const openUploadDialog = (context: UploadContext) => {
+    setUploadContext(context);
+    setUploadData({ version: '', description: '' });
+    setUploadDialogOpen(true);
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !uploadContext) return;
 
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${uploadData.category}/${fileName}`;
+      const filePath = `${uploadContext.category}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('ea-files')
@@ -65,16 +82,16 @@ const FileManagement = () => {
       const insertData: any = {
         file_name: file.name,
         file_path: filePath,
-        category: uploadData.category as 'ea_files' | 'documents' | 'images' | 'videos',
+        category: uploadContext.category,
         version: uploadData.version || undefined,
         description: uploadData.description || undefined,
         file_size: file.size,
         mime_type: file.type,
       };
 
-      // Only include ea_mode for EA files
-      if (uploadData.category === 'ea_files') {
-        insertData.ea_mode = uploadData.ea_mode;
+      // Include ea_mode for EA files and set files
+      if (uploadContext.category === 'ea_files' || uploadContext.category === 'set_files') {
+        insertData.ea_mode = uploadContext.ea_mode;
       }
 
       const { error: dbError } = await supabase.from('files').insert(insertData);
@@ -83,7 +100,8 @@ const FileManagement = () => {
 
       toast.success('File uploaded successfully!');
       loadFiles();
-      setUploadData({ category: 'ea_files', version: '', description: '', ea_mode: 'auto' });
+      setUploadDialogOpen(false);
+      setUploadContext(null);
       e.target.value = '';
     } catch (error: any) {
       toast.error(error.message || 'Failed to upload file');
@@ -105,218 +123,253 @@ const FileManagement = () => {
     }
   };
 
-  const getFilesByCategory = (category: string) => {
+  const getFilesByCategory = (category: string, mode?: 'auto' | 'hybrid') => {
+    if (mode) {
+      return files.filter(f => f.category === category && f.ea_mode === mode);
+    }
     return files.filter(f => f.category === category);
   };
 
-  const getEAFilesByMode = (mode: 'auto' | 'hybrid') => {
-    return files.filter(f => f.category === 'ea_files' && f.ea_mode === mode);
-  };
-
-  const EAModeFileList = ({ mode }: { mode: 'auto' | 'hybrid' }) => {
-    const modeFiles = getEAFilesByMode(mode);
-
-    return (
-      <div className="space-y-4">
-        {modeFiles.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No {mode} mode files uploaded yet</p>
-        ) : (
-          modeFiles.map((file) => (
-            <Card key={file.id}>
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-semibold">{file.file_name}</h4>
-                    <Badge variant={mode === 'auto' ? 'default' : 'secondary'} className="text-xs">
-                      {mode === 'auto' ? <Zap className="h-3 w-3 mr-1" /> : <Settings className="h-3 w-3 mr-1" />}
-                      {mode}
-                    </Badge>
-                  </div>
-                  {file.version && <p className="text-sm text-muted-foreground">Version: {file.version}</p>}
-                  {file.description && <p className="text-sm text-muted-foreground">{file.description}</p>}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Downloads: {file.download_count} | Uploaded: {new Date(file.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(file.id, file.file_path)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+  const FileItem = ({ file }: { file: FileData }) => (
+    <div className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-lg">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-medium truncate">{file.version || file.file_name}</span>
+          {file.version && (
+            <span className="text-xs text-muted-foreground truncate">- {file.file_name}</span>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Downloads: {file.download_count} | {new Date(file.created_at).toLocaleDateString()}
+        </p>
       </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-destructive hover:text-destructive"
+        onClick={() => handleDelete(file.id, file.file_path)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+
+  const FileSection = ({ 
+    title, 
+    files, 
+    onUpload,
+    icon: Icon,
+    uploadLabel 
+  }: { 
+    title: string; 
+    files: FileData[]; 
+    onUpload: () => void;
+    icon: React.ElementType;
+    uploadLabel: string;
+  }) => (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-muted-foreground" />
+          <span className="font-medium">{title}</span>
+          <Badge variant="secondary" className="text-xs">{files.length}</Badge>
+        </div>
+        <Button variant="outline" size="sm" onClick={onUpload}>
+          <Plus className="h-4 w-4 mr-1" />
+          {uploadLabel}
+        </Button>
+      </div>
+      {files.length > 0 ? (
+        <div className="space-y-2">
+          {files.map((file) => (
+            <FileItem key={file.id} file={file} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground py-4 text-center bg-muted/30 rounded-lg">
+          No files uploaded yet
+        </p>
+      )}
+    </div>
+  );
+
+  const ModeCard = ({ mode, icon: Icon, color }: { mode: 'auto' | 'hybrid'; icon: React.ElementType; color: string }) => {
+    const eaFiles = getFilesByCategory('ea_files', mode);
+    const setFiles = getFilesByCategory('set_files', mode);
+    
+    return (
+      <Card className={`border-2 ${color}`}>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <Icon className="h-5 w-5" />
+            {mode === 'auto' ? 'Auto Mode' : 'Hybrid Mode'}
+          </CardTitle>
+          <CardDescription>
+            {mode === 'auto' ? 'Fully automated 24/7 trading' : 'AI signals + manual control'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <FileSection
+            title="EA Files"
+            files={eaFiles}
+            icon={Package}
+            uploadLabel="Upload EA"
+            onUpload={() => openUploadDialog({ category: 'ea_files', ea_mode: mode })}
+          />
+          <div className="border-t pt-4">
+            <FileSection
+              title="Set Files"
+              files={setFiles}
+              icon={Settings}
+              uploadLabel="Upload Set"
+              onUpload={() => openUploadDialog({ category: 'set_files', ea_mode: mode })}
+            />
+          </div>
+        </CardContent>
+      </Card>
     );
   };
 
-  const FileList = ({ category }: { category: string }) => {
-    const categoryFiles = getFilesByCategory(category);
-
-    return (
-      <div className="space-y-4">
-        {categoryFiles.length === 0 ? (
-          <p className="text-muted-foreground text-center py-8">No files uploaded yet</p>
-        ) : (
-          categoryFiles.map((file) => (
-            <Card key={file.id}>
-              <CardContent className="p-4 flex items-center justify-between">
-                <div className="flex-1">
-                  <h4 className="font-semibold">{file.file_name}</h4>
-                  {file.version && <p className="text-sm text-muted-foreground">Version: {file.version}</p>}
-                  {file.description && <p className="text-sm text-muted-foreground">{file.description}</p>}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Downloads: {file.download_count} | Uploaded: {new Date(file.created_at).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleDelete(file.id, file.file_path)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-    );
+  const getUploadDialogTitle = () => {
+    if (!uploadContext) return 'Upload File';
+    
+    const categoryNames: Record<string, string> = {
+      ea_files: 'EA File',
+      set_files: 'Set File',
+      documents: 'Document',
+      images: 'Image',
+      videos: 'Video',
+    };
+    
+    const modeName = uploadContext.ea_mode ? ` (${uploadContext.ea_mode === 'auto' ? 'Auto Mode' : 'Hybrid Mode'})` : '';
+    return `Upload ${categoryNames[uploadContext.category]}${modeName}`;
   };
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold mb-2">File Management</h1>
-        <p className="text-muted-foreground">Upload and manage EA files, documents, and media</p>
+        <p className="text-muted-foreground">Upload and manage EA files, set files, and documents</p>
       </div>
 
+      {/* Mode Cards - EA & Set Files */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <ModeCard mode="auto" icon={Zap} color="border-primary/50 bg-primary/5" />
+        <ModeCard mode="hybrid" icon={Settings} color="border-secondary/50 bg-secondary/5" />
+      </div>
+
+      {/* Documents Section */}
       <Card>
-        <CardHeader>
-          <CardTitle>Upload New File</CardTitle>
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Documents
+          </CardTitle>
+          <CardDescription>User manuals, guides, and documentation</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={uploadData.category}
-                onValueChange={(value) => setUploadData({ ...uploadData, category: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ea_files">EA Files</SelectItem>
-                  <SelectItem value="documents">Documents</SelectItem>
-                  <SelectItem value="images">Images</SelectItem>
-                  <SelectItem value="videos">Videos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {uploadData.category === 'ea_files' && (
-              <div className="space-y-2">
-                <Label htmlFor="ea_mode">EA Mode</Label>
-                <Select
-                  value={uploadData.ea_mode}
-                  onValueChange={(value: 'auto' | 'hybrid') => setUploadData({ ...uploadData, ea_mode: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="auto">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4" />
-                        Auto Mode
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="hybrid">
-                      <div className="flex items-center gap-2">
-                        <Settings className="h-4 w-4" />
-                        Hybrid Mode
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="version">Version (Optional)</Label>
-              <Input
-                id="version"
-                placeholder="v3.2.1"
-                value={uploadData.version}
-                onChange={(e) => setUploadData({ ...uploadData, version: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="description">Description (Optional)</Label>
-            <Textarea
-              id="description"
-              placeholder="File description"
-              value={uploadData.description}
-              onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="file">Select File</Label>
-            <Input
-              id="file"
-              type="file"
-              onChange={handleFileUpload}
-              disabled={uploading}
-            />
-          </div>
-          {uploading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-              Uploading...
-            </div>
-          )}
+        <CardContent>
+          <FileSection
+            title="PDF Documents"
+            files={getFilesByCategory('documents')}
+            icon={FileText}
+            uploadLabel="Upload Document"
+            onUpload={() => openUploadDialog({ category: 'documents' })}
+          />
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="ea_auto">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="ea_auto" className="flex items-center gap-1">
-            <Zap className="h-3 w-3" />
-            Auto EA
-          </TabsTrigger>
-          <TabsTrigger value="ea_hybrid" className="flex items-center gap-1">
-            <Settings className="h-3 w-3" />
-            Hybrid EA
-          </TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="images">Images</TabsTrigger>
-          <TabsTrigger value="videos">Videos</TabsTrigger>
-        </TabsList>
-        <TabsContent value="ea_auto">
-          <EAModeFileList mode="auto" />
-        </TabsContent>
-        <TabsContent value="ea_hybrid">
-          <EAModeFileList mode="hybrid" />
-        </TabsContent>
-        <TabsContent value="documents">
-          <FileList category="documents" />
-        </TabsContent>
-        <TabsContent value="images">
-          <FileList category="images" />
-        </TabsContent>
-        <TabsContent value="videos">
-          <FileList category="videos" />
-        </TabsContent>
-      </Tabs>
+      {/* Media Section - Collapsible */}
+      <Collapsible open={mediaExpanded} onOpenChange={setMediaExpanded}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors pb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Image className="h-5 w-5" />
+                    Media Files
+                  </CardTitle>
+                  <CardDescription>Images and videos (click to expand)</CardDescription>
+                </div>
+                {mediaExpanded ? (
+                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                )}
+              </div>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="space-y-6 pt-0">
+              <FileSection
+                title="Images"
+                files={getFilesByCategory('images')}
+                icon={Image}
+                uploadLabel="Upload Image"
+                onUpload={() => openUploadDialog({ category: 'images' })}
+              />
+              <div className="border-t pt-4">
+                <FileSection
+                  title="Videos"
+                  files={getFilesByCategory('videos')}
+                  icon={Video}
+                  uploadLabel="Upload Video"
+                  onUpload={() => openUploadDialog({ category: 'videos' })}
+                />
+              </div>
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
+
+      {/* Upload Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{getUploadDialogTitle()}</DialogTitle>
+            <DialogDescription>
+              Fill in the details and select a file to upload
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {(uploadContext?.category === 'ea_files' || uploadContext?.category === 'set_files') && (
+              <div className="space-y-2">
+                <Label htmlFor="version">Version</Label>
+                <Input
+                  id="version"
+                  placeholder="v3.2.1"
+                  value={uploadData.version}
+                  onChange={(e) => setUploadData({ ...uploadData, version: e.target.value })}
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea
+                id="description"
+                placeholder="File description"
+                value={uploadData.description}
+                onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="file">Select File</Label>
+              <Input
+                id="file"
+                type="file"
+                onChange={handleFileUpload}
+                disabled={uploading}
+              />
+            </div>
+            {uploading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                Uploading...
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

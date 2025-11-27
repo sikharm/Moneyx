@@ -244,6 +244,8 @@ const expectedTranslations: Record<string, { value: string; category: string }> 
   "download.versions.older": { value: "Older Versions", category: "download" },
   "download.versions.released": { value: "Released", category: "download" },
   "download.no_files": { value: "No files available yet", category: "download" },
+  "download.set_files.title": { value: "Preset Configurations", category: "download" },
+  "download.set_files.description": { value: "Recommended EA settings for different trading styles", category: "download" },
   "download.files.mt5_title": { value: "EA for MetaTrader 5", category: "download" },
   "download.files.mt5_desc": { value: "Compatible with all MT5 brokers", category: "download" },
   "download.files.manual_title": { value: "User Manual", category: "download" },

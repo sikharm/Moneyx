@@ -225,7 +225,12 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       ea_mode_type: "auto" | "hybrid"
-      file_category: "ea_files" | "documents" | "images" | "videos"
+      file_category:
+        | "ea_files"
+        | "documents"
+        | "images"
+        | "videos"
+        | "set_files"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -355,7 +360,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       ea_mode_type: ["auto", "hybrid"],
-      file_category: ["ea_files", "documents", "images", "videos"],
+      file_category: ["ea_files", "documents", "images", "videos", "set_files"],
     },
   },
 } as const

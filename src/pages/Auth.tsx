@@ -8,10 +8,13 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, KeyRound, ArrowLeft, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const { signIn, signUp } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
@@ -58,6 +61,82 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetEmail.trim()) {
+      toast.error(t('auth.reset.email_required'));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) throw error;
+
+      toast.success(t('auth.reset.email_sent'));
+      setShowResetPassword(false);
+      setResetEmail('');
+    } catch (error: any) {
+      toast.error(error.message || t('auth.reset.error'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="bg-gradient-hero p-3 rounded-2xl w-fit mx-auto mb-4">
+              <KeyRound className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <CardTitle className="text-2xl">{t('auth.reset.title')}</CardTitle>
+            <CardDescription>{t('auth.reset.subtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">{t('common.email')}</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full bg-gradient-hero" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t('auth.reset.sending')}
+                  </>
+                ) : (
+                  t('auth.reset.send_link')
+                )}
+              </Button>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                className="w-full" 
+                onClick={() => setShowResetPassword(false)}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                {t('auth.reset.back_to_login')}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 px-4">
       <Card className="w-full max-w-md">
@@ -89,7 +168,17 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">{t('common.password')}</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="login-password">{t('common.password')}</Label>
+                    <Button 
+                      type="button" 
+                      variant="link" 
+                      className="px-0 h-auto text-sm text-muted-foreground hover:text-primary"
+                      onClick={() => setShowResetPassword(true)}
+                    >
+                      {t('auth.forgot_password')}
+                    </Button>
+                  </div>
                   <Input
                     id="login-password"
                     type="password"
@@ -100,8 +189,17 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full bg-gradient-hero" disabled={isLoading}>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  {isLoading ? t('auth.button.signing_in') : t('auth.button.sign_in')}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('auth.button.signing_in')}
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      {t('auth.button.sign_in')}
+                    </>
+                  )}
                 </Button>
               </form>
             </TabsContent>
@@ -153,8 +251,17 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full bg-gradient-hero" disabled={isLoading}>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  {isLoading ? t('auth.button.creating_account') : t('auth.button.create_account')}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('auth.button.creating_account')}
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      {t('auth.button.create_account')}
+                    </>
+                  )}
                 </Button>
               </form>
             </TabsContent>

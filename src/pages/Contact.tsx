@@ -1,13 +1,31 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageSquare, Phone, MapPin } from "lucide-react";
+import { Mail, MessageSquare, Phone, MapPin, Loader2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  subject: z.string().trim().min(1, "Subject is required").max(200, "Subject must be less than 200 characters"),
+  message: z.string().trim().min(1, "Message is required").max(2000, "Message must be less than 2000 characters"),
+});
 
 const Contact = () => {
   const { t } = useLanguage();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
 
   const contactInfo = [
     {
@@ -35,6 +53,40 @@ const Contact = () => {
       description: t('contact.info.live_chat_desc'),
     },
   ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate form data
+    const validation = contactSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('contact_messages')
+        .insert({
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+        });
+
+      if (error) throw error;
+
+      toast.success(t('contact.form.success'));
+      setFormData({ name: "", email: "", subject: "", message: "" });
+    } catch (error: any) {
+      console.error('Error submitting contact form:', error);
+      toast.error(t('contact.form.error'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen pt-24 pb-20">
@@ -80,20 +132,42 @@ const Contact = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="space-y-2">
                     <Label htmlFor="name">{t('common.name')}</Label>
-                    <Input id="name" placeholder={t('contact.form.name_placeholder')} />
+                    <Input 
+                      id="name" 
+                      placeholder={t('contact.form.name_placeholder')}
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      disabled={isSubmitting}
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email">{t('common.email')}</Label>
-                    <Input id="email" type="email" placeholder={t('contact.form.email_placeholder')} />
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder={t('contact.form.email_placeholder')}
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      disabled={isSubmitting}
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="subject">{t('common.subject')}</Label>
-                    <Input id="subject" placeholder={t('contact.form.subject_placeholder')} />
+                    <Input 
+                      id="subject" 
+                      placeholder={t('contact.form.subject_placeholder')}
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      disabled={isSubmitting}
+                      required
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -102,11 +176,27 @@ const Contact = () => {
                       id="message"
                       placeholder={t('contact.form.message_placeholder')}
                       rows={6}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      disabled={isSubmitting}
+                      required
                     />
                   </div>
 
-                  <Button type="submit" className="w-full bg-gradient-hero hover:opacity-90" size="lg">
-                    {t('common.send_message')}
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-hero hover:opacity-90" 
+                    size="lg"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t('common.sending')}
+                      </>
+                    ) : (
+                      t('common.send_message')
+                    )}
                   </Button>
                 </form>
               </CardContent>

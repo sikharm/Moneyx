@@ -34,7 +34,7 @@ const AdminLayout = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <Link to="/admin" className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
-              EA Admin Panel
+              MoneyX Admin
             </Link>
             <nav className="hidden md:flex gap-2">
               {navItems.map((item) => (

@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, TrendingUp, LogIn, LogOut, Shield } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { ThemeToggle } from "./ThemeToggle";
+import logo from "@/assets/logo.png";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,10 +33,8 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-            <div className="bg-gradient-hero p-2 rounded-lg">
-              <TrendingUp className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="bg-gradient-hero bg-clip-text text-transparent">EA Trading</span>
+            <img src={logo} alt="MoneyX Logo" className="h-10 w-auto" />
+            <span className="bg-gradient-hero bg-clip-text text-transparent">MoneyX</span>
           </Link>
 
           {/* Desktop Navigation */}

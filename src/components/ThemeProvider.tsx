@@ -1,8 +1,100 @@
-import { ThemeProvider as NextThemesProvider } from "next-themes";
 import * as React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-type ThemeProviderProps = React.ComponentProps<typeof NextThemesProvider>;
+type Theme = "dark" | "light" | "system";
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+type ThemeProviderProps = {
+  children: React.ReactNode;
+  defaultTheme?: Theme;
+  storageKey?: string;
+  attribute?: string;
+  enableSystem?: boolean;
+};
+
+type ThemeProviderState = {
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
+  resolvedTheme: "dark" | "light";
+};
+
+const ThemeProviderContext = createContext<ThemeProviderState | undefined>(
+  undefined
+);
+
+export function ThemeProvider({
+  children,
+  defaultTheme = "system",
+  storageKey = "vite-ui-theme",
+  attribute = "class",
+  enableSystem = true,
+  ...props
+}: ThemeProviderProps) {
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+  );
+  const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+
+    root.classList.remove("light", "dark");
+
+    if (theme === "system" && enableSystem) {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+        .matches
+        ? "dark"
+        : "light";
+
+      root.classList.add(systemTheme);
+      if (attribute === "class") {
+        root.setAttribute("class", root.className);
+      }
+      setResolvedTheme(systemTheme);
+      return;
+    }
+
+    root.classList.add(theme);
+    setResolvedTheme(theme === "system" ? "dark" : theme);
+  }, [theme, attribute, enableSystem]);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    if (theme !== "system" || !enableSystem) return;
+
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = (e: MediaQueryListEvent) => {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      const newTheme = e.matches ? "dark" : "light";
+      root.classList.add(newTheme);
+      setResolvedTheme(newTheme);
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme, enableSystem]);
+
+  const value = {
+    theme,
+    setTheme: (theme: Theme) => {
+      localStorage.setItem(storageKey, theme);
+      setTheme(theme);
+    },
+    resolvedTheme,
+  };
+
+  return (
+    <ThemeProviderContext.Provider {...props} value={value}>
+      {children}
+    </ThemeProviderContext.Provider>
+  );
 }
+
+export const useTheme = () => {
+  const context = useContext(ThemeProviderContext);
+
+  if (context === undefined)
+    throw new Error("useTheme must be used within a ThemeProvider");
+
+  return context;
+};

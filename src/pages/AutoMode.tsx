@@ -130,43 +130,19 @@ const AutoMode = () => {
 
         {/* Benefits Section */}
         <section className="mb-20">
-          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <div>
-              <h2 className="text-3xl font-bold mb-6">{t('auto.benefits.title')}</h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                {t('auto.benefits.description')}
-              </p>
-              <ul className="space-y-3">
-                {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckCircle className="h-6 w-6 text-accent flex-shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <Card className="border-2 bg-gradient-card">
-              <CardContent className="p-8">
-                <div className="text-center mb-6">
-                  <div className="text-5xl font-bold bg-gradient-success bg-clip-text text-transparent mb-2">
-                    98.5%
-                  </div>
-                  <div className="text-muted-foreground">{t('auto.stats.win_rate')}</div>
-                </div>
-                <div className="text-center mb-6">
-                  <div className="text-5xl font-bold bg-gradient-success bg-clip-text text-transparent mb-2">
-                    3.2x
-                  </div>
-                  <div className="text-muted-foreground">{t('auto.stats.roi')}</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-5xl font-bold bg-gradient-success bg-clip-text text-transparent mb-2">
-                    5000+
-                  </div>
-                  <div className="text-muted-foreground">{t('auto.stats.trades')}</div>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center">{t('auto.benefits.title')}</h2>
+            <p className="text-lg text-muted-foreground mb-6 text-center">
+              {t('auto.benefits.description')}
+            </p>
+            <ul className="space-y-3">
+              {benefits.map((benefit, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <CheckCircle className="h-6 w-6 text-accent flex-shrink-0 mt-0.5" />
+                  <span className="text-muted-foreground">{benefit}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 

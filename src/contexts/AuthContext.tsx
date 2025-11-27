@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check admin role after setting session
+          // Check admin role after setting session - loading stays true until complete
           setTimeout(async () => {
             const { data } = await supabase
               .from('user_roles')
@@ -40,12 +40,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               .maybeSingle();
             
             setIsAdmin(!!data);
+            setLoading(false); // Only set loading false AFTER admin check completes
           }, 0);
         } else {
           setIsAdmin(false);
+          setLoading(false); // Set loading false for logged-out users
         }
-        
-        setLoading(false);
       }
     );
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Upload, Trash2, Zap, Settings, FileText, Image, Video, Package, Plus, X } from 'lucide-react';
+import { Upload, Trash2, Zap, Settings, FileText, Image, Video, Package, Plus, CloudUpload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
@@ -14,7 +14,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronUp } from 'lucide-react';
@@ -43,6 +42,8 @@ const FileManagement = () => {
   const [uploadContext, setUploadContext] = useState<UploadContext | null>(null);
   const [uploadData, setUploadData] = useState({ version: '', description: '' });
   const [mediaExpanded, setMediaExpanded] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [dragOverSection, setDragOverSection] = useState<string | null>(null);
 
   useEffect(() => {
     loadFiles();
@@ -57,15 +58,15 @@ const FileManagement = () => {
     if (data) setFiles(data);
   };
 
-  const openUploadDialog = (context: UploadContext) => {
+  const openUploadDialog = (context: UploadContext, file?: File) => {
     setUploadContext(context);
     setUploadData({ version: '', description: '' });
+    setPendingFile(file || null);
     setUploadDialogOpen(true);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !uploadContext) return;
+  const processFileUpload = async (file: File) => {
+    if (!uploadContext) return;
 
     setUploading(true);
     try {
@@ -102,12 +103,23 @@ const FileManagement = () => {
       loadFiles();
       setUploadDialogOpen(false);
       setUploadContext(null);
-      e.target.value = '';
+      setPendingFile(null);
     } catch (error: any) {
       toast.error(error.message || 'Failed to upload file');
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPendingFile(file);
+  };
+
+  const handleUploadConfirm = async () => {
+    if (!pendingFile) return;
+    await processFileUpload(pendingFile);
   };
 
   const handleDelete = async (id: string, filePath: string) => {
@@ -129,6 +141,30 @@ const FileManagement = () => {
     }
     return files.filter(f => f.category === category);
   };
+
+  // Drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent, sectionId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSection(sectionId);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSection(null);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent, context: UploadContext, sectionId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOverSection(null);
+
+    const droppedFiles = e.dataTransfer.files;
+    if (droppedFiles.length > 0) {
+      openUploadDialog(context, droppedFiles[0]);
+    }
+  }, []);
 
   const FileItem = ({ file }: { file: FileData }) => (
     <div className="flex items-center justify-between py-2 px-3 bg-muted/50 rounded-lg">
@@ -154,48 +190,89 @@ const FileManagement = () => {
     </div>
   );
 
+  const DropZone = ({ 
+    context, 
+    sectionId,
+    children 
+  }: { 
+    context: UploadContext; 
+    sectionId: string;
+    children: React.ReactNode;
+  }) => {
+    const isOver = dragOverSection === sectionId;
+    
+    return (
+      <div
+        onDragOver={(e) => handleDragOver(e, sectionId)}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDrop(e, context, sectionId)}
+        className={`relative transition-all duration-200 rounded-lg ${
+          isOver ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : ''
+        }`}
+      >
+        {isOver && (
+          <div className="absolute inset-0 flex items-center justify-center bg-primary/10 rounded-lg z-10 pointer-events-none">
+            <div className="flex flex-col items-center gap-2 text-primary">
+              <CloudUpload className="h-8 w-8 animate-bounce" />
+              <span className="font-medium">Drop file here</span>
+            </div>
+          </div>
+        )}
+        <div className={isOver ? 'opacity-30' : ''}>
+          {children}
+        </div>
+      </div>
+    );
+  };
+
   const FileSection = ({ 
     title, 
     files, 
-    onUpload,
+    context,
+    sectionId,
     icon: Icon,
     uploadLabel 
   }: { 
     title: string; 
     files: FileData[]; 
-    onUpload: () => void;
+    context: UploadContext;
+    sectionId: string;
     icon: React.ElementType;
     uploadLabel: string;
   }) => (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-muted-foreground" />
-          <span className="font-medium">{title}</span>
-          <Badge variant="secondary" className="text-xs">{files.length}</Badge>
+    <DropZone context={context} sectionId={sectionId}>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium">{title}</span>
+            <Badge variant="secondary" className="text-xs">{files.length}</Badge>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => openUploadDialog(context)}>
+            <Plus className="h-4 w-4 mr-1" />
+            {uploadLabel}
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={onUpload}>
-          <Plus className="h-4 w-4 mr-1" />
-          {uploadLabel}
-        </Button>
+        {files.length > 0 ? (
+          <div className="space-y-2">
+            {files.map((file) => (
+              <FileItem key={file.id} file={file} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-muted-foreground py-8 text-center bg-muted/30 rounded-lg border-2 border-dashed border-muted-foreground/20">
+            <CloudUpload className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
+            <p>No files uploaded yet</p>
+            <p className="text-xs mt-1">Drag & drop or click upload</p>
+          </div>
+        )}
       </div>
-      {files.length > 0 ? (
-        <div className="space-y-2">
-          {files.map((file) => (
-            <FileItem key={file.id} file={file} />
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground py-4 text-center bg-muted/30 rounded-lg">
-          No files uploaded yet
-        </p>
-      )}
-    </div>
+    </DropZone>
   );
 
   const ModeCard = ({ mode, icon: Icon, color }: { mode: 'auto' | 'hybrid'; icon: React.ElementType; color: string }) => {
     const eaFiles = getFilesByCategory('ea_files', mode);
-    const setFiles = getFilesByCategory('set_files', mode);
+    const setFilesData = getFilesByCategory('set_files', mode);
     
     return (
       <Card className={`border-2 ${color}`}>
@@ -212,17 +289,19 @@ const FileManagement = () => {
           <FileSection
             title="EA Files"
             files={eaFiles}
+            context={{ category: 'ea_files', ea_mode: mode }}
+            sectionId={`ea_${mode}`}
             icon={Package}
             uploadLabel="Upload EA"
-            onUpload={() => openUploadDialog({ category: 'ea_files', ea_mode: mode })}
           />
           <div className="border-t pt-4">
             <FileSection
               title="Set Files"
-              files={setFiles}
+              files={setFilesData}
+              context={{ category: 'set_files', ea_mode: mode }}
+              sectionId={`set_${mode}`}
               icon={Settings}
               uploadLabel="Upload Set"
-              onUpload={() => openUploadDialog({ category: 'set_files', ea_mode: mode })}
             />
           </div>
         </CardContent>
@@ -249,7 +328,7 @@ const FileManagement = () => {
     <div className="space-y-8">
       <div>
         <h1 className="text-4xl font-bold mb-2">File Management</h1>
-        <p className="text-muted-foreground">Upload and manage EA files, set files, and documents</p>
+        <p className="text-muted-foreground">Upload and manage EA files, set files, and documents. Drag & drop files to upload.</p>
       </div>
 
       {/* Mode Cards - EA & Set Files */}
@@ -271,9 +350,10 @@ const FileManagement = () => {
           <FileSection
             title="PDF Documents"
             files={getFilesByCategory('documents')}
+            context={{ category: 'documents' }}
+            sectionId="documents"
             icon={FileText}
             uploadLabel="Upload Document"
-            onUpload={() => openUploadDialog({ category: 'documents' })}
           />
         </CardContent>
       </Card>
@@ -304,17 +384,19 @@ const FileManagement = () => {
               <FileSection
                 title="Images"
                 files={getFilesByCategory('images')}
+                context={{ category: 'images' }}
+                sectionId="images"
                 icon={Image}
                 uploadLabel="Upload Image"
-                onUpload={() => openUploadDialog({ category: 'images' })}
               />
               <div className="border-t pt-4">
                 <FileSection
                   title="Videos"
                   files={getFilesByCategory('videos')}
+                  context={{ category: 'videos' }}
+                  sectionId="videos"
                   icon={Video}
                   uploadLabel="Upload Video"
-                  onUpload={() => openUploadDialog({ category: 'videos' })}
                 />
               </div>
             </CardContent>
@@ -323,15 +405,33 @@ const FileManagement = () => {
       </Collapsible>
 
       {/* Upload Dialog */}
-      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+      <Dialog open={uploadDialogOpen} onOpenChange={(open) => {
+        setUploadDialogOpen(open);
+        if (!open) {
+          setPendingFile(null);
+          setUploadContext(null);
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{getUploadDialogTitle()}</DialogTitle>
             <DialogDescription>
-              Fill in the details and select a file to upload
+              {pendingFile ? `Selected: ${pendingFile.name}` : 'Fill in the details and select a file to upload'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {pendingFile && (
+              <div className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <CloudUpload className="h-5 w-5 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{pendingFile.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(pendingFile.size / 1024).toFixed(1)} KB
+                  </p>
+                </div>
+              </div>
+            )}
+            
             {(uploadContext?.category === 'ea_files' || uploadContext?.category === 'set_files') && (
               <div className="space-y-2">
                 <Label htmlFor="version">Version</Label>
@@ -352,20 +452,37 @@ const FileManagement = () => {
                 onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="file">Select File</Label>
-              <Input
-                id="file"
-                type="file"
-                onChange={handleFileUpload}
-                disabled={uploading}
-              />
-            </div>
-            {uploading && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                Uploading...
+            
+            {!pendingFile && (
+              <div className="space-y-2">
+                <Label htmlFor="file">Select File</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  onChange={handleFileSelect}
+                  disabled={uploading}
+                />
               </div>
+            )}
+            
+            {pendingFile && (
+              <Button 
+                className="w-full" 
+                onClick={handleUploadConfirm}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload File
+                  </>
+                )}
+              </Button>
             )}
           </div>
         </DialogContent>

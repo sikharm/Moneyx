@@ -86,7 +86,7 @@ const Navigation = () => {
                     isTradingModeActive ? "text-primary" : "text-muted-foreground"
                   )}
                 >
-                  {t('nav.trading_modes') || "Trading Modes"}
+                  {t('nav.trading_modes') === 'nav.trading_modes' ? "Trading Modes" : t('nav.trading_modes')}
                   <ChevronDown className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
@@ -193,7 +193,7 @@ const Navigation = () => {
                     : "text-muted-foreground hover:bg-muted"
                 )}
               >
-                <span>{t('nav.trading_modes') || "Trading Modes"}</span>
+                <span>{t('nav.trading_modes') === 'nav.trading_modes' ? "Trading Modes" : t('nav.trading_modes')}</span>
                 <ChevronDown className={cn(
                   "h-4 w-4 transition-transform",
                   isTradingModesOpen && "rotate-180"

@@ -35,17 +35,22 @@ const Navigation = () => {
     { to: "/contact", label: t('nav.contact') },
   ];
 
+  const getTranslation = (key: string, fallback: string) => {
+    const translated = t(key);
+    return translated === key ? fallback : translated;
+  };
+
   const tradingModes = [
     { 
       to: "/auto-mode", 
       label: t('nav.auto_mode'), 
-      description: t('nav.auto_mode_desc') || "Fully automated 24/7 trading",
+      description: getTranslation('nav.auto_mode_desc', "Fully automated 24/7 trading"),
       icon: Zap 
     },
     { 
       to: "/hybrid-mode", 
       label: t('nav.hybrid_mode'), 
-      description: t('nav.hybrid_mode_desc') || "AI signals + manual control",
+      description: getTranslation('nav.hybrid_mode_desc', "AI signals + manual control"),
       icon: Users 
     },
   ];

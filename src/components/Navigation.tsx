@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, TrendingUp, LogIn, LogOut, Shield } from "lucide-react";
+import { Menu, X, TrendingUp, LogIn, LogOut, Shield, Facebook } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import LanguageSwitcher from "./LanguageSwitcher";
@@ -18,6 +18,7 @@ const Navigation = () => {
     { to: "/hybrid-mode", label: "Hybrid Mode" },
     { to: "/performance", label: "Performance" },
     { to: "/download", label: "Download" },
+    { to: "/facebook-updates", label: "Updates" },
     { to: "/contact", label: "Contact" },
   ];
 

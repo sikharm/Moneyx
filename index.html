@@ -4,9 +4,13 @@
     <meta charset="UTF-8" />
     <script>
       (function() {
-        const theme = localStorage.getItem('theme') || 'system';
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (theme === 'dark' || (theme === 'system' && systemDark)) {
+        const theme = localStorage.getItem('theme');
+        if (theme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else if (theme === 'system') {
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (systemDark) document.documentElement.classList.add('dark');
+        } else {
           document.documentElement.classList.add('dark');
         }
       })();

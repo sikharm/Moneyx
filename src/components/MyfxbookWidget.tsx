@@ -1,29 +1,43 @@
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ExternalLink, ShieldCheck } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
-const MYFXBOOK_ACCOUNT_ID = "11691566";
-const MYFXBOOK_PROFILE_URL = "https://www.myfxbook.com/members/SikharmThongin/moneyx/11691566";
+interface MyfxbookWidgetProps {
+  accountId: string;
+  accountName: string;
+  profileUrl: string;
+  showVerifiedBadge?: boolean;
+}
 
-const MyfxbookWidget = () => {
+const MyfxbookWidget = ({ 
+  accountId, 
+  accountName, 
+  profileUrl, 
+  showVerifiedBadge = false 
+}: MyfxbookWidgetProps) => {
   const { t } = useLanguage();
   const [statsLoaded, setStatsLoaded] = useState(false);
   const [chartLoaded, setChartLoaded] = useState(false);
 
   return (
-    <div className="space-y-6">
-      {/* Verified Badge */}
-      <div className="flex items-center justify-center gap-2 text-accent">
-        <ShieldCheck className="h-5 w-5" />
-        <span className="font-medium">{t('performance.myfxbook.verified') || 'Verified by Myfxbook'}</span>
-      </div>
-
-      {/* Stats Widget */}
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center justify-between">
+          <span className="text-lg">{accountName}</span>
+          {showVerifiedBadge && (
+            <div className="flex items-center gap-2 text-accent text-sm">
+              <ShieldCheck className="h-4 w-4" />
+              <span className="font-medium">{t('performance.myfxbook.verified') || 'Verified by Myfxbook'}</span>
+            </div>
+          )}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Stats Widget */}
+        <div className="rounded-lg overflow-hidden border">
           {!statsLoaded && (
             <div className="p-6 space-y-4">
               <Skeleton className="h-8 w-48 mx-auto" />
@@ -35,7 +49,7 @@ const MyfxbookWidget = () => {
             </div>
           )}
           <iframe
-            src={`https://widgets.myfxbook.com/widgets/${MYFXBOOK_ACCOUNT_ID}/large.html`}
+            src={`https://widgets.myfxbook.com/widgets/${accountId}/large.html`}
             width="100%"
             height="300"
             style={{ 
@@ -43,22 +57,20 @@ const MyfxbookWidget = () => {
               display: statsLoaded ? 'block' : 'none'
             }}
             onLoad={() => setStatsLoaded(true)}
-            title="Myfxbook Stats Widget"
+            title={`Myfxbook Stats - ${accountName}`}
             loading="lazy"
           />
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Growth Chart Widget */}
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
+        {/* Growth Chart Widget */}
+        <div className="rounded-lg overflow-hidden border">
           {!chartLoaded && (
             <div className="p-6">
               <Skeleton className="h-[300px] w-full" />
             </div>
           )}
           <iframe
-            src={`https://widgets.myfxbook.com/widgets/${MYFXBOOK_ACCOUNT_ID}/chart.html`}
+            src={`https://widgets.myfxbook.com/widgets/${accountId}/chart.html`}
             width="100%"
             height="350"
             style={{ 
@@ -66,31 +78,31 @@ const MyfxbookWidget = () => {
               display: chartLoaded ? 'block' : 'none'
             }}
             onLoad={() => setChartLoaded(true)}
-            title="Myfxbook Growth Chart"
+            title={`Myfxbook Growth Chart - ${accountName}`}
             loading="lazy"
           />
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* View Full Report Link */}
-      <div className="flex justify-center">
-        <Button 
-          variant="outline" 
-          size="lg" 
-          asChild
-          className="gap-2"
-        >
-          <a 
-            href={MYFXBOOK_PROFILE_URL} 
-            target="_blank" 
-            rel="noopener noreferrer"
+        {/* View Full Report Link */}
+        <div className="flex justify-center pt-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            asChild
+            className="gap-2"
           >
-            {t('performance.myfxbook.view_full_report') || 'View Full Report on Myfxbook'}
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </Button>
-      </div>
-    </div>
+            <a 
+              href={profileUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              {t('performance.myfxbook.view_full_report') || 'View Full Report'}
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

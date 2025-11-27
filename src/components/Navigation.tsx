@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, TrendingUp } from "lucide-react";
+import { Menu, X, TrendingUp, LogIn, LogOut, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin, signOut } = useAuth();
 
   const navLinks = [
     { to: "/", label: "Home" },
@@ -45,9 +48,34 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
-            <Button size="sm" className="bg-gradient-hero hover:opacity-90">
-              Get Started
-            </Button>
+            
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <Link to="/admin">
+                      <Button variant="ghost" size="sm">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin
+                      </Button>
+                    </Link>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={signOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth">
+                  <Button size="sm" className="bg-gradient-hero hover:opacity-90">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -78,10 +106,31 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
-            <div className="px-4 pt-2">
-              <Button className="w-full bg-gradient-hero hover:opacity-90">
-                Get Started
-              </Button>
+            <div className="px-4 pt-2 space-y-2">
+              <LanguageSwitcher />
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setIsOpen(false)}>
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Panel
+                      </Button>
+                    </Link>
+                  )}
+                  <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Link to="/auth" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-gradient-hero hover:opacity-90">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         )}

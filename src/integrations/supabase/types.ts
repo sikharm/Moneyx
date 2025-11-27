@@ -14,16 +14,214 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_admin: boolean | null
+          is_read: boolean | null
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_read?: boolean | null
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      files: {
+        Row: {
+          category: Database["public"]["Enums"]["file_category"]
+          created_at: string | null
+          description: string | null
+          download_count: number | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          is_public: boolean | null
+          mime_type: string | null
+          updated_at: string | null
+          uploaded_by: string | null
+          version: string | null
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["file_category"]
+          created_at?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          is_public?: boolean | null
+          mime_type?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: string | null
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["file_category"]
+          created_at?: string | null
+          description?: string | null
+          download_count?: number | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          is_public?: boolean | null
+          mime_type?: string | null
+          updated_at?: string | null
+          uploaded_by?: string | null
+          version?: string | null
+        }
+        Relationships: []
+      }
+      languages: {
+        Row: {
+          code: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_default: boolean | null
+          name: string
+          native_name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name: string
+          native_name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_default?: boolean | null
+          name?: string
+          native_name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      translations: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          id: string
+          language_code: string
+          translation_key: string
+          translation_value: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          language_code: string
+          translation_key: string
+          translation_value: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          language_code?: string
+          translation_key?: string
+          translation_value?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translations_language_code_fkey"
+            columns: ["language_code"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      increment_download_count: {
+        Args: { file_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      file_category: "ea_files" | "documents" | "images" | "videos"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +348,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      file_category: ["ea_files", "documents", "images", "videos"],
+    },
   },
 } as const

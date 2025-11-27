@@ -68,13 +68,13 @@ const Navigation = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-6">
+          <div className="hidden lg:flex items-center gap-5 ml-8">
             {navLinks.slice(0, 2).map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
+                  "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap",
                   isActive(link.to) ? "text-primary" : "text-muted-foreground"
                 )}
               >
@@ -87,7 +87,7 @@ const Navigation = () => {
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    "flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary focus:outline-none",
+                    "flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary focus:outline-none whitespace-nowrap",
                     isTradingModeActive ? "text-primary" : "text-muted-foreground"
                   )}
                 >
@@ -121,7 +121,7 @@ const Navigation = () => {
                 key={link.to}
                 to={link.to}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary",
+                  "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap",
                   isActive(link.to) ? "text-primary" : "text-muted-foreground"
                 )}
               >

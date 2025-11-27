@@ -1,18 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Users, Brain, ThumbsUp, AlertCircle, CheckCircle, TrendingUp } from "lucide-react";
+import { Users, ThumbsUp, AlertCircle, CheckCircle, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const HybridMode = () => {
   const { t } = useLanguage();
 
   const features = [
-    {
-      icon: <Brain className="h-6 w-6" />,
-      title: t('hybrid.features.ai_signals'),
-      description: t('hybrid.features.ai_signals_desc'),
-    },
     {
       icon: <ThumbsUp className="h-6 w-6" />,
       title: t('hybrid.features.manual_approval'),
@@ -140,60 +135,21 @@ const HybridMode = () => {
           </div>
         </section>
 
-        {/* Comparison Section */}
+        {/* Benefits Section */}
         <section className="mb-20">
           <h2 className="text-3xl font-bold mb-12 text-center">{t('hybrid.benefits.title')}</h2>
-          <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
-            <div>
-              <p className="text-lg text-muted-foreground mb-6">
-                {t('hybrid.benefits.description')}
-              </p>
-              <ul className="space-y-3">
-                {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start gap-3">
-                    <CheckCircle className="h-6 w-6 text-secondary flex-shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="space-y-6">
-              <Card className="border-2 border-accent">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">{t('hybrid.stats.signal_accuracy')}</span>
-                    <span className="text-2xl font-bold text-accent">96%</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-accent w-[96%]"></div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-secondary">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">{t('hybrid.stats.user_satisfaction')}</span>
-                    <span className="text-2xl font-bold text-secondary">97%</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-secondary w-[97%]"></div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-primary">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">{t('hybrid.stats.time_saved')}</span>
-                    <span className="text-2xl font-bold text-primary">80%</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-[80%]"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <div className="max-w-3xl mx-auto">
+            <p className="text-lg text-muted-foreground mb-6 text-center">
+              {t('hybrid.benefits.description')}
+            </p>
+            <ul className="space-y-3">
+              {benefits.map((benefit, index) => (
+                <li key={index} className="flex items-start gap-3">
+                  <CheckCircle className="h-6 w-6 text-secondary flex-shrink-0 mt-0.5" />
+                  <span className="text-muted-foreground">{benefit}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 

@@ -16,12 +16,6 @@ const Download = () => {
 
   const downloads = [
     {
-      title: t('download.files.mt4_title'),
-      description: t('download.files.mt4_desc'),
-      version: "v3.2.1",
-      size: "2.4 MB",
-    },
-    {
       title: t('download.files.mt5_title'),
       description: t('download.files.mt5_desc'),
       version: "v3.2.1",

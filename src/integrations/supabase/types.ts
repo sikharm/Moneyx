@@ -47,6 +47,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           download_count: number | null
+          ea_mode: Database["public"]["Enums"]["ea_mode_type"] | null
           file_name: string
           file_path: string
           file_size: number | null
@@ -62,6 +63,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           download_count?: number | null
+          ea_mode?: Database["public"]["Enums"]["ea_mode_type"] | null
           file_name: string
           file_path: string
           file_size?: number | null
@@ -77,6 +79,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           download_count?: number | null
+          ea_mode?: Database["public"]["Enums"]["ea_mode_type"] | null
           file_name?: string
           file_path?: string
           file_size?: number | null
@@ -221,6 +224,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      ea_mode_type: "auto" | "hybrid"
       file_category: "ea_files" | "documents" | "images" | "videos"
     }
     CompositeTypes: {
@@ -350,6 +354,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      ea_mode_type: ["auto", "hybrid"],
       file_category: ["ea_files", "documents", "images", "videos"],
     },
   },

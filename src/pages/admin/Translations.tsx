@@ -37,6 +37,8 @@ const Translations = () => {
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [isTranslating, setIsTranslating] = useState(false);
+  const [isBulkTranslating, setIsBulkTranslating] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 });
   const [newTranslation, setNewTranslation] = useState({
     key: '',
     value: '',
@@ -248,13 +250,136 @@ const Translations = () => {
     return group.translations[langCode]?.value ? 'complete' : 'missing';
   };
 
+  // Get groups that have missing translations
+  const getGroupsWithMissingTranslations = () => {
+    return groupedTranslations.filter(group => 
+      languages.some(lang => !group.translations[lang.code]?.value)
+    );
+  };
+
+  // Bulk translate all missing translations
+  const handleBulkTranslateAll = async () => {
+    const groupsToTranslate = getGroupsWithMissingTranslations();
+    
+    if (groupsToTranslate.length === 0) {
+      toast.info('All translations are complete!');
+      return;
+    }
+
+    if (!confirm(`This will auto-translate ${groupsToTranslate.length} keys with missing translations. Continue?`)) {
+      return;
+    }
+
+    setIsBulkTranslating(true);
+    setBulkProgress({ current: 0, total: groupsToTranslate.length });
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < groupsToTranslate.length; i++) {
+      const group = groupsToTranslate[i];
+      setBulkProgress({ current: i + 1, total: groupsToTranslate.length });
+
+      try {
+        // Find source translation (prefer English)
+        const sourceLang = languages.find(l => l.code === 'en' && group.translations['en']?.value) 
+          || languages.find(l => group.translations[l.code]?.value);
+        
+        if (!sourceLang) {
+          console.warn(`No source translation for key: ${group.key}`);
+          errorCount++;
+          continue;
+        }
+
+        const sourceText = group.translations[sourceLang.code].value;
+        const missingLangs = languages
+          .filter(l => !group.translations[l.code]?.value)
+          .map(l => l.code);
+
+        if (missingLangs.length === 0) continue;
+
+        const translations = await translateText(sourceText, sourceLang.code, missingLangs);
+
+        const insertData = missingLangs.map(langCode => ({
+          language_code: langCode,
+          translation_key: group.key,
+          translation_value: translations[langCode] || sourceText,
+          category: group.category,
+        }));
+
+        const { error } = await supabase.from('translations').insert(insertData);
+        if (error) throw error;
+
+        successCount++;
+
+        // Small delay to avoid rate limiting
+        if (i < groupsToTranslate.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (error: any) {
+        console.error(`Failed to translate key ${group.key}:`, error);
+        errorCount++;
+        
+        // If rate limited, wait longer
+        if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
+          toast.error('Rate limit reached. Waiting 10 seconds...');
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        }
+      }
+    }
+
+    setIsBulkTranslating(false);
+    setBulkProgress({ current: 0, total: 0 });
+    loadAllTranslations();
+
+    if (successCount > 0) {
+      toast.success(`Successfully translated ${successCount} keys`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Failed to translate ${errorCount} keys`);
+    }
+  };
+
+  const missingCount = getGroupsWithMissingTranslations().length;
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold mb-2">Translations</h1>
-        <p className="text-muted-foreground">
-          Add content in one language and auto-translate to all others using AI
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Translations</h1>
+          <p className="text-muted-foreground">
+            Add content in one language and auto-translate to all others using AI
+          </p>
+        </div>
+        {missingCount > 0 && (
+          <div className="flex flex-col items-end gap-2">
+            <Button 
+              onClick={handleBulkTranslateAll}
+              disabled={isBulkTranslating}
+              variant="default"
+            >
+              {isBulkTranslating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Translating {bulkProgress.current}/{bulkProgress.total}...
+                </>
+              ) : (
+                <>
+                  <Languages className="h-4 w-4 mr-2" />
+                  Translate All Missing ({missingCount})
+                </>
+              )}
+            </Button>
+            {isBulkTranslating && (
+              <div className="w-48 bg-muted rounded-full h-2 overflow-hidden">
+                <div 
+                  className="bg-primary h-full transition-all duration-300"
+                  style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Add New Translation */}

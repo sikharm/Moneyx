@@ -2,3 +2,6 @@ project_id = "wegarlqeuyqeegcktrnc"
 
 [functions.translate]
 verify_jwt = true
+
+[functions.get-expected-translations]
+verify_jwt = true

@@ -1,8 +1,19 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, BarChart3 } from "lucide-react";
+import { TrendingUp, BarChart3, Zap, Settings2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MyfxbookWidget from "@/components/MyfxbookWidget";
+
+const MYFXBOOK_ACCOUNTS = {
+  hybrid: [
+    { id: "11691566", name: "MoneyX", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx/11691566" },
+    { id: "11775709", name: "MoneyX Max Profit", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx-max-profit/11775709" },
+    { id: "11808475", name: "MoneyX N M4", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx-n-m4/11808475" },
+  ],
+  auto: [
+    { id: "11808434", name: "MoneyX C M3", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx-c-m3/11808434" },
+  ],
+};
 
 const Performance = () => {
   const { t } = useLanguage();
@@ -33,18 +44,63 @@ const Performance = () => {
           </p>
         </div>
 
-        {/* Myfxbook Live Data */}
-        <section className="mb-16 max-w-4xl mx-auto">
-          <MyfxbookWidget />
-        </section>
-
-        {/* Tabs Section */}
+        {/* Main Tabs Section */}
         <section className="mb-16">
-          <Tabs defaultValue="backtest" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-1 mb-8">
-              <TabsTrigger value="backtest">{t('performance.tabs.backtest_data')}</TabsTrigger>
+          <Tabs defaultValue="hybrid" className="w-full">
+            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8">
+              <TabsTrigger value="hybrid" className="gap-2">
+                <Settings2 className="h-4 w-4" />
+                {t('performance.tabs.hybrid') || 'Hybrid System'}
+              </TabsTrigger>
+              <TabsTrigger value="auto" className="gap-2">
+                <Zap className="h-4 w-4" />
+                {t('performance.tabs.auto') || 'Auto System'}
+              </TabsTrigger>
+              <TabsTrigger value="backtest" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                {t('performance.tabs.backtest_data')}
+              </TabsTrigger>
             </TabsList>
 
+            {/* Hybrid System Tab */}
+            <TabsContent value="hybrid" className="space-y-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold mb-2">{t('performance.hybrid.title') || 'Hybrid System Performance'}</h2>
+                <p className="text-muted-foreground">
+                  {t('performance.hybrid.description') || 'Live verified results from our hybrid trading systems'}
+                </p>
+              </div>
+              {MYFXBOOK_ACCOUNTS.hybrid.map((account, index) => (
+                <MyfxbookWidget
+                  key={account.id}
+                  accountId={account.id}
+                  accountName={account.name}
+                  profileUrl={account.url}
+                  showVerifiedBadge={index === 0}
+                />
+              ))}
+            </TabsContent>
+
+            {/* Auto System Tab */}
+            <TabsContent value="auto" className="space-y-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold mb-2">{t('performance.auto.title') || 'Auto System Performance'}</h2>
+                <p className="text-muted-foreground">
+                  {t('performance.auto.description') || 'Live verified results from our fully automated trading systems'}
+                </p>
+              </div>
+              {MYFXBOOK_ACCOUNTS.auto.map((account, index) => (
+                <MyfxbookWidget
+                  key={account.id}
+                  accountId={account.id}
+                  accountName={account.name}
+                  profileUrl={account.url}
+                  showVerifiedBadge={index === 0}
+                />
+              ))}
+            </TabsContent>
+
+            {/* Backtest Data Tab */}
             <TabsContent value="backtest" className="space-y-6">
               <Card>
                 <CardHeader>

@@ -1,8 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Calendar, DollarSign, Target, BarChart3, Award } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Performance = () => {
+  const { t } = useLanguage();
+
   const monthlyResults = [
     { month: "January 2025", profit: "+12.4%", trades: 156, winRate: "98.1%" },
     { month: "December 2024", profit: "+15.2%", trades: 178, winRate: "98.9%" },
@@ -31,10 +34,10 @@ const Performance = () => {
             <TrendingUp className="h-12 w-12 text-accent-foreground" />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-success bg-clip-text text-transparent">Performance Results</span>
+            <span className="bg-gradient-success bg-clip-text text-transparent">{t('performance.hero.title')}</span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Verified backtesting and live trading results that demonstrate consistent profitability
+            {t('performance.hero.description')}
           </p>
         </div>
 
@@ -46,7 +49,7 @@ const Performance = () => {
                 <div className="flex flex-col items-center text-center">
                   <Award className="h-8 w-8 text-accent mb-2" />
                   <div className="text-3xl font-bold text-accent mb-1">98.5%</div>
-                  <div className="text-sm text-muted-foreground">Win Rate</div>
+                  <div className="text-sm text-muted-foreground">{t('performance.metrics.win_rate')}</div>
                 </div>
               </CardContent>
             </Card>
@@ -56,7 +59,7 @@ const Performance = () => {
                 <div className="flex flex-col items-center text-center">
                   <DollarSign className="h-8 w-8 text-primary mb-2" />
                   <div className="text-3xl font-bold text-primary mb-1">12.8%</div>
-                  <div className="text-sm text-muted-foreground">Avg Monthly</div>
+                  <div className="text-sm text-muted-foreground">{t('performance.metrics.avg_monthly')}</div>
                 </div>
               </CardContent>
             </Card>
@@ -66,7 +69,7 @@ const Performance = () => {
                 <div className="flex flex-col items-center text-center">
                   <BarChart3 className="h-8 w-8 text-secondary mb-2" />
                   <div className="text-3xl font-bold text-secondary mb-1">4.7</div>
-                  <div className="text-sm text-muted-foreground">Profit Factor</div>
+                  <div className="text-sm text-muted-foreground">{t('performance.metrics.profit_factor')}</div>
                 </div>
               </CardContent>
             </Card>
@@ -76,7 +79,7 @@ const Performance = () => {
                 <div className="flex flex-col items-center text-center">
                   <Target className="h-8 w-8 text-destructive mb-2" />
                   <div className="text-3xl font-bold text-destructive mb-1">3.2%</div>
-                  <div className="text-sm text-muted-foreground">Max Drawdown</div>
+                  <div className="text-sm text-muted-foreground">{t('performance.metrics.max_drawdown')}</div>
                 </div>
               </CardContent>
             </Card>
@@ -87,8 +90,8 @@ const Performance = () => {
         <section className="mb-16">
           <Tabs defaultValue="live" className="w-full">
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="live">Live Results</TabsTrigger>
-              <TabsTrigger value="backtest">Backtest Data</TabsTrigger>
+              <TabsTrigger value="live">{t('performance.tabs.live_results')}</TabsTrigger>
+              <TabsTrigger value="backtest">{t('performance.tabs.backtest_data')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="live" className="space-y-6">
@@ -96,9 +99,9 @@ const Performance = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Calendar className="h-5 w-5 text-primary" />
-                    Monthly Performance
+                    {t('performance.live.title')}
                   </CardTitle>
-                  <CardDescription>Real trading results from live accounts</CardDescription>
+                  <CardDescription>{t('performance.live.subtitle')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -110,7 +113,7 @@ const Performance = () => {
                         <div>
                           <div className="font-semibold">{result.month}</div>
                           <div className="text-sm text-muted-foreground">
-                            {result.trades} trades • {result.winRate} win rate
+                            {result.trades} {t('performance.live.trades')} • {result.winRate} {t('performance.live.win_rate')}
                           </div>
                         </div>
                         <div className="text-2xl font-bold text-accent">{result.profit}</div>
@@ -126,39 +129,39 @@ const Performance = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
-                    Backtest Results
+                    {t('performance.backtest.title')}
                   </CardTitle>
                   <CardDescription>
-                    Comprehensive testing over {backtestData.period}
+                    {t('performance.backtest.subtitle')} {backtestData.period}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <div className="flex justify-between items-center p-4 rounded-lg bg-muted">
-                        <span className="text-muted-foreground">Test Period</span>
+                        <span className="text-muted-foreground">{t('performance.backtest.test_period')}</span>
                         <span className="font-semibold">{backtestData.period}</span>
                       </div>
                       <div className="flex justify-between items-center p-4 rounded-lg bg-muted">
-                        <span className="text-muted-foreground">Total Trades</span>
+                        <span className="text-muted-foreground">{t('performance.backtest.total_trades')}</span>
                         <span className="font-semibold">{backtestData.totalTrades.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between items-center p-4 rounded-lg bg-muted">
-                        <span className="text-muted-foreground">Win Rate</span>
+                        <span className="text-muted-foreground">{t('performance.metrics.win_rate')}</span>
                         <span className="font-semibold text-accent">{backtestData.winRate}</span>
                       </div>
                     </div>
                     <div className="space-y-4">
                       <div className="flex justify-between items-center p-4 rounded-lg bg-muted">
-                        <span className="text-muted-foreground">Average Profit</span>
+                        <span className="text-muted-foreground">{t('performance.backtest.average_profit')}</span>
                         <span className="font-semibold text-accent">{backtestData.avgProfit}</span>
                       </div>
                       <div className="flex justify-between items-center p-4 rounded-lg bg-muted">
-                        <span className="text-muted-foreground">Max Drawdown</span>
+                        <span className="text-muted-foreground">{t('performance.metrics.max_drawdown')}</span>
                         <span className="font-semibold text-destructive">{backtestData.maxDrawdown}</span>
                       </div>
                       <div className="flex justify-between items-center p-4 rounded-lg bg-muted">
-                        <span className="text-muted-foreground">Profit Factor</span>
+                        <span className="text-muted-foreground">{t('performance.metrics.profit_factor')}</span>
                         <span className="font-semibold">{backtestData.profitFactor}</span>
                       </div>
                     </div>
@@ -168,29 +171,29 @@ const Performance = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Testing Methodology</CardTitle>
+                  <CardTitle>{t('performance.methodology.title')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-3 text-muted-foreground">
                     <li className="flex gap-2">
                       <span className="text-accent">•</span>
-                      <span>Tick-by-tick data with 99.9% modeling quality</span>
+                      <span>{t('performance.methodology.item1')}</span>
                     </li>
                     <li className="flex gap-2">
                       <span className="text-accent">•</span>
-                      <span>Real spread and commission costs included</span>
+                      <span>{t('performance.methodology.item2')}</span>
                     </li>
                     <li className="flex gap-2">
                       <span className="text-accent">•</span>
-                      <span>Multiple currency pairs and market conditions tested</span>
+                      <span>{t('performance.methodology.item3')}</span>
                     </li>
                     <li className="flex gap-2">
                       <span className="text-accent">•</span>
-                      <span>Includes major market events and volatility periods</span>
+                      <span>{t('performance.methodology.item4')}</span>
                     </li>
                     <li className="flex gap-2">
                       <span className="text-accent">•</span>
-                      <span>Conservative position sizing and risk management</span>
+                      <span>{t('performance.methodology.item5')}</span>
                     </li>
                   </ul>
                 </CardContent>
@@ -203,9 +206,7 @@ const Performance = () => {
         <Card className="bg-muted/50">
           <CardContent className="py-8 px-6">
             <p className="text-sm text-muted-foreground text-center">
-              <strong>Disclaimer:</strong> Past performance is not indicative of future results.
-              Trading involves risk and may not be suitable for all investors. Please ensure you
-              understand the risks before using our Expert Advisor system.
+              <strong>{t('performance.disclaimer_label')}</strong> {t('performance.disclaimer')}
             </p>
           </CardContent>
         </Card>

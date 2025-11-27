@@ -2,48 +2,51 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Users, Brain, ThumbsUp, AlertCircle, CheckCircle, TrendingUp } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const HybridMode = () => {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: <Brain className="h-6 w-6" />,
-      title: "AI-Powered Signals",
-      description: "Advanced algorithms analyze markets and suggest high-probability trade opportunities.",
+      title: t('hybrid.features.ai_signals'),
+      description: t('hybrid.features.ai_signals_desc'),
     },
     {
       icon: <ThumbsUp className="h-6 w-6" />,
-      title: "Manual Approval",
-      description: "Review and approve each trade before execution. You're always in control.",
+      title: t('hybrid.features.manual_approval'),
+      description: t('hybrid.features.manual_approval_desc'),
     },
     {
       icon: <AlertCircle className="h-6 w-6" />,
-      title: "Real-Time Alerts",
-      description: "Instant notifications when trading opportunities match your criteria.",
+      title: t('hybrid.features.real_time_alerts'),
+      description: t('hybrid.features.real_time_alerts_desc'),
     },
     {
       icon: <TrendingUp className="h-6 w-6" />,
-      title: "Smart Recommendations",
-      description: "Get entry points, stop-loss, and take-profit levels for every signal.",
+      title: t('hybrid.features.smart_recommendations'),
+      description: t('hybrid.features.smart_recommendations_desc'),
     },
     {
       icon: <Users className="h-6 w-6" />,
-      title: "Learning Mode",
-      description: "Perfect for traders who want to learn while the EA assists them.",
+      title: t('hybrid.features.learning_mode'),
+      description: t('hybrid.features.learning_mode_desc'),
     },
     {
       icon: <CheckCircle className="h-6 w-6" />,
-      title: "Flexible Control",
-      description: "Modify suggested trades or create your own with EA assistance.",
+      title: t('hybrid.features.flexible_control'),
+      description: t('hybrid.features.flexible_control_desc'),
     },
   ];
 
   const benefits = [
-    "Learn from AI-generated insights",
-    "Maintain full control over your trades",
-    "Reduce analysis time significantly",
-    "Get confirmation on your trade ideas",
-    "Perfect for part-time traders",
-    "Build confidence in your decisions",
+    t('hybrid.benefits.item1'),
+    t('hybrid.benefits.item2'),
+    t('hybrid.benefits.item3'),
+    t('hybrid.benefits.item4'),
+    t('hybrid.benefits.item5'),
+    t('hybrid.benefits.item6'),
   ];
 
   return (
@@ -55,29 +58,28 @@ const HybridMode = () => {
             <Users className="h-12 w-12 text-primary-foreground" />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-hero bg-clip-text text-transparent">Hybrid Mode</span>
+            <span className="bg-gradient-hero bg-clip-text text-transparent">{t('hybrid.hero.title')}</span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-            The perfect balance between automation and control. Get AI-powered trade suggestions
-            while maintaining full approval authority over every position.
+            {t('hybrid.hero.description')}
           </p>
           <Button size="lg" className="bg-gradient-hero hover:opacity-90" asChild>
-            <Link to="/download">Start Hybrid Trading</Link>
+            <Link to="/download">{t('hybrid.hero.button')}</Link>
           </Button>
         </div>
 
         {/* How It Works */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">How Hybrid Mode Works</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('hybrid.how_it_works.title')}</h2>
           <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <Card className="border-2 text-center">
               <CardHeader>
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">1</span>
                 </div>
-                <CardTitle className="text-lg">EA Analyzes</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step1_title')}</CardTitle>
                 <CardDescription>
-                  System scans markets for opportunities
+                  {t('hybrid.how_it_works.step1_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -87,9 +89,9 @@ const HybridMode = () => {
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">2</span>
                 </div>
-                <CardTitle className="text-lg">You Receive Alert</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step2_title')}</CardTitle>
                 <CardDescription>
-                  Get notified with trade details
+                  {t('hybrid.how_it_works.step2_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -99,9 +101,9 @@ const HybridMode = () => {
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">3</span>
                 </div>
-                <CardTitle className="text-lg">Review & Decide</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step3_title')}</CardTitle>
                 <CardDescription>
-                  Approve, modify, or reject the trade
+                  {t('hybrid.how_it_works.step3_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -111,9 +113,9 @@ const HybridMode = () => {
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">4</span>
                 </div>
-                <CardTitle className="text-lg">Trade Executes</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step4_title')}</CardTitle>
                 <CardDescription>
-                  EA places your approved trade
+                  {t('hybrid.how_it_works.step4_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -122,7 +124,7 @@ const HybridMode = () => {
 
         {/* Features Grid */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">Key Features</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('hybrid.features.title')}</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <Card key={index} className="border-2 hover:border-secondary transition-all duration-300">
@@ -140,13 +142,11 @@ const HybridMode = () => {
 
         {/* Comparison Section */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">Why Choose Hybrid Mode?</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('hybrid.benefits.title')}</h2>
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div>
               <p className="text-lg text-muted-foreground mb-6">
-                Hybrid Mode is ideal for traders who value both efficiency and control.
-                You get the analytical power of our Expert Advisor combined with your own
-                trading intuition and market knowledge.
+                {t('hybrid.benefits.description')}
               </p>
               <ul className="space-y-3">
                 {benefits.map((benefit, index) => (
@@ -161,7 +161,7 @@ const HybridMode = () => {
               <Card className="border-2 border-accent">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">Signal Accuracy</span>
+                    <span className="font-semibold">{t('hybrid.stats.signal_accuracy')}</span>
                     <span className="text-2xl font-bold text-accent">96%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -173,7 +173,7 @@ const HybridMode = () => {
               <Card className="border-2 border-secondary">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">User Satisfaction</span>
+                    <span className="font-semibold">{t('hybrid.stats.user_satisfaction')}</span>
                     <span className="text-2xl font-bold text-secondary">97%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -185,7 +185,7 @@ const HybridMode = () => {
               <Card className="border-2 border-primary">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-semibold">Time Saved</span>
+                    <span className="font-semibold">{t('hybrid.stats.time_saved')}</span>
                     <span className="text-2xl font-bold text-primary">80%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -199,31 +199,31 @@ const HybridMode = () => {
 
         {/* Use Cases */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">Perfect For</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('hybrid.perfect_for.title')}</h2>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <Card className="border-2">
               <CardHeader>
-                <CardTitle>Learning Traders</CardTitle>
+                <CardTitle>{t('hybrid.perfect_for.learning_traders')}</CardTitle>
                 <CardDescription>
-                  Study AI-generated signals to improve your own trading skills and market understanding.
+                  {t('hybrid.perfect_for.learning_traders_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card className="border-2">
               <CardHeader>
-                <CardTitle>Part-Time Traders</CardTitle>
+                <CardTitle>{t('hybrid.perfect_for.part_time_traders')}</CardTitle>
                 <CardDescription>
-                  Let the EA do the heavy analysis while you focus on final decisions during your available time.
+                  {t('hybrid.perfect_for.part_time_traders_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card className="border-2">
               <CardHeader>
-                <CardTitle>Risk-Conscious Traders</CardTitle>
+                <CardTitle>{t('hybrid.perfect_for.risk_conscious_traders')}</CardTitle>
                 <CardDescription>
-                  Maintain complete control over every trade while benefiting from advanced algorithmic analysis.
+                  {t('hybrid.perfect_for.risk_conscious_traders_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -234,9 +234,9 @@ const HybridMode = () => {
         <section>
           <Card className="bg-gradient-hero border-0 text-primary-foreground">
             <CardContent className="py-16 px-8 text-center">
-              <h2 className="text-4xl font-bold mb-4">Ready to Trade Smarter?</h2>
+              <h2 className="text-4xl font-bold mb-4">{t('hybrid.cta.title')}</h2>
               <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-                Experience the perfect balance of automation and control with Hybrid Mode.
+                {t('hybrid.cta.description')}
               </p>
               <Button
                 size="lg"
@@ -244,7 +244,7 @@ const HybridMode = () => {
                 className="bg-background text-foreground hover:bg-background/90"
                 asChild
               >
-                <Link to="/download">Download Now</Link>
+                <Link to="/download">{t('common.download_now')}</Link>
               </Button>
             </CardContent>
           </Card>

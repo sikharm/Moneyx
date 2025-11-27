@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Upload, Trash2, Download } from 'lucide-react';
+import { Upload, Trash2, Download, Zap, Settings } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 
 interface FileData {
   id: string;
@@ -19,6 +20,7 @@ interface FileData {
   download_count: number;
   created_at: string;
   file_path: string;
+  ea_mode?: 'auto' | 'hybrid';
 }
 
 const FileManagement = () => {
@@ -28,6 +30,7 @@ const FileManagement = () => {
     category: 'ea_files',
     version: '',
     description: '',
+    ea_mode: 'auto' as 'auto' | 'hybrid',
   });
 
   useEffect(() => {
@@ -59,7 +62,7 @@ const FileManagement = () => {
 
       if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase.from('files').insert({
+      const insertData: any = {
         file_name: file.name,
         file_path: filePath,
         category: uploadData.category as 'ea_files' | 'documents' | 'images' | 'videos',
@@ -67,13 +70,20 @@ const FileManagement = () => {
         description: uploadData.description || undefined,
         file_size: file.size,
         mime_type: file.type,
-      });
+      };
+
+      // Only include ea_mode for EA files
+      if (uploadData.category === 'ea_files') {
+        insertData.ea_mode = uploadData.ea_mode;
+      }
+
+      const { error: dbError } = await supabase.from('files').insert(insertData);
 
       if (dbError) throw dbError;
 
       toast.success('File uploaded successfully!');
       loadFiles();
-      setUploadData({ category: 'ea_files', version: '', description: '' });
+      setUploadData({ category: 'ea_files', version: '', description: '', ea_mode: 'auto' });
       e.target.value = '';
     } catch (error: any) {
       toast.error(error.message || 'Failed to upload file');
@@ -97,6 +107,52 @@ const FileManagement = () => {
 
   const getFilesByCategory = (category: string) => {
     return files.filter(f => f.category === category);
+  };
+
+  const getEAFilesByMode = (mode: 'auto' | 'hybrid') => {
+    return files.filter(f => f.category === 'ea_files' && f.ea_mode === mode);
+  };
+
+  const EAModeFileList = ({ mode }: { mode: 'auto' | 'hybrid' }) => {
+    const modeFiles = getEAFilesByMode(mode);
+
+    return (
+      <div className="space-y-4">
+        {modeFiles.length === 0 ? (
+          <p className="text-muted-foreground text-center py-8">No {mode} mode files uploaded yet</p>
+        ) : (
+          modeFiles.map((file) => (
+            <Card key={file.id}>
+              <CardContent className="p-4 flex items-center justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="font-semibold">{file.file_name}</h4>
+                    <Badge variant={mode === 'auto' ? 'default' : 'secondary'} className="text-xs">
+                      {mode === 'auto' ? <Zap className="h-3 w-3 mr-1" /> : <Settings className="h-3 w-3 mr-1" />}
+                      {mode}
+                    </Badge>
+                  </div>
+                  {file.version && <p className="text-sm text-muted-foreground">Version: {file.version}</p>}
+                  {file.description && <p className="text-sm text-muted-foreground">{file.description}</p>}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Downloads: {file.download_count} | Uploaded: {new Date(file.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(file.id, file.file_path)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+    );
   };
 
   const FileList = ({ category }: { category: string }) => {
@@ -165,6 +221,35 @@ const FileManagement = () => {
                 </SelectContent>
               </Select>
             </div>
+            
+            {uploadData.category === 'ea_files' && (
+              <div className="space-y-2">
+                <Label htmlFor="ea_mode">EA Mode</Label>
+                <Select
+                  value={uploadData.ea_mode}
+                  onValueChange={(value: 'auto' | 'hybrid') => setUploadData({ ...uploadData, ea_mode: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-4 w-4" />
+                        Auto Mode
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="hybrid">
+                      <div className="flex items-center gap-2">
+                        <Settings className="h-4 w-4" />
+                        Hybrid Mode
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="version">Version (Optional)</Label>
               <Input
@@ -202,15 +287,25 @@ const FileManagement = () => {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="ea_files">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="ea_files">EA Files</TabsTrigger>
+      <Tabs defaultValue="ea_auto">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="ea_auto" className="flex items-center gap-1">
+            <Zap className="h-3 w-3" />
+            Auto EA
+          </TabsTrigger>
+          <TabsTrigger value="ea_hybrid" className="flex items-center gap-1">
+            <Settings className="h-3 w-3" />
+            Hybrid EA
+          </TabsTrigger>
           <TabsTrigger value="documents">Documents</TabsTrigger>
           <TabsTrigger value="images">Images</TabsTrigger>
           <TabsTrigger value="videos">Videos</TabsTrigger>
         </TabsList>
-        <TabsContent value="ea_files">
-          <FileList category="ea_files" />
+        <TabsContent value="ea_auto">
+          <EAModeFileList mode="auto" />
+        </TabsContent>
+        <TabsContent value="ea_hybrid">
+          <EAModeFileList mode="hybrid" />
         </TabsContent>
         <TabsContent value="documents">
           <FileList category="documents" />

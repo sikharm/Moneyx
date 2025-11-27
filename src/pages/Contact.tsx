@@ -1,13 +1,28 @@
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageSquare, Phone, MapPin } from "lucide-react";
+import { Mail, MessageSquare, Phone, MapPin, Facebook } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Contact = () => {
   const { t } = useLanguage();
+
+  useEffect(() => {
+    // Load Facebook SDK
+    const script = document.createElement("script");
+    script.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0";
+    script.async = true;
+    script.defer = true;
+    script.crossOrigin = "anonymous";
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const contactInfo = [
     {
@@ -69,7 +84,7 @@ const Contact = () => {
           </div>
         </section>
 
-        {/* Contact Form */}
+        {/* Contact Form & Facebook Updates */}
         <section>
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="border-2">
@@ -113,6 +128,51 @@ const Contact = () => {
             </Card>
 
             <div className="space-y-6">
+              {/* Facebook Updates Section */}
+              <Card className="border-2">
+                <CardHeader>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-[#1877F2] p-2 rounded-lg">
+                      <Facebook className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle>{t('updates.hero.title')}</CardTitle>
+                      <CardDescription>{t('updates.hero.description')}</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div id="fb-root"></div>
+                  <div
+                    className="fb-page"
+                    data-href="https://www.facebook.com/SabuyHUBlao"
+                    data-tabs="timeline"
+                    data-width="500"
+                    data-height="400"
+                    data-small-header="true"
+                    data-adapt-container-width="true"
+                    data-hide-cover="false"
+                    data-show-facepile="false"
+                  >
+                    <blockquote
+                      cite="https://www.facebook.com/SabuyHUBlao"
+                      className="fb-xfbml-parse-ignore"
+                    >
+                      <a href="https://www.facebook.com/SabuyHUBlao">SabuyHUB Lao</a>
+                    </blockquote>
+                  </div>
+                  <a
+                    href="https://www.facebook.com/SabuyHUBlao"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mt-4"
+                  >
+                    <Facebook className="w-4 h-4" />
+                    {t('updates.visit_page')}
+                  </a>
+                </CardContent>
+              </Card>
+
               <Card className="border-2">
                 <CardHeader>
                   <CardTitle>{t('contact.faq.title')}</CardTitle>

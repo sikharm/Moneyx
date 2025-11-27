@@ -22,7 +22,6 @@ const Navigation = () => {
     { to: "/hybrid-mode", label: t('nav.hybrid_mode') },
     { to: "/performance", label: t('nav.performance') },
     { to: "/download", label: t('nav.download') },
-    { to: "/facebook-updates", label: t('nav.updates') },
     { to: "/contact", label: t('nav.contact') },
   ];
 

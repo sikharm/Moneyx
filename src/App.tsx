@@ -16,7 +16,6 @@ import Performance from "./pages/Performance";
 import Download from "./pages/Download";
 import Contact from "./pages/Contact";
 import Auth from "./pages/Auth";
-import FacebookUpdates from "./pages/FacebookUpdates";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import FileManagement from "./pages/admin/FileManagement";
@@ -44,7 +43,6 @@ const App = () => (
                 <Route path="/hybrid-mode" element={<HybridMode />} />
                 <Route path="/performance" element={<Performance />} />
                 <Route path="/download" element={<Download />} />
-                <Route path="/facebook-updates" element={<FacebookUpdates />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/auth" element={<Auth />} />
                 

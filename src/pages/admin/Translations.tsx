@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Languages, Loader2, Check, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Languages, Loader2, Check, AlertCircle, Search, Zap } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface Translation {
   id: string;
@@ -30,6 +31,17 @@ interface GroupedTranslation {
   translations: Record<string, { id: string; value: string }>;
 }
 
+interface ExpectedTranslation {
+  value: string;
+  category: string;
+}
+
+interface MissingKey {
+  key: string;
+  defaultValue: string;
+  category: string;
+}
+
 const Translations = () => {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [allTranslations, setAllTranslations] = useState<Translation[]>([]);
@@ -45,6 +57,13 @@ const Translations = () => {
     category: 'general',
     sourceLang: 'en',
   });
+
+  // Missing keys state
+  const [missingKeys, setMissingKeys] = useState<MissingKey[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const [showMissingKeys, setShowMissingKeys] = useState(true);
+  const [isAddingMissing, setIsAddingMissing] = useState(false);
+  const [addMissingProgress, setAddMissingProgress] = useState({ current: 0, total: 0 });
 
   useEffect(() => {
     loadLanguages();
@@ -104,6 +123,115 @@ const Translations = () => {
     }
 
     return data.translations as Record<string, string>;
+  };
+
+  // Scan for missing translation keys
+  const handleScanMissingKeys = async () => {
+    setIsScanning(true);
+    try {
+      // Get expected translations from edge function
+      const { data, error } = await supabase.functions.invoke('get-expected-translations');
+      
+      if (error) {
+        throw new Error(error.message || 'Failed to get expected translations');
+      }
+
+      const expectedTranslations = data.translations as Record<string, ExpectedTranslation>;
+      const existingKeys = new Set(allTranslations.map(t => t.translation_key));
+
+      // Find missing keys
+      const missing: MissingKey[] = [];
+      for (const [key, info] of Object.entries(expectedTranslations)) {
+        if (!existingKeys.has(key)) {
+          missing.push({
+            key,
+            defaultValue: info.value,
+            category: info.category,
+          });
+        }
+      }
+
+      setMissingKeys(missing);
+      
+      if (missing.length === 0) {
+        toast.success('All translation keys are present!');
+      } else {
+        toast.info(`Found ${missing.length} missing translation keys`);
+      }
+    } catch (error: any) {
+      console.error('Scan error:', error);
+      toast.error(error.message || 'Failed to scan for missing keys');
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  // Add and auto-translate all missing keys
+  const handleAddAllMissingKeys = async () => {
+    if (missingKeys.length === 0) {
+      toast.info('No missing keys to add');
+      return;
+    }
+
+    if (!confirm(`This will add and auto-translate ${missingKeys.length} missing keys to all languages. Continue?`)) {
+      return;
+    }
+
+    setIsAddingMissing(true);
+    setAddMissingProgress({ current: 0, total: missingKeys.length });
+
+    const targetLangs = languages.map(l => l.code);
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < missingKeys.length; i++) {
+      const missing = missingKeys[i];
+      setAddMissingProgress({ current: i + 1, total: missingKeys.length });
+
+      try {
+        // Translate to all languages
+        const translations = await translateText(missing.defaultValue, 'en', targetLangs);
+
+        // Insert all translations
+        const insertData = targetLangs.map(langCode => ({
+          language_code: langCode,
+          translation_key: missing.key,
+          translation_value: translations[langCode] || missing.defaultValue,
+          category: missing.category,
+        }));
+
+        const { error } = await supabase.from('translations').insert(insertData);
+        if (error) throw error;
+
+        successCount++;
+
+        // Small delay to avoid rate limiting
+        if (i < missingKeys.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (error: any) {
+        console.error(`Failed to add key ${missing.key}:`, error);
+        errorCount++;
+
+        // If rate limited, wait longer
+        if (error.message?.includes('Rate limit') || error.message?.includes('429')) {
+          toast.error('Rate limit reached. Waiting 10 seconds...');
+          await new Promise(resolve => setTimeout(resolve, 10000));
+        }
+      }
+    }
+
+    setIsAddingMissing(false);
+    setAddMissingProgress({ current: 0, total: 0 });
+    loadAllTranslations();
+    setMissingKeys([]);
+
+    if (successCount > 0) {
+      toast.success(`Successfully added ${successCount} translation keys`);
+    }
+    if (errorCount > 0) {
+      toast.error(`Failed to add ${errorCount} keys`);
+    }
   };
 
   const handleAddWithAutoTranslate = async () => {
@@ -340,19 +468,36 @@ const Translations = () => {
     }
   };
 
-  const missingCount = getGroupsWithMissingTranslations().length;
+  const incompleteCount = getGroupsWithMissingTranslations().length;
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-4xl font-bold mb-2">Translations</h1>
           <p className="text-muted-foreground">
             Add content in one language and auto-translate to all others using AI
           </p>
         </div>
-        {missingCount > 0 && (
-          <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={handleScanMissingKeys}
+            disabled={isScanning}
+            variant="outline"
+          >
+            {isScanning ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Scanning...
+              </>
+            ) : (
+              <>
+                <Search className="h-4 w-4 mr-2" />
+                Scan Missing Keys
+              </>
+            )}
+          </Button>
+          {incompleteCount > 0 && (
             <Button 
               onClick={handleBulkTranslateAll}
               disabled={isBulkTranslating}
@@ -366,21 +511,83 @@ const Translations = () => {
               ) : (
                 <>
                   <Languages className="h-4 w-4 mr-2" />
-                  Translate All Missing ({missingCount})
+                  Translate Incomplete ({incompleteCount})
                 </>
               )}
             </Button>
-            {isBulkTranslating && (
-              <div className="w-48 bg-muted rounded-full h-2 overflow-hidden">
-                <div 
-                  className="bg-primary h-full transition-all duration-300"
-                  style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
-                />
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* Progress bar for bulk operations */}
+      {(isBulkTranslating || isAddingMissing) && (
+        <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+          <div 
+            className="bg-primary h-full transition-all duration-300"
+            style={{ 
+              width: `${((isBulkTranslating ? bulkProgress.current : addMissingProgress.current) / 
+                        (isBulkTranslating ? bulkProgress.total : addMissingProgress.total)) * 100}%` 
+            }}
+          />
+        </div>
+      )}
+
+      {/* Missing Keys Section */}
+      {missingKeys.length > 0 && (
+        <Card className="border-2 border-destructive/50 bg-destructive/5">
+          <Collapsible open={showMissingKeys} onOpenChange={setShowMissingKeys}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-destructive" />
+                  <CardTitle className="text-lg">Missing Keys Found ({missingKeys.length})</CardTitle>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={handleAddAllMissingKeys}
+                    disabled={isAddingMissing}
+                    size="sm"
+                  >
+                    {isAddingMissing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Adding {addMissingProgress.current}/{addMissingProgress.total}...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-4 w-4 mr-2" />
+                        Auto-Translate All Missing
+                      </>
+                    )}
+                  </Button>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm">
+                      {showMissingKeys ? 'Hide' : 'Show'}
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+              </div>
+            </CardHeader>
+            <CollapsibleContent>
+              <CardContent className="pt-0">
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {missingKeys.map((missing) => (
+                    <div key={missing.key} className="flex items-center justify-between p-2 bg-background rounded border">
+                      <div>
+                        <span className="font-mono text-sm">{missing.key}</span>
+                        <Badge variant="secondary" className="ml-2 text-xs">{missing.category}</Badge>
+                      </div>
+                      <span className="text-sm text-muted-foreground truncate max-w-xs">
+                        "{missing.defaultValue}"
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+      )}
 
       {/* Add New Translation */}
       <Card>

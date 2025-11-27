@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { ThemeProvider } from "./components/ThemeProvider";
 import Navigation from "@/components/Navigation";
 import ChatWidget from "@/components/ChatWidget";
 import Home from "./pages/Home";
@@ -27,39 +28,41 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <LanguageProvider>
-            <Navigation />
-            <ChatWidget />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/auto-mode" element={<AutoMode />} />
-              <Route path="/hybrid-mode" element={<HybridMode />} />
-              <Route path="/performance" element={<Performance />} />
-              <Route path="/download" element={<Download />} />
-              <Route path="/facebook-updates" element={<FacebookUpdates />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/auth" element={<Auth />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route index element={<Dashboard />} />
-                <Route path="files" element={<FileManagement />} />
-                <Route path="translations" element={<Translations />} />
-                <Route path="chat" element={<ChatSupport />} />
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </LanguageProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <LanguageProvider>
+              <Navigation />
+              <ChatWidget />
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/auto-mode" element={<AutoMode />} />
+                <Route path="/hybrid-mode" element={<HybridMode />} />
+                <Route path="/performance" element={<Performance />} />
+                <Route path="/download" element={<Download />} />
+                <Route path="/facebook-updates" element={<FacebookUpdates />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/auth" element={<Auth />} />
+                
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLayout />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="files" element={<FileManagement />} />
+                  <Route path="translations" element={<Translations />} />
+                  <Route path="chat" element={<ChatSupport />} />
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </LanguageProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

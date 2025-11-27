@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogIn, LogOut, Shield, Zap, Users, ChevronDown } from "lucide-react";
+import { Menu, X, Zap, Users, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import LanguageSwitcher from "./LanguageSwitcher";
-import { ThemeToggle } from "./ThemeToggle";
+import SettingsDropdown from "./SettingsDropdown";
 import logo from "@/assets/logo.png";
 import {
   DropdownMenu,
@@ -24,7 +22,6 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isTradingModesOpen, setIsTradingModesOpen] = useState(false);
   const location = useLocation();
-  const { user, isAdmin, signOut } = useAuth();
   const { t } = useLanguage();
 
   const navLinks = [
@@ -129,34 +126,7 @@ const Navigation = () => {
               </Link>
             ))}
             
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <LanguageSwitcher />
-              
-              {user ? (
-                <>
-                  {isAdmin && (
-                    <Link to="/admin">
-                      <Button variant="ghost" size="sm">
-                        <Shield className="h-4 w-4 mr-2" />
-                        {t('nav.admin')}
-                      </Button>
-                    </Link>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={signOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    {t('nav.sign_out')}
-                  </Button>
-                </>
-              ) : (
-                <Link to="/auth">
-                  <Button size="sm" className="bg-gradient-hero hover:opacity-90">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    {t('nav.sign_in')}
-                  </Button>
-                </Link>
-              )}
-            </div>
+            <SettingsDropdown />
           </div>
 
           {/* Mobile/Tablet Menu Button */}
@@ -243,34 +213,8 @@ const Navigation = () => {
               </Link>
             ))}
 
-            <div className="px-4 pt-2 space-y-2 flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <ThemeToggle />
-                <LanguageSwitcher />
-              </div>
-              {user ? (
-                <>
-                  {isAdmin && (
-                    <Link to="/admin" onClick={() => setIsOpen(false)}>
-                      <Button variant="ghost" size="sm" className="w-full justify-start">
-                        <Shield className="h-4 w-4 mr-2" />
-                        {t('nav.admin_panel')}
-                      </Button>
-                    </Link>
-                  )}
-                  <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    {t('nav.sign_out')}
-                  </Button>
-                </>
-              ) : (
-                <Link to="/auth" onClick={() => setIsOpen(false)}>
-                  <Button className="w-full bg-gradient-hero hover:opacity-90">
-                    <LogIn className="h-4 w-4 mr-2" />
-                    {t('nav.sign_in')}
-                  </Button>
-                </Link>
-              )}
+            <div className="px-4 pt-2">
+              <SettingsDropdown onNavigate={() => setIsOpen(false)} />
             </div>
           </div>
         )}

@@ -1,0 +1,162 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Mail, MessageSquare, Phone, MapPin } from "lucide-react";
+
+const Contact = () => {
+  const contactInfo = [
+    {
+      icon: <Mail className="h-6 w-6" />,
+      title: "Email",
+      content: "support@eatrading.com",
+      description: "We respond within 24 hours",
+    },
+    {
+      icon: <Phone className="h-6 w-6" />,
+      title: "Phone",
+      content: "+1 (555) 123-4567",
+      description: "Mon-Fri, 9AM-6PM EST",
+    },
+    {
+      icon: <MapPin className="h-6 w-6" />,
+      title: "Office",
+      content: "123 Trading Street",
+      description: "New York, NY 10001",
+    },
+    {
+      icon: <MessageSquare className="h-6 w-6" />,
+      title: "Live Chat",
+      content: "Available 24/7",
+      description: "Instant support",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen pt-24 pb-20">
+      <div className="container mx-auto px-4 max-w-6xl">
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            <span className="bg-gradient-hero bg-clip-text text-transparent">Get In Touch</span>
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+          </p>
+        </div>
+
+        {/* Contact Info Cards */}
+        <section className="mb-16">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {contactInfo.map((info, index) => (
+              <Card key={index} className="border-2 hover:border-primary transition-all duration-300 text-center">
+                <CardHeader>
+                  <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
+                    <div className="text-primary-foreground">{info.icon}</div>
+                  </div>
+                  <CardTitle className="text-lg">{info.title}</CardTitle>
+                  <CardDescription className="text-base font-semibold text-foreground">
+                    {info.content}
+                  </CardDescription>
+                  <CardDescription className="text-sm">{info.description}</CardDescription>
+                </CardHeader>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {/* Contact Form */}
+        <section>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="border-2">
+              <CardHeader>
+                <CardTitle className="text-2xl">Send Us a Message</CardTitle>
+                <CardDescription>
+                  Fill out the form below and we'll get back to you shortly
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name</Label>
+                    <Input id="name" placeholder="Your full name" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input id="email" type="email" placeholder="your.email@example.com" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">Subject</Label>
+                    <Input id="subject" placeholder="How can we help?" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Tell us more about your inquiry..."
+                      rows={6}
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full bg-gradient-hero hover:opacity-90" size="lg">
+                    Send Message
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <Card className="border-2">
+                <CardHeader>
+                  <CardTitle>Frequently Asked Questions</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2">What is your response time?</h3>
+                    <p className="text-muted-foreground">
+                      We typically respond to all inquiries within 24 hours during business days.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">Do you offer installation support?</h3>
+                    <p className="text-muted-foreground">
+                      Yes! Our team provides free installation support for all customers.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold mb-2">Can I schedule a demo?</h3>
+                    <p className="text-muted-foreground">
+                      Absolutely. Contact us to schedule a personalized demo of our EA system.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-hero border-0 text-primary-foreground">
+                <CardContent className="py-8">
+                  <h3 className="text-2xl font-bold mb-2">Need Immediate Help?</h3>
+                  <p className="mb-4 opacity-90">
+                    Our live chat support is available 24/7 for urgent inquiries.
+                  </p>
+                  <Button
+                    size="lg"
+                    variant="secondary"
+                    className="w-full bg-background text-foreground hover:bg-background/90"
+                  >
+                    Start Live Chat
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+export default Contact;

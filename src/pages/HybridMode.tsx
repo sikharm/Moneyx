@@ -10,43 +10,43 @@ const HybridMode = () => {
   const features = [
     {
       icon: <TrendingUp className="h-6 w-6" />,
-      title: "Autonomous Trade Execution",
-      description: "EA automatically analyzes the market and executes trades based on your configured strategy and settings.",
+      title: t('hybrid.features.autonomous_trade'),
+      description: t('hybrid.features.autonomous_trade_desc'),
     },
     {
       icon: <Settings className="h-6 w-6" />,
-      title: "Customizable Settings",
-      description: "Full control over lot size, volume, order quantity, grid settings, profit targets, and trading sessions.",
+      title: t('hybrid.features.customizable_settings'),
+      description: t('hybrid.features.customizable_settings_desc'),
     },
     {
       icon: <Newspaper className="h-6 w-6" />,
-      title: "News Event Protection",
-      description: "EA automatically pauses trading before and after high-impact news events to protect your capital.",
+      title: t('hybrid.features.news_protection'),
+      description: t('hybrid.features.news_protection_desc'),
     },
     {
       icon: <Hand className="h-6 w-6" />,
-      title: "Manual Order Control",
-      description: "Close individual orders, all buy/sell orders, or all profitable positions with one click anytime.",
+      title: t('hybrid.features.manual_order_control'),
+      description: t('hybrid.features.manual_order_control_desc'),
     },
     {
       icon: <Clock className="h-6 w-6" />,
-      title: "Trading Session Filter",
-      description: "Set specific trading hours and sessions to match your preferred market conditions.",
+      title: t('hybrid.features.trading_session_filter'),
+      description: t('hybrid.features.trading_session_filter_desc'),
     },
     {
       icon: <Shield className="h-6 w-6" />,
-      title: "Risk Management",
-      description: "Built-in hedging settings, fixed money loss limits, and grid profit/loss targets for protection.",
+      title: t('hybrid.features.risk_management'),
+      description: t('hybrid.features.risk_management_desc'),
     },
   ];
 
   const benefits = [
-    "Automated trading with full manual override capability",
-    "Customizable lot sizes and grid trading parameters",
-    "News filter with adjustable pause times before and after events",
-    "Multiple trading sessions for different market hours",
-    "Real-time P/L tracking (Daily, Weekly, Monthly, All Time)",
-    "One-click order management (Close All, Close Buy, Close Sell)",
+    t('hybrid.benefits.item1_new'),
+    t('hybrid.benefits.item2_new'),
+    t('hybrid.benefits.item3_new'),
+    t('hybrid.benefits.item4_new'),
+    t('hybrid.benefits.item5_new'),
+    t('hybrid.benefits.item6_new'),
   ];
 
   return (
@@ -61,7 +61,7 @@ const HybridMode = () => {
             <span className="bg-gradient-hero bg-clip-text text-transparent">{t('hybrid.hero.title')}</span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-            The perfect balance between automated trading and manual control. EA executes trades autonomously while you maintain full control over settings and can intervene anytime.
+            {t('hybrid.hero.description_new')}
           </p>
           <Button size="lg" className="bg-gradient-hero hover:opacity-90" asChild>
             <Link to="/download">{t('hybrid.hero.button')}</Link>
@@ -77,9 +77,9 @@ const HybridMode = () => {
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">1</span>
                 </div>
-                <CardTitle className="text-lg">Configure Settings</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step1_title_new')}</CardTitle>
                 <CardDescription>
-                  Set your lot size, grid parameters, profit targets, and trading sessions
+                  {t('hybrid.how_it_works.step1_desc_new')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -89,9 +89,9 @@ const HybridMode = () => {
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">2</span>
                 </div>
-                <CardTitle className="text-lg">EA Trades Automatically</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step2_title_new')}</CardTitle>
                 <CardDescription>
-                  The EA analyzes the market and executes trades based on your configured strategy
+                  {t('hybrid.how_it_works.step2_desc_new')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -101,9 +101,9 @@ const HybridMode = () => {
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">3</span>
                 </div>
-                <CardTitle className="text-lg">News Protection Active</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step3_title_new')}</CardTitle>
                 <CardDescription>
-                  Trading automatically pauses before and after high-impact news events
+                  {t('hybrid.how_it_works.step3_desc_new')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -113,9 +113,9 @@ const HybridMode = () => {
                 <div className="bg-secondary rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-secondary-foreground">4</span>
                 </div>
-                <CardTitle className="text-lg">Manual Override Anytime</CardTitle>
+                <CardTitle className="text-lg">{t('hybrid.how_it_works.step4_title_new')}</CardTitle>
                 <CardDescription>
-                  Close orders manually whenever you want with one-click buttons
+                  {t('hybrid.how_it_works.step4_desc_new')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -142,16 +142,16 @@ const HybridMode = () => {
 
         {/* Key Settings */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">Configurable Parameters</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('hybrid.parameters.title')}</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <Card className="border-2">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <BarChart3 className="h-5 w-5 text-secondary" />
-                  Trade Settings
+                  {t('hybrid.parameters.trade_settings')}
                 </CardTitle>
                 <CardDescription>
-                  Lot size, trade type mode, signal strategy, grid settings
+                  {t('hybrid.parameters.trade_settings_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -160,10 +160,10 @@ const HybridMode = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-secondary" />
-                  Profit/Loss Targets
+                  {t('hybrid.parameters.profit_loss_targets')}
                 </CardTitle>
                 <CardDescription>
-                  Grid TP points, target profit per group, fixed money loss
+                  {t('hybrid.parameters.profit_loss_targets_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -172,10 +172,10 @@ const HybridMode = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Newspaper className="h-5 w-5 text-secondary" />
-                  News Filter
+                  {t('hybrid.parameters.news_filter')}
                 </CardTitle>
                 <CardDescription>
-                  Filter high impact news, custom news, pause times before/after
+                  {t('hybrid.parameters.news_filter_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -184,10 +184,10 @@ const HybridMode = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Clock className="h-5 w-5 text-secondary" />
-                  Trading Sessions
+                  {t('hybrid.parameters.trading_sessions')}
                 </CardTitle>
                 <CardDescription>
-                  Multiple tradable sessions, specific hours for each day
+                  {t('hybrid.parameters.trading_sessions_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -199,7 +199,7 @@ const HybridMode = () => {
           <h2 className="text-3xl font-bold mb-12 text-center">{t('hybrid.benefits.title')}</h2>
           <div className="max-w-3xl mx-auto">
             <p className="text-lg text-muted-foreground mb-6 text-center">
-              Get the best of both worlds - automated efficiency with manual control when you need it.
+              {t('hybrid.benefits.description_new')}
             </p>
             <ul className="space-y-3">
               {benefits.map((benefit, index) => (
@@ -218,27 +218,27 @@ const HybridMode = () => {
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
             <Card className="border-2">
               <CardHeader>
-                <CardTitle>Busy Traders</CardTitle>
+                <CardTitle>{t('hybrid.perfect_for.busy_traders')}</CardTitle>
                 <CardDescription>
-                  Let the EA trade while you work, step in to manage positions when convenient
+                  {t('hybrid.perfect_for.busy_traders_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card className="border-2">
               <CardHeader>
-                <CardTitle>Risk-Conscious Traders</CardTitle>
+                <CardTitle>{t('hybrid.perfect_for.risk_conscious')}</CardTitle>
                 <CardDescription>
-                  Benefit from news protection and manual override to manage risk effectively
+                  {t('hybrid.perfect_for.risk_conscious_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
 
             <Card className="border-2">
               <CardHeader>
-                <CardTitle>Control Seekers</CardTitle>
+                <CardTitle>{t('hybrid.perfect_for.control_seekers')}</CardTitle>
                 <CardDescription>
-                  Enjoy automated execution while maintaining full control over settings and closures
+                  {t('hybrid.perfect_for.control_seekers_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -251,7 +251,7 @@ const HybridMode = () => {
             <CardContent className="py-16 px-8 text-center">
               <h2 className="text-4xl font-bold mb-4">{t('hybrid.cta.title')}</h2>
               <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-                Experience the perfect balance of automation and control with Hybrid Mode.
+                {t('hybrid.cta.description_new')}
               </p>
               <Button
                 size="lg"

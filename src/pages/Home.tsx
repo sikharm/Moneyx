@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Award, Clock } from "lucide-react";
+import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Award, Clock, Facebook } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import FacebookWidget from "@/components/FacebookWidget";
 
 const Home = () => {
   const { t } = useLanguage();
@@ -88,6 +89,29 @@ const Home = () => {
                 <div className="text-muted-foreground">{stat.label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Social Updates Section */}
+      <section className="py-16 px-4">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                {t('home.updates.title') || 'Latest Updates'}
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                {t('home.updates.description') || 'Stay connected with our community. See our latest trading results and updates on Facebook.'}
+              </p>
+              <Button variant="outline" className="gap-2" asChild>
+                <a href="https://www.facebook.com/SabuyHUBlao" target="_blank" rel="noopener noreferrer">
+                  <Facebook className="h-4 w-4" />
+                  {t('home.updates.follow_button') || 'Follow Us on Facebook'}
+                </a>
+              </Button>
+            </div>
+            <FacebookWidget showCard={false} />
           </div>
         </div>
       </section>

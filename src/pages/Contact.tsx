@@ -5,7 +5,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Mail, MessageSquare, Phone, MapPin } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import FacebookWidget from "@/components/FacebookWidget";
 
 const Contact = () => {
   const { t } = useLanguage();
@@ -114,9 +113,6 @@ const Contact = () => {
             </Card>
 
             <div className="space-y-6">
-              {/* Facebook Updates Section */}
-              <FacebookWidget />
-
               <Card className="border-2">
                 <CardHeader>
                   <CardTitle>{t('contact.faq.title')}</CardTitle>

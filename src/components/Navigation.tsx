@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, TrendingUp, LogIn, LogOut, Shield, Facebook } from "lucide-react";
+import { Menu, X, TrendingUp, LogIn, LogOut, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "./LanguageSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,6 +54,7 @@ const Navigation = () => {
             ))}
             
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <LanguageSwitcher />
               
               {user ? (
@@ -109,8 +111,11 @@ const Navigation = () => {
                 {link.label}
               </Link>
             ))}
-            <div className="px-4 pt-2 space-y-2">
-              <LanguageSwitcher />
+            <div className="px-4 pt-2 space-y-2 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <LanguageSwitcher />
+              </div>
               {user ? (
                 <>
                   {isAdmin && (

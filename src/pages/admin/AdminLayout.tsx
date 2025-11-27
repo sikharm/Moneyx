@@ -1,8 +1,8 @@
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, FileText, Languages, MessageSquare, LogOut, Home } from 'lucide-react';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { LayoutDashboard, FileText, Languages, MessageSquare } from 'lucide-react';
+import SettingsDropdown from '@/components/SettingsDropdown';
 
 const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -51,19 +51,7 @@ const AdminLayout = () => {
               ))}
             </nav>
           </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Link to="/">
-              <Button variant="ghost" size="sm">
-                <Home className="h-4 w-4 mr-2" />
-                View Site
-              </Button>
-            </Link>
-            <Button variant="ghost" size="sm" onClick={signOut}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
+          <SettingsDropdown showViewSite={true} />
         </div>
       </header>
 

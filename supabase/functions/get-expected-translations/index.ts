@@ -91,6 +91,11 @@ const expectedTranslations: Record<string, { value: string; category: string }> 
   "home.cta.description": { value: "Join thousands of successful traders using our EA system", category: "home" },
   "home.cta.button": { value: "Download Now", category: "home" },
 
+  // Home - Social Updates Section
+  "home.updates.title": { value: "Latest Updates", category: "home" },
+  "home.updates.description": { value: "Stay connected with our community. See our latest trading results and updates on Facebook.", category: "home" },
+  "home.updates.follow_button": { value: "Follow Us on Facebook", category: "home" },
+
   // About
   "about.hero.title": { value: "About", category: "about" },
   "about.hero.subtitle": { value: "EA Trading", category: "about" },

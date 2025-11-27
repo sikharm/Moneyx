@@ -21,6 +21,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import FileManagement from "./pages/admin/FileManagement";
 import Translations from "./pages/admin/Translations";
 import ChatSupport from "./pages/admin/ChatSupport";
+import ContactMessages from "./pages/admin/ContactMessages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +53,7 @@ const App = () => (
                   <Route path="files" element={<FileManagement />} />
                   <Route path="translations" element={<Translations />} />
                   <Route path="chat" element={<ChatSupport />} />
+                  <Route path="messages" element={<ContactMessages />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

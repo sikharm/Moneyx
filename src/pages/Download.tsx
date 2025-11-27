@@ -1,32 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download as DownloadIcon, FileText, CheckCircle } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Download = () => {
+  const { t } = useLanguage();
+
   const requirements = [
-    "MetaTrader 4 or MetaTrader 5 platform",
-    "Windows 10 or later (or Wine on Mac/Linux)",
-    "Minimum 4GB RAM recommended",
-    "Stable internet connection",
-    "Broker account with EA support enabled",
+    t('download.requirements.item1'),
+    t('download.requirements.item2'),
+    t('download.requirements.item3'),
+    t('download.requirements.item4'),
+    t('download.requirements.item5'),
   ];
 
   const downloads = [
     {
-      title: "EA Trading System (MT4)",
-      description: "Compatible with MetaTrader 4",
+      title: t('download.files.mt4_title'),
+      description: t('download.files.mt4_desc'),
       version: "v3.2.1",
       size: "2.4 MB",
     },
     {
-      title: "EA Trading System (MT5)",
-      description: "Compatible with MetaTrader 5",
+      title: t('download.files.mt5_title'),
+      description: t('download.files.mt5_desc'),
       version: "v3.2.1",
       size: "2.6 MB",
     },
     {
-      title: "User Manual",
-      description: "Complete installation and setup guide",
+      title: t('download.files.manual_title'),
+      description: t('download.files.manual_desc'),
       version: "Latest",
       size: "8.2 MB",
     },
@@ -41,10 +44,10 @@ const Download = () => {
             <DownloadIcon className="h-12 w-12 text-primary-foreground" />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-hero bg-clip-text text-transparent">Download EA System</span>
+            <span className="bg-gradient-hero bg-clip-text text-transparent">{t('download.hero.title')}</span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            Get started with our Expert Advisor trading system in minutes
+            {t('download.hero.description')}
           </p>
         </div>
 
@@ -61,8 +64,8 @@ const Download = () => {
                     <CardTitle className="text-xl mb-1">{download.title}</CardTitle>
                     <CardDescription>{download.description}</CardDescription>
                     <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
-                      <span>Version: {download.version}</span>
-                      <span>Size: {download.size}</span>
+                      <span>{t('download.files.version')}: {download.version}</span>
+                      <span>{t('download.files.size')}: {download.size}</span>
                     </div>
                   </div>
                 </div>
@@ -70,7 +73,7 @@ const Download = () => {
               <CardContent>
                 <Button className="w-full bg-gradient-hero hover:opacity-90">
                   <DownloadIcon className="mr-2 h-4 w-4" />
-                  Download Now
+                  {t('common.download_now')}
                 </Button>
               </CardContent>
             </Card>
@@ -81,9 +84,9 @@ const Download = () => {
         <section className="mb-16">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">System Requirements</CardTitle>
+              <CardTitle className="text-2xl">{t('download.requirements.title')}</CardTitle>
               <CardDescription>
-                Ensure your system meets these requirements before installation
+                {t('download.requirements.subtitle')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -101,7 +104,7 @@ const Download = () => {
 
         {/* Installation Steps */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">Quick Installation Guide</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center">{t('download.installation.title')}</h2>
           <div className="space-y-4">
             <Card>
               <CardHeader>
@@ -109,12 +112,12 @@ const Download = () => {
                   <div className="bg-gradient-hero rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xl font-bold text-primary-foreground">1</span>
                   </div>
-                  <CardTitle>Download the EA file</CardTitle>
+                  <CardTitle>{t('download.installation.step1_title')}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Click the download button above to get the EA file for your MetaTrader platform.
+                  {t('download.installation.step1_desc')}
                 </p>
               </CardContent>
             </Card>
@@ -125,12 +128,12 @@ const Download = () => {
                   <div className="bg-gradient-hero rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xl font-bold text-primary-foreground">2</span>
                   </div>
-                  <CardTitle>Copy to Experts folder</CardTitle>
+                  <CardTitle>{t('download.installation.step2_title')}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Open MetaTrader, go to File → Open Data Folder → MQL4/5 → Experts, and paste the EA file.
+                  {t('download.installation.step2_desc')}
                 </p>
               </CardContent>
             </Card>
@@ -141,12 +144,12 @@ const Download = () => {
                   <div className="bg-gradient-hero rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xl font-bold text-primary-foreground">3</span>
                   </div>
-                  <CardTitle>Restart MetaTrader</CardTitle>
+                  <CardTitle>{t('download.installation.step3_title')}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Close and reopen MetaTrader to load the new Expert Advisor.
+                  {t('download.installation.step3_desc')}
                 </p>
               </CardContent>
             </Card>
@@ -157,12 +160,12 @@ const Download = () => {
                   <div className="bg-gradient-hero rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xl font-bold text-primary-foreground">4</span>
                   </div>
-                  <CardTitle>Attach to chart</CardTitle>
+                  <CardTitle>{t('download.installation.step4_title')}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  In the Navigator panel, find the EA under Expert Advisors and drag it onto your chart.
+                  {t('download.installation.step4_desc')}
                 </p>
               </CardContent>
             </Card>
@@ -173,12 +176,12 @@ const Download = () => {
                   <div className="bg-gradient-hero rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                     <span className="text-xl font-bold text-primary-foreground">5</span>
                   </div>
-                  <CardTitle>Configure settings</CardTitle>
+                  <CardTitle>{t('download.installation.step5_title')}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Set your preferred trading parameters and enable AutoTrading in MetaTrader.
+                  {t('download.installation.step5_desc')}
                 </p>
               </CardContent>
             </Card>
@@ -188,16 +191,16 @@ const Download = () => {
         {/* Support Notice */}
         <Card className="bg-gradient-hero border-0 text-primary-foreground">
           <CardContent className="py-12 px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">Need Help?</h2>
+            <h2 className="text-3xl font-bold mb-4">{t('download.support.title')}</h2>
             <p className="text-lg mb-6 opacity-90">
-              Our support team is here to assist you with installation and setup.
+              {t('download.support.description')}
             </p>
             <Button
               size="lg"
               variant="secondary"
               className="bg-background text-foreground hover:bg-background/90"
             >
-              Contact Support
+              {t('common.contact_support')}
             </Button>
           </CardContent>
         </Card>

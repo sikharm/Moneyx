@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { Facebook } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const FacebookUpdates = () => {
+  const { t } = useLanguage();
+
   useEffect(() => {
     // Load Facebook SDK
     const script = document.createElement("script");
@@ -25,10 +28,10 @@ const FacebookUpdates = () => {
             <Facebook className="w-8 h-8 text-[#1877F2]" />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-hero bg-clip-text text-transparent">
-            Latest Updates
+            {t('updates.hero.title')}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Stay connected with our latest news and updates from Facebook
+            {t('updates.hero.description')}
           </p>
         </div>
 
@@ -65,7 +68,7 @@ const FacebookUpdates = () => {
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <Facebook className="w-4 h-4" />
-              Visit our Facebook Page
+              {t('updates.visit_page')}
             </a>
           </div>
         </div>

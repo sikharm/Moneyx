@@ -1,27 +1,30 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Target, Lightbulb, Award } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const About = () => {
+  const { t } = useLanguage();
+
   const values = [
     {
       icon: <Users className="h-8 w-8" />,
-      title: "Trader-Focused",
-      description: "Built by experienced traders who understand the market's challenges and opportunities.",
+      title: t('about.values.trader_focused'),
+      description: t('about.values.trader_focused_desc'),
     },
     {
       icon: <Target className="h-8 w-8" />,
-      title: "Results-Driven",
-      description: "Every feature is designed with one goal: maximizing your trading profitability.",
+      title: t('about.values.results_driven'),
+      description: t('about.values.results_driven_desc'),
     },
     {
       icon: <Lightbulb className="h-8 w-8" />,
-      title: "Innovation First",
-      description: "Continuously evolving with cutting-edge AI and trading technologies.",
+      title: t('about.values.innovation_first'),
+      description: t('about.values.innovation_first_desc'),
     },
     {
       icon: <Award className="h-8 w-8" />,
-      title: "Proven Excellence",
-      description: "Recognized by industry experts and trusted by thousands of traders worldwide.",
+      title: t('about.values.proven_excellence'),
+      description: t('about.values.proven_excellence_desc'),
     },
   ];
 
@@ -31,11 +34,10 @@ const About = () => {
         {/* Hero Section */}
         <div className="max-w-4xl mx-auto text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            About <span className="bg-gradient-hero bg-clip-text text-transparent">EA Trading</span>
+            {t('about.hero.title')} <span className="bg-gradient-hero bg-clip-text text-transparent">{t('about.hero.subtitle')}</span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            We're revolutionizing automated trading with intelligent Expert Advisor systems
-            that combine advanced algorithms with proven trading strategies.
+            {t('about.hero.description')}
           </p>
         </div>
 
@@ -43,11 +45,9 @@ const About = () => {
         <section className="mb-20">
           <Card className="border-2">
             <CardContent className="py-12 px-8">
-              <h2 className="text-3xl font-bold mb-6 text-center">Our Mission</h2>
+              <h2 className="text-3xl font-bold mb-6 text-center">{t('about.mission.title')}</h2>
               <p className="text-lg text-muted-foreground leading-relaxed max-w-3xl mx-auto text-center">
-                To empower traders of all levels with professional-grade automated trading tools
-                that are both powerful and easy to use. We believe that successful trading should
-                be accessible to everyone, not just institutional investors.
+                {t('about.mission.description')}
               </p>
             </CardContent>
           </Card>
@@ -56,30 +56,18 @@ const About = () => {
         {/* Story Section */}
         <section className="mb-20">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-center">Our Story</h2>
+            <h2 className="text-3xl font-bold mb-8 text-center">{t('about.story.title')}</h2>
             <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-              <p>
-                EA Trading was founded by a team of professional traders and software engineers
-                who were frustrated with the complexity and unreliability of existing automated
-                trading solutions. We knew there had to be a better way.
-              </p>
-              <p>
-                After years of research and development, we created an Expert Advisor system that
-                combines the precision of algorithmic trading with the flexibility that modern
-                traders demand. Our platform has been refined through countless market conditions
-                and real-world trading scenarios.
-              </p>
-              <p>
-                Today, we're proud to serve thousands of traders worldwide, helping them achieve
-                consistent profitability through our Auto Mode and Hybrid Mode trading systems.
-              </p>
+              <p>{t('about.story.p1')}</p>
+              <p>{t('about.story.p2')}</p>
+              <p>{t('about.story.p3')}</p>
             </div>
           </div>
         </section>
 
         {/* Values Section */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">Our Core Values</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('about.values.title')}</h2>
           <div className="grid md:grid-cols-2 gap-6">
             {values.map((value, index) => (
               <Card key={index} className="border-2 hover:border-primary transition-all duration-300">
@@ -99,31 +87,31 @@ const About = () => {
 
         {/* Stats Section */}
         <section className="bg-gradient-card rounded-2xl p-12">
-          <h2 className="text-3xl font-bold mb-12 text-center">By The Numbers</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('about.stats.title')}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
                 2019
               </div>
-              <div className="text-muted-foreground">Founded</div>
+              <div className="text-muted-foreground">{t('about.stats.founded')}</div>
             </div>
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
                 10K+
               </div>
-              <div className="text-muted-foreground">Active Users</div>
+              <div className="text-muted-foreground">{t('about.stats.active_users')}</div>
             </div>
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
                 $50M+
               </div>
-              <div className="text-muted-foreground">Traded Volume</div>
+              <div className="text-muted-foreground">{t('about.stats.traded_volume')}</div>
             </div>
             <div className="text-center">
               <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
                 98.5%
               </div>
-              <div className="text-muted-foreground">Satisfaction</div>
+              <div className="text-muted-foreground">{t('about.stats.satisfaction')}</div>
             </div>
           </div>
         </section>

@@ -4,32 +4,35 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Mail, MessageSquare, Phone, MapPin } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Contact = () => {
+  const { t } = useLanguage();
+
   const contactInfo = [
     {
       icon: <Mail className="h-6 w-6" />,
-      title: "Email",
+      title: t('contact.info.email'),
       content: "support@eatrading.com",
-      description: "We respond within 24 hours",
+      description: t('contact.info.email_desc'),
     },
     {
       icon: <Phone className="h-6 w-6" />,
-      title: "Phone",
+      title: t('contact.info.phone'),
       content: "+1 (555) 123-4567",
-      description: "Mon-Fri, 9AM-6PM EST",
+      description: t('contact.info.phone_desc'),
     },
     {
       icon: <MapPin className="h-6 w-6" />,
-      title: "Office",
+      title: t('contact.info.office'),
       content: "123 Trading Street",
       description: "New York, NY 10001",
     },
     {
       icon: <MessageSquare className="h-6 w-6" />,
-      title: "Live Chat",
-      content: "Available 24/7",
-      description: "Instant support",
+      title: t('contact.info.live_chat'),
+      content: t('contact.info.live_chat_content'),
+      description: t('contact.info.live_chat_desc'),
     },
   ];
 
@@ -39,10 +42,10 @@ const Contact = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-hero bg-clip-text text-transparent">Get In Touch</span>
+            <span className="bg-gradient-hero bg-clip-text text-transparent">{t('contact.hero.title')}</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+            {t('contact.hero.description')}
           </p>
         </div>
 
@@ -71,39 +74,39 @@ const Contact = () => {
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="border-2">
               <CardHeader>
-                <CardTitle className="text-2xl">Send Us a Message</CardTitle>
+                <CardTitle className="text-2xl">{t('contact.form.title')}</CardTitle>
                 <CardDescription>
-                  Fill out the form below and we'll get back to you shortly
+                  {t('contact.form.subtitle')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input id="name" placeholder="Your full name" />
+                    <Label htmlFor="name">{t('common.name')}</Label>
+                    <Input id="name" placeholder={t('contact.form.name_placeholder')} />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="your.email@example.com" />
+                    <Label htmlFor="email">{t('common.email')}</Label>
+                    <Input id="email" type="email" placeholder={t('contact.form.email_placeholder')} />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="How can we help?" />
+                    <Label htmlFor="subject">{t('common.subject')}</Label>
+                    <Input id="subject" placeholder={t('contact.form.subject_placeholder')} />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message">{t('common.message')}</Label>
                     <Textarea
                       id="message"
-                      placeholder="Tell us more about your inquiry..."
+                      placeholder={t('contact.form.message_placeholder')}
                       rows={6}
                     />
                   </div>
 
                   <Button type="submit" className="w-full bg-gradient-hero hover:opacity-90" size="lg">
-                    Send Message
+                    {t('common.send_message')}
                   </Button>
                 </form>
               </CardContent>
@@ -112,25 +115,25 @@ const Contact = () => {
             <div className="space-y-6">
               <Card className="border-2">
                 <CardHeader>
-                  <CardTitle>Frequently Asked Questions</CardTitle>
+                  <CardTitle>{t('contact.faq.title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="font-semibold mb-2">What is your response time?</h3>
+                    <h3 className="font-semibold mb-2">{t('contact.faq.q1')}</h3>
                     <p className="text-muted-foreground">
-                      We typically respond to all inquiries within 24 hours during business days.
+                      {t('contact.faq.a1')}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Do you offer installation support?</h3>
+                    <h3 className="font-semibold mb-2">{t('contact.faq.q2')}</h3>
                     <p className="text-muted-foreground">
-                      Yes! Our team provides free installation support for all customers.
+                      {t('contact.faq.a2')}
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">Can I schedule a demo?</h3>
+                    <h3 className="font-semibold mb-2">{t('contact.faq.q3')}</h3>
                     <p className="text-muted-foreground">
-                      Absolutely. Contact us to schedule a personalized demo of our EA system.
+                      {t('contact.faq.a3')}
                     </p>
                   </div>
                 </CardContent>
@@ -138,16 +141,16 @@ const Contact = () => {
 
               <Card className="bg-gradient-hero border-0 text-primary-foreground">
                 <CardContent className="py-8">
-                  <h3 className="text-2xl font-bold mb-2">Need Immediate Help?</h3>
+                  <h3 className="text-2xl font-bold mb-2">{t('contact.urgent.title')}</h3>
                   <p className="mb-4 opacity-90">
-                    Our live chat support is available 24/7 for urgent inquiries.
+                    {t('contact.urgent.description')}
                   </p>
                   <Button
                     size="lg"
                     variant="secondary"
                     className="w-full bg-background text-foreground hover:bg-background/90"
                   >
-                    Start Live Chat
+                    {t('common.start_live_chat')}
                   </Button>
                 </CardContent>
               </Card>

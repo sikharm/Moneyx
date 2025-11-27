@@ -2,48 +2,51 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Zap, Shield, BarChart3, RefreshCw, CheckCircle, Settings } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AutoMode = () => {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: <Zap className="h-6 w-6" />,
-      title: "Fully Automated",
-      description: "No manual intervention required. The system handles everything from entry to exit.",
+      title: t('auto.features.fully_automated'),
+      description: t('auto.features.fully_automated_desc'),
     },
     {
       icon: <RefreshCw className="h-6 w-6" />,
-      title: "24/7 Operation",
-      description: "Continuously monitors markets and executes trades around the clock.",
+      title: t('auto.features.24_7_operation'),
+      description: t('auto.features.24_7_operation_desc'),
     },
     {
       icon: <Shield className="h-6 w-6" />,
-      title: "Risk Management",
-      description: "Built-in stop-loss, take-profit, and position sizing algorithms.",
+      title: t('auto.features.risk_management'),
+      description: t('auto.features.risk_management_desc'),
     },
     {
       icon: <BarChart3 className="h-6 w-6" />,
-      title: "Real-Time Analytics",
-      description: "Live performance tracking with detailed reporting and statistics.",
+      title: t('auto.features.real_time_analytics'),
+      description: t('auto.features.real_time_analytics_desc'),
     },
     {
       icon: <Settings className="h-6 w-6" />,
-      title: "Customizable Settings",
-      description: "Adjust risk parameters, trade size, and strategy preferences.",
+      title: t('auto.features.customizable_settings'),
+      description: t('auto.features.customizable_settings_desc'),
     },
     {
       icon: <CheckCircle className="h-6 w-6" />,
-      title: "Proven Strategy",
-      description: "Based on years of backtesting and live trading results.",
+      title: t('auto.features.proven_strategy'),
+      description: t('auto.features.proven_strategy_desc'),
     },
   ];
 
   const benefits = [
-    "Eliminate emotional trading decisions",
-    "Never miss a trading opportunity",
-    "Consistent execution without fatigue",
-    "Precise entry and exit timing",
-    "Diversify across multiple currency pairs",
-    "Focus on other activities while trading",
+    t('auto.benefits.item1'),
+    t('auto.benefits.item2'),
+    t('auto.benefits.item3'),
+    t('auto.benefits.item4'),
+    t('auto.benefits.item5'),
+    t('auto.benefits.item6'),
   ];
 
   return (
@@ -55,29 +58,28 @@ const AutoMode = () => {
             <Zap className="h-12 w-12 text-primary-foreground" />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-hero bg-clip-text text-transparent">Auto Mode</span>
+            <span className="bg-gradient-hero bg-clip-text text-transparent">{t('auto.hero.title')}</span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-            Set it and forget it. Our fully automated trading system executes trades
-            based on proven algorithms while you focus on what matters most.
+            {t('auto.hero.description')}
           </p>
           <Button size="lg" className="bg-gradient-hero hover:opacity-90" asChild>
-            <Link to="/download">Start Auto Trading</Link>
+            <Link to="/download">{t('auto.hero.button')}</Link>
           </Button>
         </div>
 
         {/* How It Works */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">How Auto Mode Works</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('auto.how_it_works.title')}</h2>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <Card className="border-2 text-center">
               <CardHeader>
                 <div className="bg-gradient-hero rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-primary-foreground">1</span>
                 </div>
-                <CardTitle>Configure Settings</CardTitle>
+                <CardTitle>{t('auto.how_it_works.step1_title')}</CardTitle>
                 <CardDescription>
-                  Set your risk tolerance, trade size, and preferred currency pairs
+                  {t('auto.how_it_works.step1_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -87,9 +89,9 @@ const AutoMode = () => {
                 <div className="bg-gradient-hero rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-primary-foreground">2</span>
                 </div>
-                <CardTitle>Activate EA</CardTitle>
+                <CardTitle>{t('auto.how_it_works.step2_title')}</CardTitle>
                 <CardDescription>
-                  Turn on the Expert Advisor and let it analyze market conditions
+                  {t('auto.how_it_works.step2_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -99,9 +101,9 @@ const AutoMode = () => {
                 <div className="bg-gradient-hero rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl font-bold text-primary-foreground">3</span>
                 </div>
-                <CardTitle>Watch It Trade</CardTitle>
+                <CardTitle>{t('auto.how_it_works.step3_title')}</CardTitle>
                 <CardDescription>
-                  The system automatically executes trades and manages positions
+                  {t('auto.how_it_works.step3_desc')}
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -110,7 +112,7 @@ const AutoMode = () => {
 
         {/* Features Grid */}
         <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-12 text-center">Key Features</h2>
+          <h2 className="text-3xl font-bold mb-12 text-center">{t('auto.features.title')}</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <Card key={index} className="border-2 hover:border-primary transition-all duration-300">
@@ -130,11 +132,9 @@ const AutoMode = () => {
         <section className="mb-20">
           <div className="grid md:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             <div>
-              <h2 className="text-3xl font-bold mb-6">Why Choose Auto Mode?</h2>
+              <h2 className="text-3xl font-bold mb-6">{t('auto.benefits.title')}</h2>
               <p className="text-lg text-muted-foreground mb-6">
-                Auto Mode is perfect for traders who want consistent results without spending
-                hours monitoring charts. Our system combines sophisticated algorithms with
-                proven trading strategies.
+                {t('auto.benefits.description')}
               </p>
               <ul className="space-y-3">
                 {benefits.map((benefit, index) => (
@@ -151,19 +151,19 @@ const AutoMode = () => {
                   <div className="text-5xl font-bold bg-gradient-success bg-clip-text text-transparent mb-2">
                     98.5%
                   </div>
-                  <div className="text-muted-foreground">Average Win Rate</div>
+                  <div className="text-muted-foreground">{t('auto.stats.win_rate')}</div>
                 </div>
                 <div className="text-center mb-6">
                   <div className="text-5xl font-bold bg-gradient-success bg-clip-text text-transparent mb-2">
                     3.2x
                   </div>
-                  <div className="text-muted-foreground">Average ROI</div>
+                  <div className="text-muted-foreground">{t('auto.stats.roi')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-5xl font-bold bg-gradient-success bg-clip-text text-transparent mb-2">
                     5000+
                   </div>
-                  <div className="text-muted-foreground">Successful Trades</div>
+                  <div className="text-muted-foreground">{t('auto.stats.trades')}</div>
                 </div>
               </CardContent>
             </Card>
@@ -174,9 +174,9 @@ const AutoMode = () => {
         <section>
           <Card className="bg-gradient-hero border-0 text-primary-foreground">
             <CardContent className="py-16 px-8 text-center">
-              <h2 className="text-4xl font-bold mb-4">Ready to Automate Your Trading?</h2>
+              <h2 className="text-4xl font-bold mb-4">{t('auto.cta.title')}</h2>
               <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-                Download Auto Mode now and experience the power of fully automated trading.
+                {t('auto.cta.description')}
               </p>
               <Button
                 size="lg"
@@ -184,7 +184,7 @@ const AutoMode = () => {
                 className="bg-background text-foreground hover:bg-background/90"
                 asChild
               >
-                <Link to="/download">Download Now</Link>
+                <Link to="/download">{t('common.download_now')}</Link>
               </Button>
             </CardContent>
           </Card>

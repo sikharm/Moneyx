@@ -2,46 +2,49 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Award, Clock } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Home = () => {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: <Zap className="h-8 w-8" />,
-      title: "Lightning Fast",
-      description: "Execute trades in milliseconds with our optimized algorithms",
+      title: t('home.features.lightning_fast'),
+      description: t('home.features.lightning_fast_desc'),
     },
     {
       icon: <Shield className="h-8 w-8" />,
-      title: "Secure & Reliable",
-      description: "Bank-grade security with 99.9% uptime guarantee",
+      title: t('home.features.secure_reliable'),
+      description: t('home.features.secure_reliable_desc'),
     },
     {
       icon: <TrendingUp className="h-8 w-8" />,
-      title: "Proven Results",
-      description: "Consistent profitability with verified backtesting results",
+      title: t('home.features.proven_results'),
+      description: t('home.features.proven_results_desc'),
     },
     {
       icon: <BarChart3 className="h-8 w-8" />,
-      title: "Advanced Analytics",
-      description: "Real-time monitoring and comprehensive reporting",
+      title: t('home.features.advanced_analytics'),
+      description: t('home.features.advanced_analytics_desc'),
     },
     {
       icon: <Award className="h-8 w-8" />,
-      title: "Award Winning",
-      description: "Recognized by industry leaders and traders worldwide",
+      title: t('home.features.award_winning'),
+      description: t('home.features.award_winning_desc'),
     },
     {
       icon: <Clock className="h-8 w-8" />,
-      title: "24/7 Trading",
-      description: "Never miss an opportunity with round-the-clock automation",
+      title: t('home.features.trading_24_7'),
+      description: t('home.features.trading_24_7_desc'),
     },
   ];
 
   const stats = [
-    { value: "98.5%", label: "Win Rate" },
-    { value: "3.2x", label: "Average ROI" },
-    { value: "10K+", label: "Active Traders" },
-    { value: "24/7", label: "Support" },
+    { value: "98.5%", label: t('home.stats.win_rate') },
+    { value: "3.2x", label: t('home.stats.average_roi') },
+    { value: "10K+", label: t('home.stats.active_traders') },
+    { value: "24/7", label: t('home.stats.support') },
   ];
 
   return (
@@ -51,24 +54,23 @@ const Home = () => {
         <div className="absolute inset-0 bg-gradient-hero opacity-5"></div>
         <div className="container mx-auto text-center relative z-10">
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-            Professional Trading
+            {t('home.hero.title')}
             <br />
             <span className="bg-gradient-hero bg-clip-text text-transparent">
-              Made Simple
+              {t('home.hero.title_highlight')}
             </span>
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Our Expert Advisor system combines cutting-edge AI with proven trading strategies
-            to maximize your profits automatically.
+            {t('home.hero.description')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="bg-gradient-hero hover:opacity-90 text-lg px-8" asChild>
               <Link to="/download">
-                Download Now <ArrowRight className="ml-2 h-5 w-5" />
+                {t('common.download_now')} <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-              <Link to="/performance">View Performance</Link>
+              <Link to="/performance">{t('common.view_performance')}</Link>
             </Button>
           </div>
         </div>
@@ -95,10 +97,10 @@ const Home = () => {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Why Choose Our EA System?
+              {t('home.features.title')}
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Built by traders, for traders. Everything you need to succeed in automated trading.
+              {t('home.features.subtitle')}
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -123,64 +125,64 @@ const Home = () => {
       <section className="py-20 px-4 bg-gradient-card">
         <div className="container mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">Choose Your Trading Mode</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">{t('home.modes.title')}</h2>
             <p className="text-xl text-muted-foreground">
-              Flexible trading solutions for every strategy
+              {t('home.modes.subtitle')}
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             <Card className="border-2 hover:border-primary transition-all duration-300 hover:shadow-strong">
               <CardHeader>
-                <CardTitle className="text-2xl">Auto Mode</CardTitle>
+                <CardTitle className="text-2xl">{t('home.modes.auto_title')}</CardTitle>
                 <CardDescription className="text-base">
-                  Fully automated trading with zero manual intervention
+                  {t('home.modes.auto_desc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-accent"></div>
-                    <span>Set it and forget it</span>
+                    <span>{t('home.modes.auto_feature1')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-accent"></div>
-                    <span>24/7 market monitoring</span>
+                    <span>{t('home.modes.auto_feature2')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-accent"></div>
-                    <span>Automated risk management</span>
+                    <span>{t('home.modes.auto_feature3')}</span>
                   </li>
                 </ul>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to="/auto-mode">Learn More</Link>
+                  <Link to="/auto-mode">{t('common.learn_more')}</Link>
                 </Button>
               </CardContent>
             </Card>
 
             <Card className="border-2 hover:border-secondary transition-all duration-300 hover:shadow-strong">
               <CardHeader>
-                <CardTitle className="text-2xl">Hybrid Mode</CardTitle>
+                <CardTitle className="text-2xl">{t('home.modes.hybrid_title')}</CardTitle>
                 <CardDescription className="text-base">
-                  User-assisted trading with intelligent recommendations
+                  {t('home.modes.hybrid_desc')}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-secondary"></div>
-                    <span>AI-powered suggestions</span>
+                    <span>{t('home.modes.hybrid_feature1')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-secondary"></div>
-                    <span>Manual trade approval</span>
+                    <span>{t('home.modes.hybrid_feature2')}</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-secondary"></div>
-                    <span>Full control, smart assistance</span>
+                    <span>{t('home.modes.hybrid_feature3')}</span>
                   </li>
                 </ul>
                 <Button variant="outline" className="w-full" asChild>
-                  <Link to="/hybrid-mode">Learn More</Link>
+                  <Link to="/hybrid-mode">{t('common.learn_more')}</Link>
                 </Button>
               </CardContent>
             </Card>
@@ -194,11 +196,10 @@ const Home = () => {
           <Card className="bg-gradient-hero border-0 text-primary-foreground">
             <CardContent className="py-16 px-8 text-center">
               <h2 className="text-4xl md:text-5xl font-bold mb-4">
-                Ready to Start Trading?
+                {t('home.cta.title')}
               </h2>
               <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-                Join thousands of successful traders using our Expert Advisor system.
-                Download now and start your journey to profitable trading.
+                {t('home.cta.description')}
               </p>
               <Button
                 size="lg"
@@ -207,7 +208,7 @@ const Home = () => {
                 asChild
               >
                 <Link to="/download">
-                  Download Free Trial <ArrowRight className="ml-2 h-5 w-5" />
+                  {t('home.cta.button')} <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
             </CardContent>

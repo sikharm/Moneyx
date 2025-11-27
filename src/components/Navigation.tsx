@@ -4,22 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, TrendingUp, LogIn, LogOut, Shield, Facebook } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, isAdmin, signOut } = useAuth();
+  const { t } = useLanguage();
 
   const navLinks = [
-    { to: "/", label: "Home" },
-    { to: "/about", label: "About" },
-    { to: "/auto-mode", label: "Auto Mode" },
-    { to: "/hybrid-mode", label: "Hybrid Mode" },
-    { to: "/performance", label: "Performance" },
-    { to: "/download", label: "Download" },
-    { to: "/facebook-updates", label: "Updates" },
-    { to: "/contact", label: "Contact" },
+    { to: "/", label: t('nav.home') },
+    { to: "/about", label: t('nav.about') },
+    { to: "/auto-mode", label: t('nav.auto_mode') },
+    { to: "/hybrid-mode", label: t('nav.hybrid_mode') },
+    { to: "/performance", label: t('nav.performance') },
+    { to: "/download", label: t('nav.download') },
+    { to: "/facebook-updates", label: t('nav.updates') },
+    { to: "/contact", label: t('nav.contact') },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -59,20 +61,20 @@ const Navigation = () => {
                     <Link to="/admin">
                       <Button variant="ghost" size="sm">
                         <Shield className="h-4 w-4 mr-2" />
-                        Admin
+                        {t('nav.admin')}
                       </Button>
                     </Link>
                   )}
                   <Button variant="ghost" size="sm" onClick={signOut}>
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    {t('nav.sign_out')}
                   </Button>
                 </>
               ) : (
                 <Link to="/auth">
                   <Button size="sm" className="bg-gradient-hero hover:opacity-90">
                     <LogIn className="h-4 w-4 mr-2" />
-                    Sign In
+                    {t('nav.sign_in')}
                   </Button>
                 </Link>
               )}
@@ -115,20 +117,20 @@ const Navigation = () => {
                     <Link to="/admin" onClick={() => setIsOpen(false)}>
                       <Button variant="ghost" size="sm" className="w-full justify-start">
                         <Shield className="h-4 w-4 mr-2" />
-                        Admin Panel
+                        {t('nav.admin_panel')}
                       </Button>
                     </Link>
                   )}
                   <Button variant="ghost" size="sm" onClick={signOut} className="w-full justify-start">
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    {t('nav.sign_out')}
                   </Button>
                 </>
               ) : (
                 <Link to="/auth" onClick={() => setIsOpen(false)}>
                   <Button className="w-full bg-gradient-hero hover:opacity-90">
                     <LogIn className="h-4 w-4 mr-2" />
-                    Sign In
+                    {t('nav.sign_in')}
                   </Button>
                 </Link>
               )}

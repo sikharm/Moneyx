@@ -40,20 +40,20 @@ const Performance = () => {
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
               <TabsTrigger value="hybrid" className="gap-2">
                 <Settings2 className="h-4 w-4" />
-                Hybrid System
+                {t('performance.tabs.hybrid_system')}
               </TabsTrigger>
               <TabsTrigger value="auto" className="gap-2">
                 <Zap className="h-4 w-4" />
-                Auto System
+                {t('performance.tabs.auto_system')}
               </TabsTrigger>
             </TabsList>
 
             {/* Hybrid System Tab */}
             <TabsContent value="hybrid" className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">Hybrid System Performance</h2>
+                <h2 className="text-2xl font-bold mb-2">{t('performance.hybrid.title')}</h2>
                 <p className="text-muted-foreground">
-                  Live verified results from our hybrid trading systems
+                  {t('performance.hybrid.description')}
                 </p>
               </div>
               {MYFXBOOK_ACCOUNTS.hybrid.map((account, index) => (
@@ -70,9 +70,9 @@ const Performance = () => {
             {/* Auto System Tab */}
             <TabsContent value="auto" className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">Auto System Performance</h2>
+                <h2 className="text-2xl font-bold mb-2">{t('performance.auto.title')}</h2>
                 <p className="text-muted-foreground">
-                  Live verified results from our fully automated trading systems
+                  {t('performance.auto.description')}
                 </p>
               </div>
               {MYFXBOOK_ACCOUNTS.auto.map((account, index) => (

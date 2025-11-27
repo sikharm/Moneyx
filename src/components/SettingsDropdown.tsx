@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Settings2, ChevronDown, Sun, Moon, Monitor, LogIn, LogOut, Shield, Home, Check } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/ThemeProvider";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -42,7 +42,7 @@ const SettingsDropdown = ({ showViewSite = false, onNavigate }: SettingsDropdown
     navigate("/");
   };
 
-  const themeOptions = [
+  const themeOptions: { value: "light" | "dark" | "system"; label: string; icon: typeof Sun }[] = [
     { value: "light", label: t('settings.light') === 'settings.light' ? "Light" : t('settings.light'), icon: Sun },
     { value: "dark", label: t('settings.dark') === 'settings.dark' ? "Dark" : t('settings.dark'), icon: Moon },
     { value: "system", label: t('settings.system') === 'settings.system' ? "System" : t('settings.system'), icon: Monitor },

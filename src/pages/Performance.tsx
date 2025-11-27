@@ -50,11 +50,11 @@ const Performance = () => {
             <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8">
               <TabsTrigger value="hybrid" className="gap-2">
                 <Settings2 className="h-4 w-4" />
-                {t('performance.tabs.hybrid') || 'Hybrid System'}
+                Hybrid System
               </TabsTrigger>
               <TabsTrigger value="auto" className="gap-2">
                 <Zap className="h-4 w-4" />
-                {t('performance.tabs.auto') || 'Auto System'}
+                Auto System
               </TabsTrigger>
               <TabsTrigger value="backtest" className="gap-2">
                 <BarChart3 className="h-4 w-4" />
@@ -65,9 +65,9 @@ const Performance = () => {
             {/* Hybrid System Tab */}
             <TabsContent value="hybrid" className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">{t('performance.hybrid.title') || 'Hybrid System Performance'}</h2>
+                <h2 className="text-2xl font-bold mb-2">Hybrid System Performance</h2>
                 <p className="text-muted-foreground">
-                  {t('performance.hybrid.description') || 'Live verified results from our hybrid trading systems'}
+                  Live verified results from our hybrid trading systems
                 </p>
               </div>
               {MYFXBOOK_ACCOUNTS.hybrid.map((account, index) => (
@@ -84,9 +84,9 @@ const Performance = () => {
             {/* Auto System Tab */}
             <TabsContent value="auto" className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">{t('performance.auto.title') || 'Auto System Performance'}</h2>
+                <h2 className="text-2xl font-bold mb-2">Auto System Performance</h2>
                 <p className="text-muted-foreground">
-                  {t('performance.auto.description') || 'Live verified results from our fully automated trading systems'}
+                  Live verified results from our fully automated trading systems
                 </p>
               </div>
               {MYFXBOOK_ACCOUNTS.auto.map((account, index) => (

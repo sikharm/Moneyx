@@ -41,12 +41,6 @@ const Home = () => {
     },
   ];
 
-  const stats = [
-    { value: "98.5%", label: t('home.stats.win_rate') },
-    { value: "3.2x", label: t('home.stats.average_roi') },
-    { value: "10K+", label: t('home.stats.active_traders') },
-    { value: "24/7", label: t('home.stats.support') },
-  ];
 
   return (
     <div className="min-h-screen">
@@ -77,21 +71,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 bg-muted/50">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Social Updates Section */}
       <section className="py-16 px-4">

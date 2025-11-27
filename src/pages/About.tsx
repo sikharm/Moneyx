@@ -85,36 +85,6 @@ const About = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="bg-gradient-card rounded-2xl p-12">
-          <h2 className="text-3xl font-bold mb-12 text-center">{t('about.stats.title')}</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-                2019
-              </div>
-              <div className="text-muted-foreground">{t('about.stats.founded')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-                10K+
-              </div>
-              <div className="text-muted-foreground">{t('about.stats.active_users')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-                $50M+
-              </div>
-              <div className="text-muted-foreground">{t('about.stats.traded_volume')}</div>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl md:text-5xl font-bold bg-gradient-hero bg-clip-text text-transparent mb-2">
-                98.5%
-              </div>
-              <div className="text-muted-foreground">{t('about.stats.satisfaction')}</div>
-            </div>
-          </div>
-        </section>
       </div>
     </div>
   );

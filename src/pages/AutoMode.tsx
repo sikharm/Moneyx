@@ -170,25 +170,6 @@ const AutoMode = () => {
           </div>
         </section>
 
-        {/* CTA Section */}
-        <section>
-          <Card className="bg-gradient-hero border-0 text-primary-foreground">
-            <CardContent className="py-16 px-8 text-center">
-              <h2 className="text-4xl font-bold mb-4">{t('auto.cta.title')}</h2>
-              <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
-                {t('auto.cta.description')}
-              </p>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="bg-background text-foreground hover:bg-background/90"
-                asChild
-              >
-                <Link to="/download">{t('common.download_now')}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
       </div>
     </div>
   );

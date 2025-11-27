@@ -17,13 +17,16 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    return localStorage.getItem('language') || 'en';
+  });
   const [languages, setLanguages] = useState<Language[]>([]);
   const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [englishFallback, setEnglishFallback] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadLanguages();
-    loadTranslations(currentLanguage);
+    loadEnglishFallback();
   }, []);
 
   useEffect(() => {
@@ -37,6 +40,21 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
       .eq('is_active', true);
     
     if (data) setLanguages(data);
+  };
+
+  const loadEnglishFallback = async () => {
+    const { data } = await supabase
+      .from('translations')
+      .select('translation_key, translation_value')
+      .eq('language_code', 'en');
+    
+    if (data) {
+      const translationMap: Record<string, string> = {};
+      data.forEach(t => {
+        translationMap[t.translation_key] = t.translation_value;
+      });
+      setEnglishFallback(translationMap);
+    }
   };
 
   const loadTranslations = async (langCode: string) => {
@@ -59,8 +77,9 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
     localStorage.setItem('language', code);
   };
 
+  // Translation function with fallback to English, then to key
   const t = (key: string): string => {
-    return translations[key] || key;
+    return translations[key] || englishFallback[key] || key;
   };
 
   return (

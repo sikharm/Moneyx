@@ -75,7 +75,21 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   const setLanguage = (code: string) => {
     setCurrentLanguage(code);
     localStorage.setItem('language', code);
+    
+    // Apply Lao font when Lao language is selected
+    if (code === 'lo') {
+      document.documentElement.classList.add('lang-lao');
+    } else {
+      document.documentElement.classList.remove('lang-lao');
+    }
   };
+
+  // Apply font on initial load
+  useEffect(() => {
+    if (currentLanguage === 'lo') {
+      document.documentElement.classList.add('lang-lao');
+    }
+  }, []);
 
   // Translation function with fallback to English, then to key
   const t = (key: string): string => {

@@ -1,7 +1,7 @@
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, FileText, Languages, Mail } from 'lucide-react';
+import { LayoutDashboard, FileText, Languages } from 'lucide-react';
 import SettingsDropdown from '@/components/SettingsDropdown';
 
 const AdminLayout = () => {
@@ -24,7 +24,6 @@ const AdminLayout = () => {
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/admin/files', icon: FileText, label: 'File Management' },
     { to: '/admin/translations', icon: Languages, label: 'Translations' },
-    { to: '/admin/messages', icon: Mail, label: 'Contact Messages' },
   ];
 
   return (

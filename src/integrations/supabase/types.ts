@@ -200,6 +200,101 @@ export type Database = {
         }
         Relationships: []
       }
+      trader_preferences: {
+        Row: {
+          created_at: string
+          default_currency: string
+          display_mode: string
+          id: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_currency?: string
+          display_mode?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_currency?: string
+          display_mode?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          account_id: string
+          amount: number
+          created_at: string
+          id: string
+          notes: string | null
+          trade_date: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          trade_date?: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          trade_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "trading_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trading_accounts: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          initial_balance: number
+          nickname: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          initial_balance?: number
+          nickname: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          initial_balance?: number
+          nickname?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       translations: {
         Row: {
           category: string | null

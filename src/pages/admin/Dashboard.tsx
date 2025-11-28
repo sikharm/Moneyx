@@ -62,29 +62,6 @@ const Dashboard = () => {
           </Card>
         ))}
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a href="/admin/files" className="p-4 border rounded-lg hover:border-primary transition-colors">
-            <FileText className="h-8 w-8 mb-2 text-primary" />
-            <h3 className="font-semibold mb-1">Manage Files</h3>
-            <p className="text-sm text-muted-foreground">Upload and organize EA files, documents, and media</p>
-          </a>
-          <a href="/admin/translations" className="p-4 border rounded-lg hover:border-primary transition-colors">
-            <FileText className="h-8 w-8 mb-2 text-primary" />
-            <h3 className="font-semibold mb-1">Edit Translations</h3>
-            <p className="text-sm text-muted-foreground">Manage multi-language content for your site</p>
-          </a>
-          <a href="/admin/chat" className="p-4 border rounded-lg hover:border-primary transition-colors">
-            <MessageSquare className="h-8 w-8 mb-2 text-primary" />
-            <h3 className="font-semibold mb-1">Support Chat</h3>
-            <p className="text-sm text-muted-foreground">Respond to user messages and support requests</p>
-          </a>
-        </CardContent>
-      </Card>
     </div>
   );
 };

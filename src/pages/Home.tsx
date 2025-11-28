@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Award, Clock, Facebook } from "lucide-react";
+import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Clock, Facebook } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FacebookWidget from "@/components/FacebookWidget";
 
@@ -28,11 +28,6 @@ const Home = () => {
       icon: <BarChart3 className="h-8 w-8" />,
       title: t('home.features.advanced_analytics'),
       description: t('home.features.advanced_analytics_desc'),
-    },
-    {
-      icon: <Award className="h-8 w-8" />,
-      title: t('home.features.award_winning'),
-      description: t('home.features.award_winning_desc'),
     },
     {
       icon: <Clock className="h-8 w-8" />,

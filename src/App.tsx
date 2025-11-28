@@ -8,7 +8,6 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { AdminEditProvider } from "./contexts/AdminEditContext";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Navigation from "@/components/Navigation";
-import ChatWidget from "@/components/ChatWidget";
 import AdminEditToggle from "@/components/AdminEditToggle";
 import ScrollToTop from "@/components/ScrollToTop";
 import Home from "./pages/Home";
@@ -24,7 +23,6 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import FileManagement from "./pages/admin/FileManagement";
 import Translations from "./pages/admin/Translations";
-import ChatSupport from "./pages/admin/ChatSupport";
 import ContactMessages from "./pages/admin/ContactMessages";
 import NotFound from "./pages/NotFound";
 
@@ -42,7 +40,6 @@ const App = () => (
               <AdminEditProvider>
                 <ScrollToTop />
                 <Navigation />
-                <ChatWidget />
                 <AdminEditToggle />
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -60,7 +57,6 @@ const App = () => (
                   <Route index element={<Dashboard />} />
                   <Route path="files" element={<FileManagement />} />
                   <Route path="translations" element={<Translations />} />
-                  <Route path="chat" element={<ChatSupport />} />
                   <Route path="messages" element={<ContactMessages />} />
                 </Route>
                 

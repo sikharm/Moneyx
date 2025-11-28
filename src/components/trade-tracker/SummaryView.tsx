@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Wallet, TrendingUp, TrendingDown, Target, Trophy, BarChart3 } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, Target, Trophy, BarChart3, Calendar } from 'lucide-react';
+import { startOfWeek } from 'date-fns';
 
 interface Account {
   id: string;
@@ -22,9 +23,9 @@ interface AccountSummary {
   nickname: string;
   currency: string;
   initialBalance: number;
-  currentBalance: number;
-  periodProfitLoss: number;
-  allTimeProfitLoss: number;
+  thisWeekBalance: number;      // initial + this week P/L
+  thisWeekNetProfit: number;    // This week's P/L
+  allTimeNetProfit: number;     // All-time P/L
   winningTrades: number;
   losingTrades: number;
   winRate: number;
@@ -53,35 +54,39 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
 
     const accountIds = targetAccounts.map(a => a.id);
 
-    // Get all trades for these accounts
+    // Get this week's start (Monday)
+    const thisWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    const thisWeekStartStr = thisWeekStart.toISOString().split('T')[0];
+
+    // Get all trades for these accounts (for all-time calculation)
     const { data: allTrades, error: allTradesError } = await supabase
       .from('trades')
       .select('*')
       .in('account_id', accountIds);
 
-    // Get trades within date range
-    const { data: periodTrades, error: periodTradesError } = await supabase
+    // Get this week's trades (always Monday to now)
+    const { data: thisWeekTrades, error: thisWeekError } = await supabase
       .from('trades')
       .select('*')
       .in('account_id', accountIds)
-      .gte('trade_date', dateRange.start.toISOString().split('T')[0])
-      .lte('trade_date', dateRange.end.toISOString().split('T')[0]);
+      .gte('trade_date', thisWeekStartStr);
 
-    if (allTradesError || periodTradesError) {
-      console.error('Error loading trades:', allTradesError || periodTradesError);
+    if (allTradesError || thisWeekError) {
+      console.error('Error loading trades:', allTradesError || thisWeekError);
       setLoading(false);
       return;
     }
 
     const accountSummaries: AccountSummary[] = targetAccounts.map(account => {
       const accountAllTrades = (allTrades || []).filter(t => t.account_id === account.id);
-      const accountPeriodTrades = (periodTrades || []).filter(t => t.account_id === account.id);
+      const accountThisWeekTrades = (thisWeekTrades || []).filter(t => t.account_id === account.id);
 
       const allTimePL = accountAllTrades.reduce((sum, t) => sum + Number(t.amount), 0);
-      const periodPL = accountPeriodTrades.reduce((sum, t) => sum + Number(t.amount), 0);
+      const thisWeekPL = accountThisWeekTrades.reduce((sum, t) => sum + Number(t.amount), 0);
       
-      const winningTrades = accountPeriodTrades.filter(t => Number(t.amount) > 0).length;
-      const losingTrades = accountPeriodTrades.filter(t => Number(t.amount) < 0).length;
+      // Win rate based on this week's trades
+      const winningTrades = accountThisWeekTrades.filter(t => Number(t.amount) > 0).length;
+      const losingTrades = accountThisWeekTrades.filter(t => Number(t.amount) < 0).length;
       const totalTrades = winningTrades + losingTrades;
       const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
 
@@ -90,9 +95,9 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
         nickname: account.nickname,
         currency: account.currency,
         initialBalance: account.initial_balance,
-        currentBalance: account.initial_balance + allTimePL,
-        periodProfitLoss: periodPL,
-        allTimeProfitLoss: allTimePL,
+        thisWeekBalance: account.initial_balance + thisWeekPL,
+        thisWeekNetProfit: thisWeekPL,
+        allTimeNetProfit: allTimePL,
         winningTrades,
         losingTrades,
         winRate,
@@ -111,10 +116,10 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
     }).format(currency === 'Cents' ? amount / 100 : amount);
   };
 
-  // Combined totals (convert all to USD for simplicity)
-  const combinedPeriodPL = summaries.reduce((sum, s) => sum + s.periodProfitLoss, 0);
-  const combinedAllTimePL = summaries.reduce((sum, s) => sum + s.allTimeProfitLoss, 0);
-  const combinedCurrentBalance = summaries.reduce((sum, s) => sum + s.currentBalance, 0);
+  // Combined totals
+  const combinedThisWeekBalance = summaries.reduce((sum, s) => sum + s.thisWeekBalance, 0);
+  const combinedThisWeekPL = summaries.reduce((sum, s) => sum + s.thisWeekNetProfit, 0);
+  const combinedAllTimePL = summaries.reduce((sum, s) => sum + s.allTimeNetProfit, 0);
   const combinedWins = summaries.reduce((sum, s) => sum + s.winningTrades, 0);
   const combinedLosses = summaries.reduce((sum, s) => sum + s.losingTrades, 0);
   const combinedWinRate = (combinedWins + combinedLosses) > 0 
@@ -123,8 +128,8 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map(i => (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[1, 2, 3].map(i => (
           <Card key={i} className="animate-pulse">
             <CardContent className="p-6">
               <div className="h-4 bg-muted rounded w-1/2 mb-4" />
@@ -156,43 +161,32 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
       {selectedAccountId === 'all' && summaries.length > 1 && (
         <div>
           <h2 className="text-xl font-semibold mb-4">Combined Summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Wallet className="h-4 w-4" />
-                  Total Balance
+                  This Week Balance
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(combinedCurrentBalance)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(combinedThisWeekBalance)}</div>
+                <p className="text-xs text-muted-foreground">Initial + This Week P/L</p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  {combinedPeriodPL >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                  {periodLabel} P/L
+                  {combinedThisWeekPL >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                  This Week Net Profit
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className={`text-2xl font-bold ${combinedPeriodPL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                  {combinedPeriodPL >= 0 ? '+' : ''}{formatCurrency(combinedPeriodPL)}
+                <div className={`text-2xl font-bold ${combinedThisWeekPL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  {combinedThisWeekPL >= 0 ? '+' : ''}{formatCurrency(combinedThisWeekPL)}
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Trophy className="h-4 w-4" />
-                  Win Rate
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{combinedWinRate.toFixed(1)}%</div>
-                <p className="text-xs text-muted-foreground">{combinedWins}W / {combinedLosses}L</p>
+                <p className="text-xs text-muted-foreground">{combinedWins}W / {combinedLosses}L ({combinedWinRate.toFixed(1)}%)</p>
               </CardContent>
             </Card>
 
@@ -200,7 +194,7 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Target className="h-4 w-4" />
-                  All-Time P/L
+                  All Time Net Profit
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -229,26 +223,36 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Current Balance</p>
-                    <p className="text-xl font-bold">{formatCurrency(summary.currentBalance, summary.currency)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{periodLabel} P/L</p>
-                    <p className={`text-xl font-bold ${summary.periodProfitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {summary.periodProfitLoss >= 0 ? '+' : ''}{formatCurrency(summary.periodProfitLoss, summary.currency)}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      This Week Balance
+                    </p>
+                    <p className="text-xl font-bold">{formatCurrency(summary.thisWeekBalance, summary.currency)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Initial: {formatCurrency(summary.initialBalance, summary.currency)}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Win Rate</p>
-                    <p className="text-xl font-bold">{summary.winRate.toFixed(1)}%</p>
-                    <p className="text-xs text-muted-foreground">{summary.winningTrades}W / {summary.losingTrades}L</p>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      {summary.thisWeekNetProfit >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      This Week Net Profit
+                    </p>
+                    <p className={`text-xl font-bold ${summary.thisWeekNetProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {summary.thisWeekNetProfit >= 0 ? '+' : ''}{formatCurrency(summary.thisWeekNetProfit, summary.currency)}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {summary.winningTrades}W / {summary.losingTrades}L ({summary.winRate.toFixed(1)}%)
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">All-Time P/L</p>
-                    <p className={`text-xl font-bold ${summary.allTimeProfitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {summary.allTimeProfitLoss >= 0 ? '+' : ''}{formatCurrency(summary.allTimeProfitLoss, summary.currency)}
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Target className="h-3 w-3" />
+                      All Time Net Profit
+                    </p>
+                    <p className={`text-xl font-bold ${summary.allTimeNetProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {summary.allTimeNetProfit >= 0 ? '+' : ''}{formatCurrency(summary.allTimeNetProfit, summary.currency)}
                     </p>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download as DownloadIcon, FileText, CheckCircle, Zap, Settings, ChevronDown, ChevronUp, Clock, HardDrive, Package } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import EditableText from "@/components/EditableText";
@@ -21,6 +22,7 @@ interface FileData {
 
 const Download = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [autoFiles, setAutoFiles] = useState<FileData[]>([]);
   const [hybridFiles, setHybridFiles] = useState<FileData[]>([]);
   const [autoSetFiles, setAutoSetFiles] = useState<FileData[]>([]);
@@ -90,6 +92,15 @@ const Download = () => {
   const handleDownload = async (file: FileData) => {
     try {
       await supabase.rpc('increment_download_count', { file_id: file.id });
+      
+      // Track download for logged-in users
+      if (user) {
+        await supabase.from('user_downloads').insert({
+          user_id: user.id,
+          file_id: file.id
+        });
+      }
+      
       const { data } = supabase.storage.from('ea-files').getPublicUrl(file.file_path);
       window.open(data.publicUrl, '_blank');
     } catch (error) {

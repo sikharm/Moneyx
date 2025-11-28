@@ -238,6 +238,35 @@ export type Database = {
           },
         ]
       }
+      user_downloads: {
+        Row: {
+          downloaded_at: string | null
+          file_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          downloaded_at?: string | null
+          file_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          downloaded_at?: string | null
+          file_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_downloads_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null

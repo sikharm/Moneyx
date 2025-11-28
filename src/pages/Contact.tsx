@@ -19,18 +19,72 @@ const contactSchema = z.object({
   message: z.string().trim().min(1, "Message is required").max(2000, "Message must be less than 2000 characters"),
 });
 
+// Rate limiting constants
+const RATE_LIMIT_KEY = 'contact_form_submissions';
+const MAX_SUBMISSIONS = 3;
+const TIME_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
+const MIN_SUBMISSION_TIME = 3000; // 3 seconds minimum to fill form
+
+// Rate limiting helper functions
+const checkRateLimit = (): { allowed: boolean; remaining: number } => {
+  const now = Date.now();
+  const submissions = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '[]');
+  
+  // Filter to only recent submissions within time window
+  const recentSubmissions = submissions.filter(
+    (timestamp: number) => now - timestamp < TIME_WINDOW
+  );
+  
+  return {
+    allowed: recentSubmissions.length < MAX_SUBMISSIONS,
+    remaining: MAX_SUBMISSIONS - recentSubmissions.length
+  };
+};
+
+const recordSubmission = () => {
+  const now = Date.now();
+  const submissions = JSON.parse(localStorage.getItem(RATE_LIMIT_KEY) || '[]');
+  const recentSubmissions = submissions.filter(
+    (timestamp: number) => now - timestamp < TIME_WINDOW
+  );
+  recentSubmissions.push(now);
+  localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(recentSubmissions));
+};
+
 const Contact = () => {
   const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formLoadTime] = useState(Date.now()); // Track when form loaded
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     subject: "",
     message: "",
+    website: "", // Honeypot field
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Honeypot check - silently "succeed" if bot detected
+    if (formData.website) {
+      toast.success(t('contact.form.success'));
+      setFormData({ name: "", email: "", subject: "", message: "", website: "" });
+      return;
+    }
+    
+    // Time-based check - form filled too quickly (likely a bot)
+    if (Date.now() - formLoadTime < MIN_SUBMISSION_TIME) {
+      toast.error(t('contact.form.error'));
+      return;
+    }
+    
+    // Rate limit check
+    const { allowed } = checkRateLimit();
+    if (!allowed) {
+      toast.error(t('contact.form.rate_limit') || "You've submitted too many messages. Please try again later.");
+      return;
+    }
     
     // Validate form data
     const validation = contactSchema.safeParse(formData);
@@ -53,8 +107,11 @@ const Contact = () => {
 
       if (error) throw error;
 
+      // Record successful submission for rate limiting
+      recordSubmission();
+      
       toast.success(t('contact.form.success'));
-      setFormData({ name: "", email: "", subject: "", message: "" });
+      setFormData({ name: "", email: "", subject: "", message: "", website: "" });
     } catch (error: any) {
       console.error('Error submitting contact form:', error);
       toast.error(t('contact.form.error'));
@@ -165,6 +222,22 @@ const Contact = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Honeypot field - hidden from users, bots will fill it */}
+                  <div 
+                    style={{ position: 'absolute', left: '-9999px', opacity: 0 }} 
+                    aria-hidden="true"
+                  >
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={formData.website}
+                      onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="name">{t('common.name')}</Label>
                     <Input 

@@ -6,12 +6,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Download, Share2 } from 'lucide-react';
+import { CalendarIcon, Download, Share2, Globe } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, startOfYear, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import InfographicGenerator from '@/components/trade-tracker/InfographicGenerator';
 
 type PeriodType = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'all' | 'custom';
+export type ExportLanguage = 'en' | 'lo' | 'th';
 
 interface Account {
   id: string;
@@ -25,6 +26,7 @@ const ExportPage = () => {
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
   const [period, setPeriod] = useState<PeriodType>('monthly');
   const [showCombinedTotal, setShowCombinedTotal] = useState(true);
+  const [language, setLanguage] = useState<ExportLanguage>('lo');
   const [customDateRange, setCustomDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
@@ -211,6 +213,28 @@ const ExportPage = () => {
             </CardContent>
           </Card>
 
+          {/* Language Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Globe className="h-4 w-4" />
+                Export Language
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select value={language} onValueChange={(v) => setLanguage(v as ExportLanguage)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">🇺🇸 English</SelectItem>
+                  <SelectItem value="lo">🇱🇦 ລາວ (Lao)</SelectItem>
+                  <SelectItem value="th">🇹🇭 ไทย (Thai)</SelectItem>
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+
           {/* Options */}
           <Card>
             <CardHeader>
@@ -238,6 +262,7 @@ const ExportPage = () => {
             dateRange={getDateRange()}
             periodLabel={getPeriodLabel()}
             showCombinedTotal={showCombinedTotal && selectedAccounts.length > 1}
+            language={language}
           />
         </div>
       </div>

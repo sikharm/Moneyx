@@ -23,6 +23,12 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import FileManagement from "./pages/admin/FileManagement";
 import Translations from "./pages/admin/Translations";
+import TradeTrackerLayout from "./pages/admin/trade-tracker/TradeTrackerLayout";
+import TradeTrackerDashboard from "./pages/admin/trade-tracker/TradeTrackerDashboard";
+import AccountsPage from "./pages/admin/trade-tracker/AccountsPage";
+import SummaryPage from "./pages/admin/trade-tracker/SummaryPage";
+import ExportPage from "./pages/admin/trade-tracker/ExportPage";
+import SettingsPage from "./pages/admin/trade-tracker/SettingsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +62,15 @@ const App = () => (
                   <Route index element={<Dashboard />} />
                   <Route path="files" element={<FileManagement />} />
                   <Route path="translations" element={<Translations />} />
+                </Route>
+
+                {/* Trade Tracker Routes */}
+                <Route path="/admin/trade-tracker" element={<TradeTrackerLayout />}>
+                  <Route index element={<TradeTrackerDashboard />} />
+                  <Route path="accounts" element={<AccountsPage />} />
+                  <Route path="summary" element={<SummaryPage />} />
+                  <Route path="export" element={<ExportPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

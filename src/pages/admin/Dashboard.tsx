@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileText, MessageSquare, Download, Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FileText, MessageSquare, Download, Users, TrendingUp, ArrowRight } from 'lucide-react';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalFiles: 0,
     totalDownloads: 0,
@@ -62,6 +65,32 @@ const Dashboard = () => {
           </Card>
         ))}
       </div>
+
+      {/* Trade Tracker Card */}
+      <Card 
+        className="border-2 border-green-500/20 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent hover:border-green-500/50 transition-all cursor-pointer group"
+        onClick={() => navigate('/admin/trade-tracker')}
+      >
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl group-hover:scale-110 transition-transform">
+              <TrendingUp className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Trade Tracker</CardTitle>
+              <CardDescription className="text-base mt-1">
+                Track your trading performance, manage accounts, and generate shareable reports
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Button className="gap-2 bg-green-600 hover:bg-green-700">
+            Open Trade Tracker
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };

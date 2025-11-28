@@ -4,15 +4,15 @@ import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 interface AccountData {
   nickname: string;
   currency: string;
-  currentBalance: number;
+  initialBalance: number;
+  periodBalance: number;
   periodProfitLoss: number;
-  allTimeProfitLoss: number;
 }
 
 interface CombinedTotal {
-  currentBalance: number;
+  initialBalance: number;
+  periodBalance: number;
   periodProfitLoss: number;
-  allTimeProfitLoss: number;
 }
 
 interface InfographicCanvasProps {
@@ -65,9 +65,9 @@ const InfographicCanvas = forwardRef<HTMLDivElement, InfographicCanvasProps>(
               
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">Balance</p>
+                  <p className="text-gray-400 text-xs mb-1">Initial Balance</p>
                   <p className="text-white font-bold text-lg">
-                    {formatCurrency(account.currentBalance, account.currency)}
+                    {formatCurrency(account.initialBalance, account.currency)}
                   </p>
                 </div>
                 <div>
@@ -85,12 +85,9 @@ const InfographicCanvas = forwardRef<HTMLDivElement, InfographicCanvasProps>(
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-400 text-xs mb-1">All-Time</p>
-                  <p className={`font-bold text-lg ${
-                    account.allTimeProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {account.allTimeProfitLoss >= 0 ? '+' : ''}
-                    {formatCurrency(account.allTimeProfitLoss, account.currency)}
+                  <p className="text-gray-400 text-xs mb-1">Period Balance</p>
+                  <p className="text-white font-bold text-lg">
+                    {formatCurrency(account.periodBalance, account.currency)}
                   </p>
                 </div>
               </div>
@@ -110,9 +107,9 @@ const InfographicCanvas = forwardRef<HTMLDivElement, InfographicCanvasProps>(
             
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="text-gray-300 text-xs mb-1">Total Balance</p>
+                <p className="text-gray-300 text-xs mb-1">Initial Balance</p>
                 <p className="text-white font-bold text-xl">
-                  {formatCurrency(combinedTotal.currentBalance)}
+                  {formatCurrency(combinedTotal.initialBalance)}
                 </p>
               </div>
               <div>
@@ -125,12 +122,9 @@ const InfographicCanvas = forwardRef<HTMLDivElement, InfographicCanvasProps>(
                 </p>
               </div>
               <div>
-                <p className="text-gray-300 text-xs mb-1">All-Time P/L</p>
-                <p className={`font-bold text-xl ${
-                  combinedTotal.allTimeProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  {combinedTotal.allTimeProfitLoss >= 0 ? '+' : ''}
-                  {formatCurrency(combinedTotal.allTimeProfitLoss)}
+                <p className="text-gray-300 text-xs mb-1">Period Balance</p>
+                <p className="text-white font-bold text-xl">
+                  {formatCurrency(combinedTotal.periodBalance)}
                 </p>
               </div>
             </div>

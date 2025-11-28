@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,31 +17,22 @@ const MyfxbookWidget = ({
   profileUrl, 
   showVerifiedBadge = false 
 }: MyfxbookWidgetProps) => {
-  const [statsLoaded, setStatsLoaded] = useState(false);
+  const [sleekLoaded, setSleekLoaded] = useState(false);
+  const [customLoaded, setCustomLoaded] = useState(false);
   const [chartLoaded, setChartLoaded] = useState(false);
   const [key, setKey] = useState(0);
 
-  // Auto-hide skeleton after timeout to handle cases where onLoad doesn't fire
-  useEffect(() => {
-    const statsTimer = setTimeout(() => {
-      if (!statsLoaded) setStatsLoaded(true);
-    }, 8000);
-    
-    const chartTimer = setTimeout(() => {
-      if (!chartLoaded) setChartLoaded(true);
-    }, 8000);
-
-    return () => {
-      clearTimeout(statsTimer);
-      clearTimeout(chartTimer);
-    };
-  }, [statsLoaded, chartLoaded, key]);
-
   const handleRefresh = () => {
-    setStatsLoaded(false);
+    setSleekLoaded(false);
+    setCustomLoaded(false);
     setChartLoaded(false);
     setKey(prev => prev + 1);
   };
+
+  // Widget URLs based on user's provided embed codes
+  const sleekWidgetUrl = `https://widget.myfxbook.com/widget/widget.png?accountOid=${accountId}&type=1&color=red&t=${key}`;
+  const customWidgetUrl = `https://widget.myfxbook.com/widget/widget.png?accountOid=${accountId}&type=6&t=${key}`;
+  const chartWidgetUrl = `https://widget.myfxbook.com/widget/widget.png?accountOid=${accountId}&type=2&color=red&t=${key}`;
 
   return (
     <Card className="overflow-hidden">
@@ -67,62 +58,68 @@ const MyfxbookWidget = ({
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Stats Widget */}
-        <div className="rounded-lg overflow-hidden border bg-card">
-          {!statsLoaded && (
-            <div className="p-6 space-y-4">
-              <Skeleton className="h-8 w-48 mx-auto" />
-              <div className="grid grid-cols-3 gap-4">
-                <Skeleton className="h-16" />
-                <Skeleton className="h-16" />
-                <Skeleton className="h-16" />
-              </div>
-            </div>
-          )}
-          <iframe
-            key={`stats-${key}`}
-            src={`https://widgets.myfxbook.com/widgets/${accountId}/large.html`}
-            width="100%"
-            height="300"
-            style={{ 
-              border: 'none',
-              display: statsLoaded ? 'block' : 'none',
-              minHeight: '300px',
-              background: 'white'
-            }}
-            onLoad={() => setStatsLoaded(true)}
-            title={`Myfxbook Stats - ${accountName}`}
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+      <CardContent className="space-y-6">
+        {/* Sleek Short Widget (type=1) - Quick Overview */}
+        <div className="flex justify-center">
+          <a 
+            href={profileUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block hover:opacity-90 transition-opacity"
+          >
+            {!sleekLoaded && (
+              <Skeleton className="h-[60px] w-[400px] max-w-full" />
+            )}
+            <img
+              key={`sleek-${key}`}
+              src={sleekWidgetUrl}
+              alt={`${accountName} - Quick Stats`}
+              onLoad={() => setSleekLoaded(true)}
+              className={sleekLoaded ? "block max-w-full h-auto" : "hidden"}
+            />
+          </a>
         </div>
 
-        {/* Growth Chart Widget */}
-        <div className="rounded-lg overflow-hidden border bg-card">
-          {!chartLoaded && (
-            <div className="p-6">
-              <Skeleton className="h-[300px] w-full" />
-            </div>
-          )}
-          <iframe
-            key={`chart-${key}`}
-            src={`https://widgets.myfxbook.com/widgets/${accountId}/chart.html`}
-            width="100%"
-            height="350"
-            style={{ 
-              border: 'none',
-              display: chartLoaded ? 'block' : 'none',
-              minHeight: '350px',
-              background: 'white'
-            }}
-            onLoad={() => setChartLoaded(true)}
-            title={`Myfxbook Growth Chart - ${accountName}`}
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+        {/* Custom Widget (type=6) - Detailed Statistics */}
+        <div className="flex justify-center">
+          <a 
+            href={profileUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block hover:opacity-90 transition-opacity"
+          >
+            {!customLoaded && (
+              <Skeleton className="h-[200px] w-[400px] max-w-full" />
+            )}
+            <img
+              key={`custom-${key}`}
+              src={customWidgetUrl}
+              alt={`${accountName} - Detailed Stats`}
+              onLoad={() => setCustomLoaded(true)}
+              className={customLoaded ? "block max-w-full h-auto" : "hidden"}
+            />
+          </a>
+        </div>
+
+        {/* Chart Widget (type=2) - Growth Chart */}
+        <div className="flex justify-center">
+          <a 
+            href={profileUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="block hover:opacity-90 transition-opacity"
+          >
+            {!chartLoaded && (
+              <Skeleton className="h-[250px] w-[600px] max-w-full" />
+            )}
+            <img
+              key={`chart-${key}`}
+              src={chartWidgetUrl}
+              alt={`${accountName} - Growth Chart`}
+              onLoad={() => setChartLoaded(true)}
+              className={chartLoaded ? "block max-w-full h-auto" : "hidden"}
+            />
+          </a>
         </div>
 
         {/* View Full Report Link */}

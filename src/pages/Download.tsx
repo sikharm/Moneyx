@@ -95,10 +95,17 @@ const Download = () => {
       
       // Track download for logged-in users
       if (user) {
-        await supabase.from('user_downloads').insert({
-          user_id: user.id,
-          file_id: file.id
-        });
+        try {
+          const { error: trackError } = await supabase.from('user_downloads').insert({
+            user_id: user.id,
+            file_id: file.id
+          });
+          if (trackError) {
+            console.error('Failed to track download:', trackError);
+          }
+        } catch (trackErr) {
+          console.error('Download tracking error:', trackErr);
+        }
       }
       
       const { data } = supabase.storage.from('ea-files').getPublicUrl(file.file_path);

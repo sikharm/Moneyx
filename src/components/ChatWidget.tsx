@@ -24,6 +24,13 @@ const ChatWidget = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const isOpenRef = useRef(isOpen);
+  
+  // Keep ref in sync with state
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
   useEffect(() => {
     if (user) {
       loadMessages();
@@ -40,7 +47,7 @@ const ChatWidget = () => {
           },
           (payload) => {
             setMessages((prev) => [...prev, payload.new as Message]);
-            if ((payload.new as Message).is_admin && !isOpen) {
+            if ((payload.new as Message).is_admin && !isOpenRef.current) {
               setUnreadCount((prev) => prev + 1);
               toast('New message from support');
             }
@@ -52,7 +59,7 @@ const ChatWidget = () => {
         supabase.removeChannel(channel);
       };
     }
-  }, [user, isOpen]);
+  }, [user]);
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });

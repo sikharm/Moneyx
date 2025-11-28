@@ -10,6 +10,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import Navigation from "@/components/Navigation";
 import ChatWidget from "@/components/ChatWidget";
 import AdminEditToggle from "@/components/AdminEditToggle";
+import ScrollToTop from "@/components/ScrollToTop";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import AutoMode from "./pages/AutoMode";
@@ -39,6 +40,7 @@ const App = () => (
           <AuthProvider>
             <LanguageProvider>
               <AdminEditProvider>
+                <ScrollToTop />
                 <Navigation />
                 <ChatWidget />
                 <AdminEditToggle />

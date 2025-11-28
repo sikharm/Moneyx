@@ -5,9 +5,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import { AdminEditProvider } from "./contexts/AdminEditContext";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Navigation from "@/components/Navigation";
 import ChatWidget from "@/components/ChatWidget";
+import AdminEditToggle from "@/components/AdminEditToggle";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import AutoMode from "./pages/AutoMode";
@@ -35,8 +37,10 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <LanguageProvider>
-              <Navigation />
-              <ChatWidget />
+              <AdminEditProvider>
+                <Navigation />
+                <ChatWidget />
+                <AdminEditToggle />
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
@@ -58,6 +62,7 @@ const App = () => (
                 
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              </AdminEditProvider>
             </LanguageProvider>
           </AuthProvider>
         </BrowserRouter>

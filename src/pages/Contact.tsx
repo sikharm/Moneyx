@@ -9,6 +9,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import EditableText from "@/components/EditableText";
+import EditableSetting from "@/components/EditableSetting";
 
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
@@ -26,33 +28,6 @@ const Contact = () => {
     subject: "",
     message: "",
   });
-
-  const contactInfo = [
-    {
-      icon: <Mail className="h-6 w-6" />,
-      title: t('contact.info.email'),
-      content: "support@eatrading.com",
-      description: t('contact.info.email_desc'),
-    },
-    {
-      icon: <Phone className="h-6 w-6" />,
-      title: t('contact.info.phone'),
-      content: "+1 (555) 123-4567",
-      description: t('contact.info.phone_desc'),
-    },
-    {
-      icon: <MapPin className="h-6 w-6" />,
-      title: t('contact.info.office'),
-      content: "123 Trading Street",
-      description: "New York, NY 10001",
-    },
-    {
-      icon: <MessageSquare className="h-6 w-6" />,
-      title: t('contact.info.live_chat'),
-      content: t('contact.info.live_chat_content'),
-      description: t('contact.info.live_chat_desc'),
-    },
-  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,30 +69,85 @@ const Contact = () => {
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-hero bg-clip-text text-transparent">{t('contact.hero.title')}</span>
+            <span className="bg-gradient-hero bg-clip-text text-transparent">
+              <EditableText tKey="contact.hero.title" />
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t('contact.hero.description')}
+            <EditableText tKey="contact.hero.description" />
           </p>
         </div>
 
         {/* Contact Info Cards */}
         <section className="mb-16">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {contactInfo.map((info, index) => (
-              <Card key={index} className="border-2 hover:border-primary transition-all duration-300 text-center">
-                <CardHeader>
-                  <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
-                    <div className="text-primary-foreground">{info.icon}</div>
-                  </div>
-                  <CardTitle className="text-lg">{info.title}</CardTitle>
-                  <CardDescription className="text-base font-semibold text-foreground">
-                    {info.content}
-                  </CardDescription>
-                  <CardDescription className="text-sm">{info.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
+              <CardHeader>
+                <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
+                  <Mail className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <CardTitle className="text-lg">
+                  <EditableText tKey="contact.info.email" />
+                </CardTitle>
+                <CardDescription className="text-base font-semibold text-foreground">
+                  <EditableSetting settingKey="contact_email" fallback="support@xaubot.com" />
+                </CardDescription>
+                <CardDescription className="text-sm">
+                  <EditableText tKey="contact.info.email_desc" />
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
+              <CardHeader>
+                <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
+                  <Phone className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <CardTitle className="text-lg">
+                  <EditableText tKey="contact.info.phone" />
+                </CardTitle>
+                <CardDescription className="text-base font-semibold text-foreground">
+                  <EditableSetting settingKey="contact_phone" fallback="+856 20 1234 5678" />
+                </CardDescription>
+                <CardDescription className="text-sm">
+                  <EditableText tKey="contact.info.phone_desc" />
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
+              <CardHeader>
+                <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
+                  <MapPin className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <CardTitle className="text-lg">
+                  <EditableText tKey="contact.info.office" />
+                </CardTitle>
+                <CardDescription className="text-base font-semibold text-foreground">
+                  <EditableSetting settingKey="contact_address" fallback="Vientiane, Laos" />
+                </CardDescription>
+                <CardDescription className="text-sm">
+                  <EditableSetting settingKey="office_hours" fallback="Monday - Friday: 9:00 AM - 6:00 PM" />
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
+              <CardHeader>
+                <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
+                  <MessageSquare className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <CardTitle className="text-lg">
+                  <EditableText tKey="contact.info.live_chat" />
+                </CardTitle>
+                <CardDescription className="text-base font-semibold text-foreground">
+                  <EditableText tKey="contact.info.live_chat_content" />
+                </CardDescription>
+                <CardDescription className="text-sm">
+                  <EditableText tKey="contact.info.live_chat_desc" />
+                </CardDescription>
+              </CardHeader>
+            </Card>
           </div>
         </section>
 
@@ -126,9 +156,11 @@ const Contact = () => {
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="border-2">
               <CardHeader>
-                <CardTitle className="text-2xl">{t('contact.form.title')}</CardTitle>
+                <CardTitle className="text-2xl">
+                  <EditableText tKey="contact.form.title" />
+                </CardTitle>
                 <CardDescription>
-                  {t('contact.form.subtitle')}
+                  <EditableText tKey="contact.form.subtitle" />
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -205,25 +237,25 @@ const Contact = () => {
             <div className="space-y-6">
               <Card className="border-2">
                 <CardHeader>
-                  <CardTitle>{t('contact.faq.title')}</CardTitle>
+                  <CardTitle><EditableText tKey="contact.faq.title" /></CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h3 className="font-semibold mb-2">{t('contact.faq.q1')}</h3>
+                    <h3 className="font-semibold mb-2"><EditableText tKey="contact.faq.q1" /></h3>
                     <p className="text-muted-foreground">
-                      {t('contact.faq.a1')}
+                      <EditableText tKey="contact.faq.a1" />
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">{t('contact.faq.q2')}</h3>
+                    <h3 className="font-semibold mb-2"><EditableText tKey="contact.faq.q2" /></h3>
                     <p className="text-muted-foreground">
-                      {t('contact.faq.a2')}
+                      <EditableText tKey="contact.faq.a2" />
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-2">{t('contact.faq.q3')}</h3>
+                    <h3 className="font-semibold mb-2"><EditableText tKey="contact.faq.q3" /></h3>
                     <p className="text-muted-foreground">
-                      {t('contact.faq.a3')}
+                      <EditableText tKey="contact.faq.a3" />
                     </p>
                   </div>
                 </CardContent>
@@ -231,9 +263,11 @@ const Contact = () => {
 
               <Card className="bg-gradient-hero border-0 text-primary-foreground">
                 <CardContent className="py-8">
-                  <h3 className="text-2xl font-bold mb-2">{t('contact.urgent.title')}</h3>
+                  <h3 className="text-2xl font-bold mb-2">
+                    <EditableText tKey="contact.urgent.title" />
+                  </h3>
                   <p className="mb-4 opacity-90">
-                    {t('contact.urgent.description')}
+                    <EditableText tKey="contact.urgent.description" />
                   </p>
                   <Button
                     size="lg"

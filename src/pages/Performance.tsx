@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrendingUp, Zap, Settings2 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import MyfxbookWidget from "@/components/MyfxbookWidget";
+import EditableText from "@/components/EditableText";
 
 const MYFXBOOK_ACCOUNTS = {
   hybrid: [
@@ -27,10 +28,12 @@ const Performance = () => {
             <TrendingUp className="h-12 w-12 text-accent-foreground" />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-success bg-clip-text text-transparent">{t('performance.hero.title')}</span>
+            <span className="bg-gradient-success bg-clip-text text-transparent">
+              <EditableText tKey="performance.hero.title" />
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            {t('performance.hero.description')}
+            <EditableText tKey="performance.hero.description" />
           </p>
         </div>
 
@@ -40,20 +43,22 @@ const Performance = () => {
             <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
               <TabsTrigger value="hybrid" className="gap-2">
                 <Settings2 className="h-4 w-4" />
-                {t('performance.tabs.hybrid_system')}
+                <EditableText tKey="performance.tabs.hybrid_system" />
               </TabsTrigger>
               <TabsTrigger value="auto" className="gap-2">
                 <Zap className="h-4 w-4" />
-                {t('performance.tabs.auto_system')}
+                <EditableText tKey="performance.tabs.auto_system" />
               </TabsTrigger>
             </TabsList>
 
             {/* Hybrid System Tab */}
             <TabsContent value="hybrid" className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">{t('performance.hybrid.title')}</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  <EditableText tKey="performance.hybrid.title" />
+                </h2>
                 <p className="text-muted-foreground">
-                  {t('performance.hybrid.description')}
+                  <EditableText tKey="performance.hybrid.description" />
                 </p>
               </div>
               {MYFXBOOK_ACCOUNTS.hybrid.map((account, index) => (
@@ -70,9 +75,11 @@ const Performance = () => {
             {/* Auto System Tab */}
             <TabsContent value="auto" className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">{t('performance.auto.title')}</h2>
+                <h2 className="text-2xl font-bold mb-2">
+                  <EditableText tKey="performance.auto.title" />
+                </h2>
                 <p className="text-muted-foreground">
-                  {t('performance.auto.description')}
+                  <EditableText tKey="performance.auto.description" />
                 </p>
               </div>
               {MYFXBOOK_ACCOUNTS.auto.map((account, index) => (
@@ -92,7 +99,8 @@ const Performance = () => {
         <Card className="bg-muted/50">
           <CardContent className="py-8 px-6">
             <p className="text-sm text-muted-foreground text-center">
-              <strong>{t('performance.disclaimer_label')}</strong> {t('performance.disclaimer')}
+              <strong><EditableText tKey="performance.disclaimer_label" /></strong>{' '}
+              <EditableText tKey="performance.disclaimer" />
             </p>
           </CardContent>
         </Card>

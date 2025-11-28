@@ -6,6 +6,7 @@ import { Download as DownloadIcon, FileText, CheckCircle, Zap, Settings, Chevron
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import EditableText from "@/components/EditableText";
 
 interface FileData {
   id: string;
@@ -36,7 +37,6 @@ const Download = () => {
   const loadFiles = async () => {
     setLoading(true);
     try {
-      // Load Auto Mode EA files (last 5 versions)
       const { data: autoData } = await supabase
         .from('files')
         .select('*')
@@ -45,7 +45,6 @@ const Download = () => {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      // Load Hybrid Mode EA files (last 5 versions)
       const { data: hybridData } = await supabase
         .from('files')
         .select('*')
@@ -54,7 +53,6 @@ const Download = () => {
         .order('created_at', { ascending: false })
         .limit(5);
 
-      // Load Auto Mode Set files
       const { data: autoSetData } = await supabase
         .from('files')
         .select('*')
@@ -62,7 +60,6 @@ const Download = () => {
         .eq('ea_mode', 'auto')
         .order('created_at', { ascending: false });
 
-      // Load Hybrid Mode Set files
       const { data: hybridSetData } = await supabase
         .from('files')
         .select('*')
@@ -70,7 +67,6 @@ const Download = () => {
         .eq('ea_mode', 'hybrid')
         .order('created_at', { ascending: false });
 
-      // Load User Manual (latest document)
       const { data: manualData } = await supabase
         .from('files')
         .select('*')
@@ -93,10 +89,7 @@ const Download = () => {
 
   const handleDownload = async (file: FileData) => {
     try {
-      // Increment download count
       await supabase.rpc('increment_download_count', { file_id: file.id });
-
-      // Get public URL and download
       const { data } = supabase.storage.from('ea-files').getPublicUrl(file.file_path);
       window.open(data.publicUrl, '_blank');
     } catch (error) {
@@ -115,12 +108,12 @@ const Download = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const requirements = [
-    t('download.requirements.item1'),
-    t('download.requirements.item2'),
-    t('download.requirements.item3'),
-    t('download.requirements.item4'),
-    t('download.requirements.item5'),
+  const requirementKeys = [
+    'download.requirements.item1',
+    'download.requirements.item2',
+    'download.requirements.item3',
+    'download.requirements.item4',
+    'download.requirements.item5',
   ];
 
   const renderLatestVersion = (file: FileData | undefined) => {
@@ -128,7 +121,7 @@ const Download = () => {
       return (
         <Card className="border-2 border-dashed border-muted-foreground/30">
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">{t('download.no_files')}</p>
+            <p className="text-muted-foreground"><EditableText tKey="download.no_files" /></p>
           </CardContent>
         </Card>
       );
@@ -139,7 +132,7 @@ const Download = () => {
         <CardHeader>
           <div className="flex items-center gap-2 text-sm text-primary font-medium mb-2">
             <CheckCircle className="h-4 w-4" />
-            {t('download.versions.latest')}
+            <EditableText tKey="download.versions.latest" />
           </div>
           <CardTitle className="text-xl">{file.file_name}</CardTitle>
           {file.description && (
@@ -167,7 +160,7 @@ const Download = () => {
             onClick={() => handleDownload(file)}
           >
             <DownloadIcon className="mr-2 h-4 w-4" />
-            {t('common.download_now')}
+            <EditableText tKey="common.download_now" />
           </Button>
         </CardContent>
       </Card>
@@ -227,10 +220,10 @@ const Download = () => {
       <div className="mt-8 pt-8 border-t">
         <div className="flex items-center gap-2 mb-4">
           <Package className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">{t('download.set_files.title')}</h3>
+          <h3 className="text-lg font-semibold"><EditableText tKey="download.set_files.title" /></h3>
         </div>
         <p className="text-muted-foreground text-sm mb-4">
-          {t('download.set_files.description')}
+          <EditableText tKey="download.set_files.description" />
         </p>
         <div className="grid sm:grid-cols-2 gap-4">
           {setFiles.map((file) => (
@@ -274,10 +267,12 @@ const Download = () => {
             <DownloadIcon className="h-12 w-12 text-primary-foreground" />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-hero bg-clip-text text-transparent">{t('download.hero.title')}</span>
+            <span className="bg-gradient-hero bg-clip-text text-transparent">
+              <EditableText tKey="download.hero.title" />
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground">
-            {t('download.hero.description')}
+            <EditableText tKey="download.hero.description" />
           </p>
         </div>
 
@@ -287,17 +282,17 @@ const Download = () => {
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="auto" className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
-                {t('download.mode.auto_title')}
+                <EditableText tKey="download.mode.auto_title" />
               </TabsTrigger>
               <TabsTrigger value="hybrid" className="flex items-center gap-2">
                 <Settings className="h-4 w-4" />
-                {t('download.mode.hybrid_title')}
+                <EditableText tKey="download.mode.hybrid_title" />
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="auto" className="space-y-4">
               <p className="text-muted-foreground text-center mb-4">
-                {t('download.mode.auto_desc')}
+                <EditableText tKey="download.mode.auto_desc" />
               </p>
               {loading ? (
                 <Card className="border-2 border-dashed">
@@ -316,7 +311,7 @@ const Download = () => {
             
             <TabsContent value="hybrid" className="space-y-4">
               <p className="text-muted-foreground text-center mb-4">
-                {t('download.mode.hybrid_desc')}
+                <EditableText tKey="download.mode.hybrid_desc" />
               </p>
               {loading ? (
                 <Card className="border-2 border-dashed">
@@ -344,8 +339,10 @@ const Download = () => {
                   <FileText className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <CardTitle className="text-xl mb-1">{t('download.files.manual_title')}</CardTitle>
-                  <CardDescription>{t('download.files.manual_desc')}</CardDescription>
+                  <CardTitle className="text-xl mb-1">
+                    <EditableText tKey="download.files.manual_title" />
+                  </CardTitle>
+                  <CardDescription><EditableText tKey="download.files.manual_desc" /></CardDescription>
                   {manualFile && (
                     <div className="flex gap-4 mt-2 text-sm text-muted-foreground">
                       <span>{t('download.files.size')}: {formatFileSize(manualFile.file_size)}</span>
@@ -361,7 +358,7 @@ const Download = () => {
                 disabled={!manualFile}
               >
                 <DownloadIcon className="mr-2 h-4 w-4" />
-                {t('common.download_now')}
+                <EditableText tKey="common.download_now" />
               </Button>
             </CardContent>
           </Card>
@@ -371,17 +368,21 @@ const Download = () => {
         <section className="mb-16">
           <Card>
             <CardHeader>
-              <CardTitle className="text-2xl">{t('download.requirements.title')}</CardTitle>
+              <CardTitle className="text-2xl">
+                <EditableText tKey="download.requirements.title" />
+              </CardTitle>
               <CardDescription>
-                {t('download.requirements.subtitle')}
+                <EditableText tKey="download.requirements.subtitle" />
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3">
-                {requirements.map((requirement, index) => (
+                {requirementKeys.map((key, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <CheckCircle className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
-                    <span className="text-muted-foreground">{requirement}</span>
+                    <span className="text-muted-foreground">
+                      <EditableText tKey={key} />
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -391,7 +392,9 @@ const Download = () => {
 
         {/* Installation Steps */}
         <section className="mb-16">
-          <h2 className="text-3xl font-bold mb-8 text-center">{t('download.installation.title')}</h2>
+          <h2 className="text-3xl font-bold mb-8 text-center">
+            <EditableText tKey="download.installation.title" />
+          </h2>
           <div className="space-y-4">
             {[1, 2, 3, 4, 5].map((step) => (
               <Card key={step}>
@@ -400,12 +403,14 @@ const Download = () => {
                     <div className="bg-gradient-hero rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0">
                       <span className="text-xl font-bold text-primary-foreground">{step}</span>
                     </div>
-                    <CardTitle>{t(`download.installation.step${step}_title`)}</CardTitle>
+                    <CardTitle>
+                      <EditableText tKey={`download.installation.step${step}_title`} />
+                    </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
-                    {t(`download.installation.step${step}_desc`)}
+                    <EditableText tKey={`download.installation.step${step}_desc`} />
                   </p>
                 </CardContent>
               </Card>
@@ -416,16 +421,18 @@ const Download = () => {
         {/* Support Notice */}
         <Card className="bg-gradient-hero border-0 text-primary-foreground">
           <CardContent className="py-12 px-8 text-center">
-            <h2 className="text-3xl font-bold mb-4">{t('download.support.title')}</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              <EditableText tKey="download.support.title" />
+            </h2>
             <p className="text-lg mb-6 opacity-90">
-              {t('download.support.description')}
+              <EditableText tKey="download.support.description" />
             </p>
             <Button
               size="lg"
               variant="secondary"
               className="bg-background text-foreground hover:bg-background/90"
             >
-              {t('common.contact_support')}
+              <EditableText tKey="common.contact_support" />
             </Button>
           </CardContent>
         </Card>

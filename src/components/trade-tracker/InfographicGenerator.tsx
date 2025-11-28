@@ -17,9 +17,9 @@ interface Account {
 interface AccountData {
   nickname: string;
   currency: string;
-  currentBalance: number;
+  initialBalance: number;
+  periodBalance: number;
   periodProfitLoss: number;
-  allTimeProfitLoss: number;
 }
 
 interface InfographicGeneratorProps {
@@ -55,13 +55,7 @@ const InfographicGenerator = ({
     setLoading(true);
     const accountIds = accounts.map(a => a.id);
 
-    // Get all trades
-    const { data: allTrades } = await supabase
-      .from('trades')
-      .select('*')
-      .in('account_id', accountIds);
-
-    // Get period trades
+    // Get period trades only
     const { data: periodTrades } = await supabase
       .from('trades')
       .select('*')
@@ -70,18 +64,15 @@ const InfographicGenerator = ({
       .lte('trade_date', dateRange.end.toISOString().split('T')[0]);
 
     const data: AccountData[] = accounts.map(account => {
-      const accountAllTrades = (allTrades || []).filter(t => t.account_id === account.id);
       const accountPeriodTrades = (periodTrades || []).filter(t => t.account_id === account.id);
-
-      const allTimePL = accountAllTrades.reduce((sum, t) => sum + Number(t.amount), 0);
       const periodPL = accountPeriodTrades.reduce((sum, t) => sum + Number(t.amount), 0);
 
       return {
         nickname: account.nickname,
         currency: account.currency,
-        currentBalance: account.initial_balance + allTimePL,
+        initialBalance: account.initial_balance,
+        periodBalance: account.initial_balance + periodPL,
         periodProfitLoss: periodPL,
-        allTimeProfitLoss: allTimePL,
       };
     });
 
@@ -122,9 +113,9 @@ const InfographicGenerator = ({
   };
 
   const combinedTotal = showCombinedTotal ? {
-    currentBalance: accountsData.reduce((sum, a) => sum + a.currentBalance, 0),
+    initialBalance: accountsData.reduce((sum, a) => sum + a.initialBalance, 0),
+    periodBalance: accountsData.reduce((sum, a) => sum + a.periodBalance, 0),
     periodProfitLoss: accountsData.reduce((sum, a) => sum + a.periodProfitLoss, 0),
-    allTimeProfitLoss: accountsData.reduce((sum, a) => sum + a.allTimeProfitLoss, 0),
   } : null;
 
   if (loading) {

@@ -6,6 +6,7 @@ import { Download, Share2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as htmlToImage from 'html-to-image';
 import InfographicCanvas from './InfographicCanvas';
+import type { ExportLanguage } from '@/pages/admin/trade-tracker/ExportPage';
 
 interface Account {
   id: string;
@@ -27,13 +28,15 @@ interface InfographicGeneratorProps {
   dateRange: { start: Date; end: Date };
   periodLabel: string;
   showCombinedTotal: boolean;
+  language: ExportLanguage;
 }
 
 const InfographicGenerator = ({ 
   accounts, 
   dateRange, 
   periodLabel, 
-  showCombinedTotal 
+  showCombinedTotal,
+  language,
 }: InfographicGeneratorProps) => {
   const { toast } = useToast();
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -155,6 +158,7 @@ const InfographicGenerator = ({
               accountsData={accountsData}
               periodLabel={periodLabel}
               combinedTotal={combinedTotal}
+              language={language}
             />
           </div>
         </CardContent>

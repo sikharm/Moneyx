@@ -63,15 +63,20 @@ const Profile = () => {
     if (!user) return;
     
     try {
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (profile) {
+      if (error) {
+        console.error("Error loading profile:", error);
+      } else if (profile) {
         setFullName(profile.full_name || "");
         setMemberSince(profile.created_at || user.created_at || "");
+      } else {
+        // Profile doesn't exist yet, use auth data
+        setMemberSince(user.created_at || "");
       }
     } catch (error) {
       console.error("Error loading profile:", error);

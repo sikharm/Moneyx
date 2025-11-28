@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Download, Share2, Globe } from 'lucide-react';
+import { CalendarIcon, Globe } from 'lucide-react';
 import { format, startOfDay, startOfWeek, startOfMonth, startOfYear, endOfDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import InfographicGenerator from '@/components/trade-tracker/InfographicGenerator';
@@ -46,7 +46,6 @@ const ExportPage = () => {
     if (!error && data) {
       const accountsData = data.map(a => ({ ...a, initial_balance: Number(a.initial_balance) }));
       setAccounts(accountsData);
-      // Select all accounts by default
       setSelectedAccountIds(accountsData.map(a => a.id));
     }
     setLoading(false);
@@ -113,159 +112,166 @@ const ExportPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Export Infographic</h1>
-        <p className="text-muted-foreground mt-1">Generate shareable performance reports for social media</p>
+        <h1 className="text-2xl font-bold">Export Infographic</h1>
+        <p className="text-muted-foreground text-sm mt-1">Generate shareable performance reports</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Settings Panel */}
-        <div className="space-y-6">
-          {/* Account Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Select Accounts</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="select-all"
-                  checked={selectedAccountIds.length === accounts.length}
-                  onCheckedChange={selectAllAccounts}
-                />
-                <label htmlFor="select-all" className="text-sm font-medium cursor-pointer">
-                  Select All ({accounts.length} accounts)
-                </label>
-              </div>
-              <div className="border-t pt-4 space-y-3">
-                {accounts.map(account => (
-                  <div key={account.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={account.id}
-                      checked={selectedAccountIds.includes(account.id)}
-                      onCheckedChange={() => toggleAccount(account.id)}
-                    />
-                    <label htmlFor={account.id} className="text-sm cursor-pointer">
-                      {account.nickname} ({account.currency})
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+      {/* Settings Row - Compact */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {/* Account Selection */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Accounts</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="select-all"
+                checked={selectedAccountIds.length === accounts.length && accounts.length > 0}
+                onCheckedChange={selectAllAccounts}
+              />
+              <label htmlFor="select-all" className="text-xs cursor-pointer">
+                All ({accounts.length})
+              </label>
+            </div>
+            <div className="max-h-32 overflow-y-auto space-y-1.5 border-t pt-2">
+              {accounts.map(account => (
+                <div key={account.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={account.id}
+                    checked={selectedAccountIds.includes(account.id)}
+                    onCheckedChange={() => toggleAccount(account.id)}
+                  />
+                  <label htmlFor={account.id} className="text-xs cursor-pointer truncate">
+                    {account.nickname}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Period Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Time Period</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Select value={period} onValueChange={(v) => setPeriod(v as PeriodType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">Today</SelectItem>
-                  <SelectItem value="weekly">This Week</SelectItem>
-                  <SelectItem value="monthly">This Month</SelectItem>
-                  <SelectItem value="yearly">This Year</SelectItem>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="custom">Custom Range</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Period Selection */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Time Period</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <Select value={period} onValueChange={(v) => setPeriod(v as PeriodType)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Today</SelectItem>
+                <SelectItem value="weekly">This Week</SelectItem>
+                <SelectItem value="monthly">This Month</SelectItem>
+                <SelectItem value="yearly">This Year</SelectItem>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="custom">Custom</SelectItem>
+              </SelectContent>
+            </Select>
 
-              {period === 'custom' && (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !customDateRange.from && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {customDateRange.from ? (
-                        customDateRange.to ? (
-                          <>
-                            {format(customDateRange.from, "LLL dd, y")} -{" "}
-                            {format(customDateRange.to, "LLL dd, y")}
-                          </>
-                        ) : (
-                          format(customDateRange.from, "LLL dd, y")
-                        )
+            {period === 'custom' && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn(
+                      "w-full justify-start text-left text-xs h-8",
+                      !customDateRange.from && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-1 h-3 w-3" />
+                    {customDateRange.from ? (
+                      customDateRange.to ? (
+                        <span className="truncate">
+                          {format(customDateRange.from, "MMM d")} - {format(customDateRange.to, "MMM d")}
+                        </span>
                       ) : (
-                        "Pick a date range"
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      initialFocus
-                      mode="range"
-                      defaultMonth={customDateRange.from}
-                      selected={{ from: customDateRange.from, to: customDateRange.to }}
-                      onSelect={(range) => setCustomDateRange({ from: range?.from, to: range?.to })}
-                      numberOfMonths={2}
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            </CardContent>
-          </Card>
+                        format(customDateRange.from, "MMM d, y")
+                      )
+                    ) : (
+                      "Pick dates"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={customDateRange.from}
+                    selected={{ from: customDateRange.from, to: customDateRange.to }}
+                    onSelect={(range) => setCustomDateRange({ from: range?.from, to: range?.to })}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Language Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                Export Language
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Select value={language} onValueChange={(v) => setLanguage(v as ExportLanguage)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="en">🇺🇸 English</SelectItem>
-                  <SelectItem value="lo">🇱🇦 ລາວ (Lao)</SelectItem>
-                  <SelectItem value="th">🇹🇭 ไทย (Thai)</SelectItem>
-                </SelectContent>
-              </Select>
-            </CardContent>
-          </Card>
+        {/* Language Selection */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center gap-1">
+              <Globe className="h-3 w-3" />
+              Language
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={language} onValueChange={(v) => setLanguage(v as ExportLanguage)}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">🇺🇸 English</SelectItem>
+                <SelectItem value="lo">🇱🇦 ລາວ</SelectItem>
+                <SelectItem value="th">🇹🇭 ไทย</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
 
-          {/* Options */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Display Options</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="show-combined"
-                  checked={showCombinedTotal}
-                  onCheckedChange={(checked) => setShowCombinedTotal(!!checked)}
-                />
-                <label htmlFor="show-combined" className="text-sm cursor-pointer">
-                  Show combined total (when multiple accounts selected)
-                </label>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Preview Panel */}
-        <div>
-          <InfographicGenerator
-            accounts={selectedAccounts}
-            dateRange={getDateRange()}
-            periodLabel={getPeriodLabel()}
-            showCombinedTotal={showCombinedTotal && selectedAccounts.length > 1}
-            language={language}
-          />
-        </div>
+        {/* Options */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Options</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="show-combined"
+                checked={showCombinedTotal}
+                onCheckedChange={(checked) => setShowCombinedTotal(!!checked)}
+              />
+              <label htmlFor="show-combined" className="text-xs cursor-pointer">
+                Show combined total
+              </label>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Preview Panel - Full Width with Scroll */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium">Preview & Export</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <div className="min-w-fit">
+              <InfographicGenerator
+                accounts={selectedAccounts}
+                dateRange={getDateRange()}
+                periodLabel={getPeriodLabel()}
+                showCombinedTotal={showCombinedTotal && selectedAccounts.length > 1}
+                language={language}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

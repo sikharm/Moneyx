@@ -3,51 +3,9 @@ import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import EditableText from "@/components/EditableText";
 import EditableSetting from "@/components/EditableSetting";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const { t } = useLanguage();
-  const [contactEmail, setContactEmail] = useState("support@xaubot.com");
-  const [contactPhone, setContactPhone] = useState("+856 20 1234 5678");
-  const [contactWhatsapp, setContactWhatsapp] = useState("+856 20 1234 5678");
-
-  // Load settings for clickable actions
-  useEffect(() => {
-    const loadSettings = async () => {
-      const { data } = await supabase
-        .from('site_settings')
-        .select('setting_key, setting_value')
-        .in('setting_key', ['contact_email', 'contact_phone', 'contact_whatsapp']);
-      
-      if (data) {
-        data.forEach(setting => {
-          if (setting.setting_key === 'contact_email') setContactEmail(setting.setting_value);
-          if (setting.setting_key === 'contact_phone') setContactPhone(setting.setting_value);
-          if (setting.setting_key === 'contact_whatsapp') setContactWhatsapp(setting.setting_value);
-        });
-      }
-    };
-    loadSettings();
-  }, []);
-
-  const handleEmailClick = () => {
-    window.location.href = `mailto:${contactEmail}`;
-  };
-
-  const handlePhoneClick = () => {
-    const cleanPhone = contactPhone.replace(/\s/g, '');
-    window.location.href = `tel:${cleanPhone}`;
-  };
-
-  const handleWhatsappClick = () => {
-    const cleanPhone = contactWhatsapp.replace(/\s/g, '').replace('+', '');
-    window.open(`https://wa.me/${cleanPhone}`, '_blank');
-  };
-
-  const handleOfficeClick = () => {
-    window.open('https://maps.google.com/?q=Vientiane,Laos', '_blank');
-  };
 
   return (
     <div className="min-h-screen pt-24 pb-20">
@@ -67,10 +25,7 @@ const Contact = () => {
         {/* Contact Info Cards */}
         <section className="mb-16">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card 
-              className="border-2 hover:border-primary transition-all duration-300 text-center cursor-pointer hover:shadow-lg"
-              onClick={handleEmailClick}
-            >
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
               <CardHeader>
                 <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
                   <Mail className="h-6 w-6 text-primary-foreground" />
@@ -87,10 +42,7 @@ const Contact = () => {
               </CardHeader>
             </Card>
 
-            <Card 
-              className="border-2 hover:border-primary transition-all duration-300 text-center cursor-pointer hover:shadow-lg"
-              onClick={handlePhoneClick}
-            >
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
               <CardHeader>
                 <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
                   <Phone className="h-6 w-6 text-primary-foreground" />
@@ -107,10 +59,7 @@ const Contact = () => {
               </CardHeader>
             </Card>
 
-            <Card 
-              className="border-2 hover:border-primary transition-all duration-300 text-center cursor-pointer hover:shadow-lg"
-              onClick={handleOfficeClick}
-            >
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
               <CardHeader>
                 <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
                   <MapPin className="h-6 w-6 text-primary-foreground" />
@@ -127,10 +76,7 @@ const Contact = () => {
               </CardHeader>
             </Card>
 
-            <Card 
-              className="border-2 hover:border-primary transition-all duration-300 text-center cursor-pointer hover:shadow-lg"
-              onClick={handleWhatsappClick}
-            >
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
               <CardHeader>
                 <div className="bg-[#25D366] p-3 rounded-lg w-fit mx-auto mb-3">
                   <MessageCircle className="h-6 w-6 text-primary-foreground" />

@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
+import { Mail, Phone, MapPin, Loader2, MessageCircle } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -137,7 +137,7 @@ const Contact = () => {
 
         {/* Contact Info Cards */}
         <section className="mb-16">
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
               <CardHeader>
                 <div className="bg-gradient-hero p-3 rounded-lg w-fit mx-auto mb-3">
@@ -185,6 +185,23 @@ const Contact = () => {
                 </CardDescription>
                 <CardDescription className="text-sm">
                   <EditableSetting settingKey="office_hours" fallback="Monday - Friday: 9:00 AM - 6:00 PM" />
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2 hover:border-primary transition-all duration-300 text-center">
+              <CardHeader>
+                <div className="bg-[#25D366] p-3 rounded-lg w-fit mx-auto mb-3">
+                  <MessageCircle className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <CardTitle className="text-lg">
+                  <EditableText tKey="contact.info.whatsapp" fallback="WhatsApp" />
+                </CardTitle>
+                <CardDescription className="text-base font-semibold text-foreground">
+                  <EditableSetting settingKey="contact_whatsapp" fallback="+856 20 1234 5678" />
+                </CardDescription>
+                <CardDescription className="text-sm">
+                  <EditableText tKey="contact.info.whatsapp_desc" fallback="Quick responses" />
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -325,16 +342,33 @@ const Contact = () => {
                   <p className="mb-4 opacity-90">
                     <EditableText tKey="contact.urgent.description" />
                   </p>
-                  <a href="mailto:support@xaubot.com">
-                    <Button
-                      size="lg"
-                      variant="secondary"
-                      className="w-full bg-background text-foreground hover:bg-background/90"
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <a href="mailto:support@xaubot.com" className="flex-1">
+                      <Button
+                        size="lg"
+                        variant="secondary"
+                        className="w-full bg-background text-foreground hover:bg-background/90"
+                      >
+                        <Mail className="mr-2 h-4 w-4" />
+                        {t('common.email_us')}
+                      </Button>
+                    </a>
+                    <a 
+                      href="https://wa.me/8562012345678?text=Hello%2C%20I%20need%20help%20with%20XAUBot" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex-1"
                     >
-                      <Mail className="mr-2 h-4 w-4" />
-                      {t('common.email_us')}
-                    </Button>
-                  </a>
+                      <Button
+                        size="lg"
+                        variant="secondary"
+                        className="w-full bg-[#25D366] text-primary-foreground hover:bg-[#25D366]/90"
+                      >
+                        <MessageCircle className="mr-2 h-4 w-4" />
+                        {t('common.chat_whatsapp') || 'Chat on WhatsApp'}
+                      </Button>
+                    </a>
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -89,6 +89,7 @@ const InlineEditDialog = ({ open, onOpenChange, translationKey, onSave }: Inline
       const { data, error } = await supabase.functions.invoke('translate', {
         body: { 
           text: englishText,
+          sourceLanguage: 'en',
           targetLanguages: languages.filter(l => l.code !== 'en').map(l => l.code)
         }
       });

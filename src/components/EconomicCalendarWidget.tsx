@@ -16,7 +16,7 @@ const EconomicCalendarWidget = ({
 }: EconomicCalendarWidgetProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { theme } = useTheme();
+  const { theme, resolvedTheme } = useTheme();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -24,8 +24,8 @@ const EconomicCalendarWidget = ({
     // Clear any existing content
     containerRef.current.innerHTML = '';
 
-    // Determine color theme based on current theme
-    const colorTheme = theme === 'dark' ? 'dark' : 'light';
+    // Determine color theme based on current resolved theme
+    const colorTheme = resolvedTheme === 'dark' ? 'dark' : 'light';
 
     // Create the widget container
     const widgetContainer = document.createElement('div');
@@ -45,7 +45,7 @@ const EconomicCalendarWidget = ({
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
     script.async = true;
     script.innerHTML = JSON.stringify({
-      colorTheme: "dark",
+      colorTheme: colorTheme,
       isTransparent: false,
       width: "100%",
       height: "100%",
@@ -65,7 +65,7 @@ const EconomicCalendarWidget = ({
     return () => {
       clearTimeout(timer);
     };
-  }, [theme, width, height]);
+  }, [resolvedTheme, width, height]);
 
   const LoadingSkeleton = () => (
     <div className="space-y-3 p-4">
@@ -81,15 +81,18 @@ const EconomicCalendarWidget = ({
   );
 
   const content = (
-    <div className="relative w-full overflow-hidden rounded-lg" style={{ minHeight: height }}>
+    <div 
+      className="relative w-full overflow-hidden rounded-xl border border-border/50 bg-card shadow-lg" 
+      style={{ minHeight: height }}
+    >
       {isLoading && (
-        <div className="absolute inset-0 z-10 bg-card">
+        <div className="absolute inset-0 z-10 bg-card rounded-xl">
           <LoadingSkeleton />
         </div>
       )}
       <div 
         ref={containerRef} 
-        className="w-full"
+        className="w-full rounded-xl overflow-hidden"
         style={{ height: height }}
       />
     </div>
@@ -100,7 +103,7 @@ const EconomicCalendarWidget = ({
   }
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden border-border/50 shadow-lg">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">Economic Calendar</CardTitle>
       </CardHeader>

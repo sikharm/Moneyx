@@ -59,8 +59,10 @@ const Navigation = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center gap-2 font-bold text-xl">
-            <img src={logo} alt="MoneyX Logo" className="h-10 w-auto" />
+          <Link to="/" className="flex items-center gap-3 font-bold text-xl">
+            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-primary/30 bg-card flex items-center justify-center">
+              <img src={logo} alt="MoneyX Logo" className="h-10 w-10 object-contain" />
+            </div>
             <span className="bg-gradient-hero bg-clip-text text-transparent">MoneyX</span>
           </Link>
 

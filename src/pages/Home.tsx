@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Clock, Facebook } from "lucide-react";
+import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Clock, Facebook, Calendar } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import FacebookWidget from "@/components/FacebookWidget";
+import EconomicCalendarWidget from "@/components/EconomicCalendarWidget";
 import EditableText from "@/components/EditableText";
-
 const Home = () => {
   const { t } = useLanguage();
 
@@ -67,6 +67,31 @@ const Home = () => {
         </div>
       </section>
 
+      {/* Economic Calendar Section */}
+      <section className="py-16 px-4 bg-gradient-card">
+        <div className="container mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Calendar className="h-6 w-6 text-primary" />
+                <h2 className="text-3xl md:text-4xl font-bold">
+                  <EditableText tKey="home.calendar.title" fallback="Economic Calendar" />
+                </h2>
+              </div>
+              <p className="text-lg text-muted-foreground mb-6">
+                <EditableText tKey="home.calendar.description" fallback="Stay informed about important economic events that can impact the forex market. Track high-impact news releases in real-time." />
+              </p>
+              <Button variant="outline" className="gap-2" asChild>
+                <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener noreferrer">
+                  <Calendar className="h-4 w-4" />
+                  <EditableText tKey="home.calendar.view_full" fallback="View Full Calendar on Forex Factory" />
+                </a>
+              </Button>
+            </div>
+            <EconomicCalendarWidget showCard={false} height={350} />
+          </div>
+        </div>
+      </section>
 
       {/* Social Updates Section */}
       <section className="py-16 px-4">

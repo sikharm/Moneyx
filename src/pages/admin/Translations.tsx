@@ -130,14 +130,17 @@ const Translations = () => {
     setIsScanning(true);
     try {
       // Fetch fresh translations from database to ensure we have latest data
+      // Use DISTINCT to get unique keys only
       const { data: freshTranslations, error: fetchError } = await supabase
         .from('translations')
-        .select('translation_key')
-        .order('translation_key');
+        .select('translation_key');
       
       if (fetchError) {
         throw new Error(fetchError.message || 'Failed to fetch existing translations');
       }
+
+      console.log('Fresh translations from DB:', freshTranslations?.length, 'rows');
+      console.log('Sample keys:', freshTranslations?.slice(0, 5).map(t => t.translation_key));
 
       // Get expected translations from edge function
       const { data, error } = await supabase.functions.invoke('get-expected-translations');
@@ -146,9 +149,21 @@ const Translations = () => {
         throw new Error(error.message || 'Failed to get expected translations');
       }
 
-      const expectedTranslations = data.translations as Record<string, ExpectedTranslation>;
+      console.log('Edge function response:', data);
+      
+      const expectedTranslations = data?.translations as Record<string, ExpectedTranslation>;
+      
+      if (!expectedTranslations) {
+        throw new Error('No translations returned from edge function');
+      }
+      
+      console.log('Expected keys count:', Object.keys(expectedTranslations).length);
+      
       // Use fresh data from database, not stale state
       const existingKeys = new Set(freshTranslations?.map(t => t.translation_key) || []);
+      
+      console.log('Unique existing keys in DB:', existingKeys.size);
+      console.log('Has nav.home?', existingKeys.has('nav.home'));
 
       // Find missing keys
       const missing: MissingKey[] = [];
@@ -160,6 +175,11 @@ const Translations = () => {
             category: info.category,
           });
         }
+      }
+
+      console.log('Missing keys found:', missing.length);
+      if (missing.length > 0) {
+        console.log('First 5 missing:', missing.slice(0, 5).map(m => m.key));
       }
 
       setMissingKeys(missing);

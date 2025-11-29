@@ -46,7 +46,7 @@ const EconomicCalendarWidget = ({
     script.async = true;
     script.innerHTML = JSON.stringify({
       colorTheme: "dark",
-      isTransparent: true,
+      isTransparent: false,
       width: "100%",
       height: "100%",
       locale: "en",

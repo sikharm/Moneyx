@@ -67,7 +67,7 @@ const HybridMode = () => {
             <EditableText tKey="hybrid.hero.description_new" />
           </p>
           <Button size="lg" className="bg-gradient-hero hover:opacity-90" asChild>
-            <Link to="/download"><EditableText tKey="hybrid.hero.button" /></Link>
+            <Link to="/download?mode=hybrid"><EditableText tKey="hybrid.hero.button" /></Link>
           </Button>
         </div>
 
@@ -288,7 +288,7 @@ const HybridMode = () => {
                 className="bg-background text-foreground hover:bg-background/90"
                 asChild
               >
-                <Link to="/download"><EditableText tKey="common.download_now" /></Link>
+                <Link to="/download?mode=hybrid"><EditableText tKey="common.download_now" /></Link>
               </Button>
             </CardContent>
           </Card>

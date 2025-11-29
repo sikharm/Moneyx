@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +24,8 @@ interface FileData {
 const Download = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const defaultMode = searchParams.get('mode') === 'hybrid' ? 'hybrid' : 'auto';
   const [autoFiles, setAutoFiles] = useState<FileData[]>([]);
   const [hybridFiles, setHybridFiles] = useState<FileData[]>([]);
   const [autoSetFiles, setAutoSetFiles] = useState<FileData[]>([]);
@@ -296,7 +299,7 @@ const Download = () => {
 
         {/* EA Mode Tabs */}
         <section className="mb-16">
-          <Tabs defaultValue="auto" className="w-full">
+          <Tabs defaultValue={defaultMode} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="auto" className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />

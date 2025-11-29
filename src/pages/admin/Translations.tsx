@@ -129,6 +129,16 @@ const Translations = () => {
   const handleScanMissingKeys = async () => {
     setIsScanning(true);
     try {
+      // Fetch fresh translations from database to ensure we have latest data
+      const { data: freshTranslations, error: fetchError } = await supabase
+        .from('translations')
+        .select('translation_key')
+        .order('translation_key');
+      
+      if (fetchError) {
+        throw new Error(fetchError.message || 'Failed to fetch existing translations');
+      }
+
       // Get expected translations from edge function
       const { data, error } = await supabase.functions.invoke('get-expected-translations');
       
@@ -137,7 +147,8 @@ const Translations = () => {
       }
 
       const expectedTranslations = data.translations as Record<string, ExpectedTranslation>;
-      const existingKeys = new Set(allTranslations.map(t => t.translation_key));
+      // Use fresh data from database, not stale state
+      const existingKeys = new Set(freshTranslations?.map(t => t.translation_key) || []);
 
       // Find missing keys
       const missing: MissingKey[] = [];
@@ -152,6 +163,9 @@ const Translations = () => {
       }
 
       setMissingKeys(missing);
+      
+      // Also refresh the state with latest data
+      loadAllTranslations();
       
       if (missing.length === 0) {
         toast.success('All translation keys are present!');

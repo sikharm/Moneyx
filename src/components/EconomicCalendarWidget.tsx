@@ -45,13 +45,13 @@ const EconomicCalendarWidget = ({
     script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
     script.async = true;
     script.innerHTML = JSON.stringify({
-      colorTheme: colorTheme,
+      colorTheme: "dark",
       isTransparent: true,
       width: "100%",
       height: "100%",
       locale: "en",
       importanceFilter: "-1,0,1",
-      countryFilter: "us,eu,gb,jp,au,nz,ch,ca"
+      countryFilter: "us"
     });
 
     widgetContainer.appendChild(script);

@@ -91,6 +91,11 @@ const expectedTranslations: Record<string, { value: string; category: string }> 
   "home.cta.description": { value: "Join thousands of successful traders using our EA system", category: "home" },
   "home.cta.button": { value: "Download Now", category: "home" },
 
+  // Home - Economic Calendar Section
+  "home.calendar.title": { value: "Economic Calendar", category: "home" },
+  "home.calendar.description": { value: "Stay informed about important economic events that can impact the forex market. Track high-impact news releases in real-time.", category: "home" },
+  "home.calendar.view_full": { value: "View Full Calendar on Forex Factory", category: "home" },
+
   // Home - Social Updates Section
   "home.updates.title": { value: "Latest Updates", category: "home" },
   "home.updates.description": { value: "Stay connected with our community. See our latest trading results and updates on Facebook.", category: "home" },

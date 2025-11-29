@@ -4,6 +4,7 @@ import { Facebook, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Extend Window interface for Facebook SDK
 declare global {
@@ -27,7 +28,12 @@ interface FacebookWidgetProps {
 const FACEBOOK_PAGE_URL = "https://www.facebook.com/SabuyHUBlao";
 const SDK_LOAD_TIMEOUT = 8000; // 8 seconds to show loading
 
-const FacebookWidget = ({ width = "500", height = "400", showCard = true }: FacebookWidgetProps) => {
+const FacebookWidget = ({ width: propWidth, height: propHeight, showCard = true }: FacebookWidgetProps) => {
+  const isMobile = useIsMobile();
+  
+  // Use smaller dimensions on mobile
+  const width = propWidth || (isMobile ? "320" : "500");
+  const height = propHeight || (isMobile ? "350" : "400");
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);

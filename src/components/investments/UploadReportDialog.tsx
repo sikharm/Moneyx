@@ -213,9 +213,14 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
                 HTML report file from MT5
               </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Export from MT5: Account History → Right Click → Save as Detailed Report
-            </p>
+            <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+              <p className="font-medium mb-1">How to export from MT5:</p>
+              <ol className="list-decimal list-inside space-y-0.5">
+                <li>Go to <span className="font-medium">History</span> tab at bottom</li>
+                <li>Right-click → <span className="font-medium">Report</span> → <span className="font-medium">HTML (Detailed)</span></li>
+                <li>Save and upload the file here</li>
+              </ol>
+            </div>
           </div>
 
           {parseError && (

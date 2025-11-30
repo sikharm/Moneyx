@@ -126,11 +126,21 @@ const AccountsPage = () => {
 
       if (error) throw error;
       
+      if (data?.requires_billing) {
+        toast.error('MetaAPI quota exceeded. Please top up your MetaAPI account to deploy.');
+        return;
+      }
+      
       toast.success('Redeploy initiated. Check status in 2-3 minutes.');
       await loadAccounts();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Redeploy error:', error);
-      toast.error('Failed to redeploy account');
+      const message = error?.message || 'Failed to redeploy account';
+      if (message.includes('quota') || message.includes('top up')) {
+        toast.error('MetaAPI quota exceeded. Please top up your MetaAPI account.');
+      } else {
+        toast.error(message);
+      }
     } finally {
       setRedeployingId(null);
     }

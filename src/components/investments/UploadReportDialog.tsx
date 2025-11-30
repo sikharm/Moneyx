@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Loader2, Upload, FileText, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { parseMT5Report, ParsedReportData, formatCurrency } from '@/utils/mt5ReportParser';
+import { parseMT5Report, ParsedReportData, formatCurrency, ParseOptions } from '@/utils/mt5ReportParser';
 
 interface MT5Account {
   id: string;
@@ -42,7 +42,8 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
 
     try {
       const text = await file.text();
-      const data = parseMT5Report(text);
+      // Pass isCentAccount to parser for lot conversion
+      const data = parseMT5Report(text, { isCentAccount: account?.is_cent_account || false });
       
       if (data.balance === 0 && data.totalTrades === 0) {
         setParseError('Could not parse report data. Make sure this is a valid MT5 trade history report.');

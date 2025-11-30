@@ -23,12 +23,17 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import FileManagement from "./pages/admin/FileManagement";
 import Translations from "./pages/admin/Translations";
+import UserInvestments from "./pages/admin/UserInvestments";
 import TradeTrackerLayout from "./pages/admin/trade-tracker/TradeTrackerLayout";
 import TradeTrackerDashboard from "./pages/admin/trade-tracker/TradeTrackerDashboard";
 import AccountsPage from "./pages/admin/trade-tracker/AccountsPage";
 import SummaryPage from "./pages/admin/trade-tracker/SummaryPage";
 import ExportPage from "./pages/admin/trade-tracker/ExportPage";
 import SettingsPage from "./pages/admin/trade-tracker/SettingsPage";
+import DashboardLayout from "./pages/dashboard/DashboardLayout";
+import DashboardHome from "./pages/dashboard/DashboardHome";
+import UserAccountsPage from "./pages/dashboard/AccountsPage";
+import EarningsPage from "./pages/dashboard/EarningsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -57,11 +62,19 @@ const App = () => (
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
                 
+                {/* User Dashboard Routes */}
+                <Route path="/dashboard" element={<DashboardLayout />}>
+                  <Route index element={<DashboardHome />} />
+                  <Route path="accounts" element={<UserAccountsPage />} />
+                  <Route path="earnings" element={<EarningsPage />} />
+                </Route>
+                
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminLayout />}>
                   <Route index element={<Dashboard />} />
                   <Route path="files" element={<FileManagement />} />
                   <Route path="translations" element={<Translations />} />
+                  <Route path="user-investments" element={<UserInvestments />} />
                 </Route>
 
                 {/* Trade Tracker Routes */}

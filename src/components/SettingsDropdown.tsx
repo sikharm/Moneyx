@@ -11,7 +11,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings2, ChevronDown, Sun, Moon, Monitor, LogIn, LogOut, Shield, Home, Check, User } from "lucide-react";
+import { Settings2, ChevronDown, Sun, Moon, Monitor, LogIn, LogOut, Shield, Home, Check, User, Wallet } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,6 +45,11 @@ const SettingsDropdown = ({ showViewSite = false, onNavigate }: SettingsDropdown
   const handleProfileClick = () => {
     onNavigate?.();
     navigate("/profile");
+  };
+
+  const handleInvestmentsClick = () => {
+    onNavigate?.();
+    navigate("/dashboard");
   };
 
   const themeOptions: { value: "light" | "dark" | "system"; label: string; icon: typeof Sun }[] = [
@@ -115,6 +120,10 @@ const SettingsDropdown = ({ showViewSite = false, onNavigate }: SettingsDropdown
             <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
               <User className="h-4 w-4 mr-2" />
               <span>{t('nav.profile') === 'nav.profile' ? "My Profile" : t('nav.profile')}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleInvestmentsClick} className="cursor-pointer">
+              <Wallet className="h-4 w-4 mr-2" />
+              <span>My Investments</span>
             </DropdownMenuItem>
             {isAdmin && !showViewSite && (
               <DropdownMenuItem onClick={handleAdminClick} className="cursor-pointer">

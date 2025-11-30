@@ -36,6 +36,41 @@ const AccountsPage = () => {
     loadAccounts();
   }, [user]);
 
+  // Real-time subscription for account updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('user-mt5-accounts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_mt5_accounts',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Account update:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            setAccounts(prev => [payload.new as MT5Account, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setAccounts(prev => 
+              prev.map(acc => acc.id === payload.new.id ? payload.new as MT5Account : acc)
+            );
+          } else if (payload.eventType === 'DELETE') {
+            setAccounts(prev => prev.filter(acc => acc.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
   const loadAccounts = async () => {
     if (!user) return;
     

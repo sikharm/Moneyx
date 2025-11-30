@@ -85,6 +85,16 @@ serve(async (req) => {
       // If already deployed, that's fine
       if (deployResponse.status === 409) {
         console.log('Account already deployed, checking status...');
+      } else if (deployResponse.status === 403 && errorText.includes('top up')) {
+        // MetaAPI quota/billing issue
+        return new Response(JSON.stringify({ 
+          error: 'MetaAPI quota exceeded',
+          message: 'Please top up your MetaAPI account to deploy trading accounts.',
+          requires_billing: true
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       } else {
         return new Response(JSON.stringify({ 
           error: 'Failed to redeploy account',

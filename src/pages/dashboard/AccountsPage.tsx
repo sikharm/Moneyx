@@ -231,20 +231,14 @@ const AccountsPage = () => {
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t">
-                  {(account.status === 'error' || account.status === 'needs_redeploy') ? (
+                {(account.status === 'error' || account.status === 'needs_redeploy') ? (
                     <Button
                       variant="outline"
                       size="sm"
                       className="flex-1"
-                      onClick={() => redeployAccount(account)}
-                      disabled={redeployingId === account.id}
+                      disabled
                     >
-                      {redeployingId === account.id ? (
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <RotateCcw className="h-4 w-4 mr-1" />
-                      )}
-                      Redeploy
+                      Unavailable
                     </Button>
                   ) : account.status === 'deploying' ? (
                     <Button

@@ -122,6 +122,68 @@ export type Database = {
         }
         Relationships: []
       }
+      investment_reports: {
+        Row: {
+          account_id: string
+          balance: number
+          created_at: string | null
+          equity: number
+          gross_loss: number
+          gross_profit: number
+          id: string
+          net_profit: number
+          profit_factor: number | null
+          raw_summary: Json | null
+          report_date: string
+          report_period_end: string | null
+          report_period_start: string | null
+          total_lots: number
+          total_trades: number
+        }
+        Insert: {
+          account_id: string
+          balance?: number
+          created_at?: string | null
+          equity?: number
+          gross_loss?: number
+          gross_profit?: number
+          id?: string
+          net_profit?: number
+          profit_factor?: number | null
+          raw_summary?: Json | null
+          report_date: string
+          report_period_end?: string | null
+          report_period_start?: string | null
+          total_lots?: number
+          total_trades?: number
+        }
+        Update: {
+          account_id?: string
+          balance?: number
+          created_at?: string | null
+          equity?: number
+          gross_loss?: number
+          gross_profit?: number
+          id?: string
+          net_profit?: number
+          profit_factor?: number | null
+          raw_summary?: Json | null
+          report_date?: string
+          report_period_end?: string | null
+          report_period_start?: string | null
+          total_lots?: number
+          total_trades?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_reports_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_mt5_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       languages: {
         Row: {
           code: string
@@ -421,13 +483,16 @@ export type Database = {
           id: string
           initial_investment: number
           is_cent_account: boolean
+          last_balance: number | null
+          last_report_date: string | null
           metaapi_account_id: string | null
-          mt5_login: string
-          mt5_password: string
-          mt5_server: string
+          mt5_login: string | null
+          mt5_password: string | null
+          mt5_server: string | null
           nickname: string
           rebate_rate_per_lot: number
           status: string
+          total_lots_traded: number | null
           updated_at: string
           user_id: string
         }
@@ -436,13 +501,16 @@ export type Database = {
           id?: string
           initial_investment?: number
           is_cent_account?: boolean
+          last_balance?: number | null
+          last_report_date?: string | null
           metaapi_account_id?: string | null
-          mt5_login: string
-          mt5_password: string
-          mt5_server: string
+          mt5_login?: string | null
+          mt5_password?: string | null
+          mt5_server?: string | null
           nickname: string
           rebate_rate_per_lot?: number
           status?: string
+          total_lots_traded?: number | null
           updated_at?: string
           user_id: string
         }
@@ -451,13 +519,16 @@ export type Database = {
           id?: string
           initial_investment?: number
           is_cent_account?: boolean
+          last_balance?: number | null
+          last_report_date?: string | null
           metaapi_account_id?: string | null
-          mt5_login?: string
-          mt5_password?: string
-          mt5_server?: string
+          mt5_login?: string | null
+          mt5_password?: string | null
+          mt5_server?: string | null
           nickname?: string
           rebate_rate_per_lot?: number
           status?: string
+          total_lots_traded?: number | null
           updated_at?: string
           user_id?: string
         }

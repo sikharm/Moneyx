@@ -2,24 +2,26 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, RefreshCw, Trash2, Edit2, Loader2, RotateCcw } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Calendar } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import AddMT5AccountDialog from '@/components/investments/AddMT5AccountDialog';
 import EditRebateDialog from '@/components/investments/EditRebateDialog';
+import UploadReportDialog from '@/components/investments/UploadReportDialog';
+import { formatCurrency } from '@/utils/mt5ReportParser';
 
 interface MT5Account {
   id: string;
   nickname: string;
-  mt5_login: string;
-  mt5_server: string;
   initial_investment: number;
   rebate_rate_per_lot: number;
   is_cent_account: boolean;
   status: string;
-  metaapi_account_id: string;
   created_at: string;
+  last_report_date: string | null;
+  last_balance: number | null;
+  total_lots_traded: number | null;
 }
 
 const AccountsPage = () => {
@@ -28,9 +30,7 @@ const AccountsPage = () => {
   const [loading, setLoading] = useState(true);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<MT5Account | null>(null);
-  const [syncingId, setSyncingId] = useState<string | null>(null);
-  const [checkingId, setCheckingId] = useState<string | null>(null);
-  const [redeployingId, setRedeployingId] = useState<string | null>(null);
+  const [uploadingAccount, setUploadingAccount] = useState<MT5Account | null>(null);
 
   useEffect(() => {
     loadAccounts();
@@ -56,50 +56,8 @@ const AccountsPage = () => {
     }
   };
 
-  const checkStatus = async (account: MT5Account) => {
-    setCheckingId(account.id);
-    try {
-      const { data, error } = await supabase.functions.invoke('check-mt5-status', {
-        body: { account_id: account.id },
-      });
-
-      if (error) throw error;
-      
-      toast.success(`Status: ${data.status}`);
-      await loadAccounts();
-    } catch (error) {
-      console.error('Status check error:', error);
-      toast.error('Failed to check status');
-    } finally {
-      setCheckingId(null);
-    }
-  };
-
-  const syncAccount = async (account: MT5Account) => {
-    setSyncingId(account.id);
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-mt5-data', {
-        body: { account_id: account.id, period_type: 'weekly' },
-      });
-
-      if (error) throw error;
-      
-      if (data.error === 'Account still deploying') {
-        toast.info('Account is still deploying. Please wait a few minutes.');
-      } else {
-        toast.success('Account synced successfully');
-      }
-      await loadAccounts();
-    } catch (error) {
-      console.error('Sync error:', error);
-      toast.error('Failed to sync account');
-    } finally {
-      setSyncingId(null);
-    }
-  };
-
   const deleteAccount = async (account: MT5Account) => {
-    if (!confirm(`Are you sure you want to delete "${account.nickname}"?`)) return;
+    if (!confirm(`Are you sure you want to delete "${account.nickname}"? All associated reports will be deleted.`)) return;
 
     try {
       const { error } = await supabase
@@ -117,54 +75,31 @@ const AccountsPage = () => {
     }
   };
 
-  const redeployAccount = async (account: MT5Account) => {
-    setRedeployingId(account.id);
-    try {
-      const { data, error } = await supabase.functions.invoke('redeploy-mt5-account', {
-        body: { account_id: account.id },
-      });
-
-      if (error) throw error;
-      
-      if (data?.requires_billing) {
-        toast.error('MetaAPI quota exceeded. Please top up your MetaAPI account to deploy.');
-        return;
-      }
-      
-      toast.success('Redeploy initiated. Check status in 2-3 minutes.');
-      await loadAccounts();
-    } catch (error: any) {
-      console.error('Redeploy error:', error);
-      const message = error?.message || 'Failed to redeploy account';
-      if (message.includes('quota') || message.includes('top up')) {
-        toast.error('MetaAPI quota exceeded. Please top up your MetaAPI account.');
-      } else {
-        toast.error(message);
-      }
-    } finally {
-      setRedeployingId(null);
+  const getStatusBadge = (status: string, lastReportDate: string | null) => {
+    if (lastReportDate) {
+      return <Badge variant="default">Active</Badge>;
     }
+    if (status === 'pending') {
+      return <Badge variant="outline">Awaiting Report</Badge>;
+    }
+    return <Badge variant="secondary">{status}</Badge>;
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
-      connected: { variant: 'default', label: 'Connected' },
-      deployed: { variant: 'secondary', label: 'Deployed' },
-      deploying: { variant: 'outline', label: 'Deploying...' },
-      pending: { variant: 'outline', label: 'Pending' },
-      needs_redeploy: { variant: 'destructive', label: 'Needs Redeploy' },
-      error: { variant: 'destructive', label: 'Error' },
-    };
-    const config = variants[status] || variants.pending;
-    return <Badge variant={config.variant}>{config.label}</Badge>;
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return 'Never';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">MT5 Accounts</h1>
-          <p className="text-muted-foreground">Manage your connected MT5 accounts</p>
+          <h1 className="text-3xl font-bold">Investment Accounts</h1>
+          <p className="text-muted-foreground">Manage your trading accounts</p>
         </div>
         <Button className="bg-gradient-hero" onClick={() => setAddDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -191,11 +126,11 @@ const AccountsPage = () => {
           <CardContent className="flex flex-col items-center justify-center py-10">
             <CardTitle className="mb-2">No accounts yet</CardTitle>
             <CardDescription className="text-center mb-4">
-              Add your first MT5 account to start tracking
+              Add your first account to start tracking your investments
             </CardDescription>
             <Button className="bg-gradient-hero" onClick={() => setAddDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Add MT5 Account
+              Add Account
             </Button>
           </CardContent>
         </Card>
@@ -207,22 +142,35 @@ const AccountsPage = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-lg">{account.nickname}</CardTitle>
-                    <CardDescription>
-                      {account.mt5_login} @ {account.mt5_server}
+                    <CardDescription className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      Last report: {formatDate(account.last_report_date)}
                     </CardDescription>
                   </div>
-                  {getStatusBadge(account.status)}
+                  {getStatusBadge(account.status, account.last_report_date)}
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Initial Investment</p>
-                    <p className="font-semibold">${account.initial_investment.toLocaleString()}</p>
+                    <p className="font-semibold">{formatCurrency(account.initial_investment)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Current Balance</p>
+                    <p className="font-semibold">
+                      {account.last_balance ? formatCurrency(account.last_balance) : '-'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Rebate Rate</p>
                     <p className="font-semibold">${account.rebate_rate_per_lot}/lot</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Total Lots</p>
+                    <p className="font-semibold">
+                      {account.total_lots_traded?.toFixed(2) || '0.00'}
+                    </p>
                   </div>
                   <div className="col-span-2">
                     <p className="text-muted-foreground">Account Type</p>
@@ -231,46 +179,15 @@ const AccountsPage = () => {
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t">
-                {(account.status === 'error' || account.status === 'needs_redeploy') ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      disabled
-                    >
-                      Unavailable
-                    </Button>
-                  ) : account.status === 'deploying' ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => checkStatus(account)}
-                      disabled={checkingId === account.id}
-                    >
-                      {checkingId === account.id ? (
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <RefreshCw className="h-4 w-4 mr-1" />
-                      )}
-                      Check Status
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => syncAccount(account)}
-                      disabled={syncingId === account.id || !['connected', 'deployed'].includes(account.status)}
-                    >
-                      {syncingId === account.id ? (
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      ) : (
-                        <RefreshCw className="h-4 w-4 mr-1" />
-                      )}
-                      Sync
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setUploadingAccount(account)}
+                  >
+                    <Upload className="h-4 w-4 mr-1" />
+                    Upload Report
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -302,6 +219,12 @@ const AccountsPage = () => {
       <EditRebateDialog
         account={editingAccount}
         onOpenChange={(open) => !open && setEditingAccount(null)}
+        onSuccess={loadAccounts}
+      />
+
+      <UploadReportDialog
+        account={uploadingAccount}
+        onOpenChange={(open) => !open && setUploadingAccount(null)}
         onSuccess={loadAccounts}
       />
     </div>

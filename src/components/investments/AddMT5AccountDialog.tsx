@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
 interface AddMT5AccountDialogProps {
@@ -15,12 +16,10 @@ interface AddMT5AccountDialogProps {
 }
 
 const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDialogProps) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nickname: '',
-    mt5_login: '',
-    mt5_password: '',
-    mt5_server: '',
     initial_investment: '',
     rebate_rate_per_lot: '',
     is_cent_account: false,
@@ -28,30 +27,34 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error('Please sign in to add an account');
+      return;
+    }
+    
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('connect-mt5-account', {
-        body: {
+      const { error } = await supabase
+        .from('user_mt5_accounts')
+        .insert({
+          user_id: user.id,
           nickname: formData.nickname,
-          mt5_login: formData.mt5_login,
-          mt5_password: formData.mt5_password,
-          mt5_server: formData.mt5_server,
           initial_investment: parseFloat(formData.initial_investment) || 0,
           rebate_rate_per_lot: parseFloat(formData.rebate_rate_per_lot) || 0,
           is_cent_account: formData.is_cent_account,
-        },
-      });
+          status: 'pending',
+          // Optional fields left null
+          mt5_login: null,
+          mt5_password: null,
+          mt5_server: null,
+        });
 
       if (error) throw error;
-      if (data.error) throw new Error(data.error);
 
-      toast.success('Account added! It may take 2-3 minutes to connect.');
+      toast.success('Account added! Upload a report to start tracking.');
       setFormData({
         nickname: '',
-        mt5_login: '',
-        mt5_password: '',
-        mt5_server: '',
         initial_investment: '',
         rebate_rate_per_lot: '',
         is_cent_account: false,
@@ -70,15 +73,15 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add MT5 Account</DialogTitle>
+          <DialogTitle>Add Investment Account</DialogTitle>
           <DialogDescription>
-            Connect your MT5 account using investor password (read-only access)
+            Create a new account to track your trading performance
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="nickname">Nickname</Label>
+            <Label htmlFor="nickname">Account Name</Label>
             <Input
               id="nickname"
               placeholder="e.g., EA Gold Scalper"
@@ -86,44 +89,6 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
               onChange={(e) => setFormData({ ...formData, nickname: e.target.value })}
               required
             />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="mt5_login">MT5 Login</Label>
-              <Input
-                id="mt5_login"
-                placeholder="12345678"
-                value={formData.mt5_login}
-                onChange={(e) => setFormData({ ...formData, mt5_login: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="mt5_server">Server</Label>
-              <Input
-                id="mt5_server"
-                placeholder="XMGlobal-MT5"
-                value={formData.mt5_server}
-                onChange={(e) => setFormData({ ...formData, mt5_server: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="mt5_password">Investor Password</Label>
-            <Input
-              id="mt5_password"
-              type="password"
-              placeholder="Read-only password"
-              value={formData.mt5_password}
-              onChange={(e) => setFormData({ ...formData, mt5_password: e.target.value })}
-              required
-            />
-            <p className="text-xs text-muted-foreground">
-              Use your investor (read-only) password, not your master password
-            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -170,7 +135,7 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
             </Button>
             <Button type="submit" className="bg-gradient-hero" disabled={loading}>
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {loading ? 'Connecting...' : 'Add Account'}
+              {loading ? 'Adding...' : 'Add Account'}
             </Button>
           </div>
         </form>

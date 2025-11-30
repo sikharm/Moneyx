@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronRight, Users, DollarSign, TrendingUp, Wallet } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/utils/mt5ReportParser';
 
 interface UserAccount {
   id: string;
@@ -14,8 +15,8 @@ interface UserAccount {
   is_cent_account: boolean;
   status: string;
   balance: number;
-  profit_loss: number;
-  lots_traded: number;
+  net_profit: number;
+  total_lots: number;
   rebate: number;
 }
 
@@ -26,7 +27,7 @@ interface UserSummary {
   accounts: UserAccount[];
   total_invested: number;
   total_balance: number;
-  total_profit_loss: number;
+  total_net_profit: number;
   total_lots: number;
   total_rebate: number;
 }
@@ -42,7 +43,7 @@ const UserInvestments = () => {
 
   const loadUserInvestments = async () => {
     try {
-      // Get all accounts with user profiles
+      // Get all accounts
       const { data: accounts, error: accountsError } = await supabase
         .from('user_mt5_accounts')
         .select('*');
@@ -58,21 +59,21 @@ const UserInvestments = () => {
 
       if (profilesError) throw profilesError;
 
-      // Get latest earnings for each account
+      // Get latest reports for each account
       const accountIds = accounts?.map(a => a.id) || [];
-      const { data: earnings, error: earningsError } = await supabase
-        .from('user_account_earnings')
+      const { data: reports, error: reportsError } = await supabase
+        .from('investment_reports')
         .select('*')
         .in('account_id', accountIds)
-        .order('synced_at', { ascending: false });
+        .order('report_date', { ascending: false });
 
-      if (earningsError) throw earningsError;
+      if (reportsError) throw reportsError;
 
-      // Map latest earnings per account
-      const latestEarnings = new Map();
-      earnings?.forEach(e => {
-        if (!latestEarnings.has(e.account_id)) {
-          latestEarnings.set(e.account_id, e);
+      // Map latest report per account
+      const latestReports = new Map();
+      reports?.forEach(r => {
+        if (!latestReports.has(r.account_id)) {
+          latestReports.set(r.account_id, r);
         }
       });
 
@@ -82,7 +83,8 @@ const UserInvestments = () => {
 
       accounts?.forEach(account => {
         const profile = profileMap.get(account.user_id);
-        const earning = latestEarnings.get(account.id);
+        const report = latestReports.get(account.id);
+        const rebateRate = Number(account.rebate_rate_per_lot) || 0;
         
         if (!userMap.has(account.user_id)) {
           userMap.set(account.user_id, {
@@ -92,31 +94,32 @@ const UserInvestments = () => {
             accounts: [],
             total_invested: 0,
             total_balance: 0,
-            total_profit_loss: 0,
+            total_net_profit: 0,
             total_lots: 0,
             total_rebate: 0,
           });
         }
 
         const user = userMap.get(account.user_id)!;
+        const totalLots = report ? Number(report.total_lots) : 0;
         const accountData: UserAccount = {
           id: account.id,
           nickname: account.nickname,
           initial_investment: Number(account.initial_investment),
-          rebate_rate_per_lot: Number(account.rebate_rate_per_lot),
+          rebate_rate_per_lot: rebateRate,
           is_cent_account: account.is_cent_account,
-          status: account.status,
-          balance: earning ? Number(earning.balance) : Number(account.initial_investment),
-          profit_loss: earning ? Number(earning.profit_loss) : 0,
-          lots_traded: earning ? Number(earning.lots_traded) : 0,
-          rebate: earning ? Number(earning.rebate) : 0,
+          status: report ? 'active' : account.status,
+          balance: report ? Number(report.balance) : Number(account.initial_investment),
+          net_profit: report ? Number(report.net_profit) : 0,
+          total_lots: totalLots,
+          rebate: totalLots * rebateRate,
         };
 
         user.accounts.push(accountData);
         user.total_invested += accountData.initial_investment;
         user.total_balance += accountData.balance;
-        user.total_profit_loss += accountData.profit_loss;
-        user.total_lots += accountData.lots_traded;
+        user.total_net_profit += accountData.net_profit;
+        user.total_lots += accountData.total_lots;
         user.total_rebate += accountData.rebate;
       });
 
@@ -139,14 +142,6 @@ const UserInvestments = () => {
     setExpandedUsers(newExpanded);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
-
   // Calculate totals
   const totals = users.reduce(
     (acc, u) => ({
@@ -154,18 +149,18 @@ const UserInvestments = () => {
       accounts: acc.accounts + u.accounts.length,
       invested: acc.invested + u.total_invested,
       balance: acc.balance + u.total_balance,
-      profit_loss: acc.profit_loss + u.total_profit_loss,
+      net_profit: acc.net_profit + u.total_net_profit,
       lots: acc.lots + u.total_lots,
       rebate: acc.rebate + u.total_rebate,
     }),
-    { users: 0, accounts: 0, invested: 0, balance: 0, profit_loss: 0, lots: 0, rebate: 0 }
+    { users: 0, accounts: 0, invested: 0, balance: 0, net_profit: 0, lots: 0, rebate: 0 }
   );
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">User Investments</h1>
-        <p className="text-muted-foreground">Overview of all user MT5 accounts and earnings</p>
+        <p className="text-muted-foreground">Overview of all user accounts and earnings</p>
       </div>
 
       {/* Summary Cards */}
@@ -196,8 +191,8 @@ const UserInvestments = () => {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totals.profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {formatCurrency(totals.profit_loss)}
+            <div className={`text-2xl font-bold ${totals.net_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {formatCurrency(totals.net_profit)}
             </div>
             <p className="text-xs text-muted-foreground">{totals.lots.toFixed(2)} lots traded</p>
           </CardContent>
@@ -210,7 +205,7 @@ const UserInvestments = () => {
           <CardContent>
             <div className="text-2xl font-bold text-green-500">{formatCurrency(totals.rebate)}</div>
             <p className="text-xs text-muted-foreground">
-              Net: {formatCurrency(totals.profit_loss + totals.rebate)}
+              Net: {formatCurrency(totals.net_profit + totals.rebate)}
             </p>
           </CardContent>
         </Card>
@@ -247,7 +242,7 @@ const UserInvestments = () => {
               <TableBody>
                 {users.map((user) => {
                   const isExpanded = expandedUsers.has(user.user_id);
-                  const net = user.total_profit_loss + user.total_rebate;
+                  const net = user.total_net_profit + user.total_rebate;
                   
                   return (
                     <>
@@ -275,8 +270,8 @@ const UserInvestments = () => {
                         </TableCell>
                         <TableCell className="text-center">{user.accounts.length}</TableCell>
                         <TableCell className="text-right">{formatCurrency(user.total_invested)}</TableCell>
-                        <TableCell className={`text-right ${user.total_profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {formatCurrency(user.total_profit_loss)}
+                        <TableCell className={`text-right ${user.total_net_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {formatCurrency(user.total_net_profit)}
                         </TableCell>
                         <TableCell className="text-right">{user.total_lots.toFixed(2)}</TableCell>
                         <TableCell className="text-right text-green-500">{formatCurrency(user.total_rebate)}</TableCell>
@@ -285,7 +280,7 @@ const UserInvestments = () => {
                         </TableCell>
                       </TableRow>
                       {isExpanded && user.accounts.map((account) => {
-                        const accountNet = account.profit_loss + account.rebate;
+                        const accountNet = account.net_profit + account.rebate;
                         return (
                           <TableRow key={account.id} className="bg-muted/30">
                             <TableCell></TableCell>
@@ -299,10 +294,10 @@ const UserInvestments = () => {
                             </TableCell>
                             <TableCell className="text-center text-sm">{account.status}</TableCell>
                             <TableCell className="text-right text-sm">{formatCurrency(account.initial_investment)}</TableCell>
-                            <TableCell className={`text-right text-sm ${account.profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                              {formatCurrency(account.profit_loss)}
+                            <TableCell className={`text-right text-sm ${account.net_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                              {formatCurrency(account.net_profit)}
                             </TableCell>
-                            <TableCell className="text-right text-sm">{account.lots_traded.toFixed(2)}</TableCell>
+                            <TableCell className="text-right text-sm">{account.total_lots.toFixed(2)}</TableCell>
                             <TableCell className="text-right text-sm text-green-500">{formatCurrency(account.rebate)}</TableCell>
                             <TableCell className={`text-right text-sm ${accountNet >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                               {formatCurrency(accountNet)}

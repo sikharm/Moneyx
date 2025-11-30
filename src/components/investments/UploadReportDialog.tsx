@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Loader2, Upload, FileText, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -13,6 +14,7 @@ interface MT5Account {
   id: string;
   nickname: string;
   rebate_rate_per_lot: number;
+  is_cent_account: boolean;
 }
 
 interface UploadReportDialogProps {
@@ -85,10 +87,19 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
     
     setLoading(true);
     try {
-      // Calculate rebate
+      // Apply cent account conversion (divide by 100 for monetary values)
+      const divisor = account.is_cent_account ? 100 : 1;
+      
+      const balance = parsedData.balance / divisor;
+      const equity = parsedData.equity / divisor;
+      const grossProfit = parsedData.grossProfit / divisor;
+      const grossLoss = parsedData.grossLoss / divisor;
+      const netProfit = parsedData.netProfit / divisor;
+      
+      // Calculate rebate (lots stay the same)
       const rebate = parsedData.totalLots * account.rebate_rate_per_lot;
 
-      // Insert the report
+      // Insert the report with converted values
       const { error: insertError } = await supabase
         .from('investment_reports')
         .upsert({
@@ -96,11 +107,11 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
           report_date: reportDate,
           report_period_start: parsedData.reportPeriodStart,
           report_period_end: parsedData.reportPeriodEnd,
-          balance: parsedData.balance,
-          equity: parsedData.equity,
-          gross_profit: parsedData.grossProfit,
-          gross_loss: parsedData.grossLoss,
-          net_profit: parsedData.netProfit,
+          balance,
+          equity,
+          gross_profit: grossProfit,
+          gross_loss: grossLoss,
+          net_profit: netProfit,
           total_lots: parsedData.totalLots,
           total_trades: parsedData.totalTrades,
           profit_factor: parsedData.profitFactor,
@@ -116,7 +127,7 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
         .from('user_mt5_accounts')
         .update({
           last_report_date: reportDate,
-          last_balance: parsedData.balance,
+          last_balance: balance,
           total_lots_traded: parsedData.totalLots,
           status: 'active',
         })
@@ -140,8 +151,14 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
     }
   };
 
+  // Preview values with cent conversion applied
+  const divisor = account?.is_cent_account ? 100 : 1;
+  const previewBalance = parsedData ? parsedData.balance / divisor : 0;
+  const previewEquity = parsedData ? parsedData.equity / divisor : 0;
+  const previewNetProfit = parsedData ? parsedData.netProfit / divisor : 0;
+  
   const calculatedRebate = parsedData && account 
-    ? parsedData.totalLots * account.rebate_rate_per_lot 
+    ? parsedData.totalLots * account.rebate_rate_per_lot
     : 0;
 
   return (
@@ -212,23 +229,23 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  Parsed Report Data
+                  Parsed Report Data {account?.is_cent_account && <Badge variant="outline" className="text-xs">Cent → USD</Badge>}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <p className="text-muted-foreground">Balance</p>
-                    <p className="font-semibold">{formatCurrency(parsedData.balance)}</p>
+                    <p className="font-semibold">{formatCurrency(previewBalance)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Equity</p>
-                    <p className="font-semibold">{formatCurrency(parsedData.equity)}</p>
+                    <p className="font-semibold">{formatCurrency(previewEquity)}</p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Net Profit</p>
-                    <p className={`font-semibold ${parsedData.netProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {formatCurrency(parsedData.netProfit)}
+                    <p className={`font-semibold ${previewNetProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {formatCurrency(previewNetProfit)}
                     </p>
                   </div>
                   <div>

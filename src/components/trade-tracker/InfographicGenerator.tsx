@@ -19,8 +19,11 @@ interface AccountData {
   nickname: string;
   currency: string;
   initialBalance: number;
-  periodBalance: number;
-  periodProfitLoss: number;
+  thisWeekBalance: number;
+  thisWeekNetProfit: number;
+  thisWeekPercent: number;
+  allTimeNetProfit: number;
+  allTimePercent: number;
 }
 
 interface InfographicGeneratorProps {
@@ -58,7 +61,13 @@ const InfographicGenerator = ({
     setLoading(true);
     const accountIds = accounts.map(a => a.id);
 
-    // Get period trades only
+    // Get all trades for these accounts (for all-time calculation)
+    const { data: allTrades } = await supabase
+      .from('trades')
+      .select('*')
+      .in('account_id', accountIds);
+
+    // Get period trades only (this week)
     const { data: periodTrades } = await supabase
       .from('trades')
       .select('*')
@@ -67,15 +76,21 @@ const InfographicGenerator = ({
       .lte('trade_date', dateRange.end.toISOString().split('T')[0]);
 
     const data: AccountData[] = accounts.map(account => {
+      const accountAllTrades = (allTrades || []).filter(t => t.account_id === account.id);
       const accountPeriodTrades = (periodTrades || []).filter(t => t.account_id === account.id);
-      const periodPL = accountPeriodTrades.reduce((sum, t) => sum + Number(t.amount), 0);
+      
+      const allTimePL = accountAllTrades.reduce((sum, t) => sum + Number(t.amount), 0);
+      const thisWeekPL = accountPeriodTrades.reduce((sum, t) => sum + Number(t.amount), 0);
 
       return {
         nickname: account.nickname,
         currency: account.currency,
         initialBalance: account.initial_balance,
-        periodBalance: account.initial_balance + periodPL,
-        periodProfitLoss: periodPL,
+        thisWeekBalance: account.initial_balance + thisWeekPL,
+        thisWeekNetProfit: thisWeekPL,
+        thisWeekPercent: account.initial_balance > 0 ? (thisWeekPL / account.initial_balance) * 100 : 0,
+        allTimeNetProfit: allTimePL,
+        allTimePercent: account.initial_balance > 0 ? (allTimePL / account.initial_balance) * 100 : 0,
       };
     });
 
@@ -115,10 +130,16 @@ const InfographicGenerator = ({
     setExporting(false);
   };
 
+  const combinedInitialBalance = accountsData.reduce((sum, a) => sum + a.initialBalance, 0);
+  const combinedThisWeekPL = accountsData.reduce((sum, a) => sum + a.thisWeekNetProfit, 0);
+  const combinedAllTimePL = accountsData.reduce((sum, a) => sum + a.allTimeNetProfit, 0);
+
   const combinedTotal = showCombinedTotal ? {
-    initialBalance: accountsData.reduce((sum, a) => sum + a.initialBalance, 0),
-    periodBalance: accountsData.reduce((sum, a) => sum + a.periodBalance, 0),
-    periodProfitLoss: accountsData.reduce((sum, a) => sum + a.periodProfitLoss, 0),
+    thisWeekBalance: accountsData.reduce((sum, a) => sum + a.thisWeekBalance, 0),
+    thisWeekNetProfit: combinedThisWeekPL,
+    thisWeekPercent: combinedInitialBalance > 0 ? (combinedThisWeekPL / combinedInitialBalance) * 100 : 0,
+    allTimeNetProfit: combinedAllTimePL,
+    allTimePercent: combinedInitialBalance > 0 ? (combinedAllTimePL / combinedInitialBalance) * 100 : 0,
   } : null;
 
   if (loading) {

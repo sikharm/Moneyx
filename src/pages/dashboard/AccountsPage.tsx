@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Edit2, Upload, Calendar } from 'lucide-react';
+import { Plus, Trash2, Edit2, Upload, Calendar, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import AddMT5AccountDialog from '@/components/investments/AddMT5AccountDialog';
 import EditRebateDialog from '@/components/investments/EditRebateDialog';
 import UploadReportDialog from '@/components/investments/UploadReportDialog';
+import AccountSummaryDialog from '@/components/investments/AccountSummaryDialog';
 import { formatCurrency } from '@/utils/mt5ReportParser';
 
 interface MT5Account {
@@ -31,6 +32,7 @@ const AccountsPage = () => {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<MT5Account | null>(null);
   const [uploadingAccount, setUploadingAccount] = useState<MT5Account | null>(null);
+  const [summaryAccount, setSummaryAccount] = useState<MT5Account | null>(null);
 
   useEffect(() => {
     loadAccounts();
@@ -217,6 +219,13 @@ const AccountsPage = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setSummaryAccount(account)}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
                     onClick={() => setUploadingAccount(account)}
                   >
@@ -261,6 +270,11 @@ const AccountsPage = () => {
         account={uploadingAccount}
         onOpenChange={(open) => !open && setUploadingAccount(null)}
         onSuccess={loadAccounts}
+      />
+
+      <AccountSummaryDialog
+        account={summaryAccount}
+        onOpenChange={(open) => !open && setSummaryAccount(null)}
       />
     </div>
   );

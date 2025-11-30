@@ -84,12 +84,19 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
   let totalTrades = 0;
   const processedOrderIds = new Set<string>();
 
+  // Debug logging
+  console.log('=== MT5 Report Parser Debug ===');
+
   // Find all tables and look for the Deals section
   const tables = doc.querySelectorAll('table');
   let dealsTable: Element | null = null;
+  let dealsTableMethod = '';
+
+  console.log(`Found ${tables.length} tables in document`);
 
   // Method 1: Look for a row header containing "Deals"
-  for (const table of tables) {
+  for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
+    const table = tables[tableIdx];
     const rows = table.querySelectorAll('tr');
     for (const row of rows) {
       const headerText = row.textContent?.trim() || '';
@@ -98,6 +105,8 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
           (headerText.toLowerCase().includes('deals') && row.querySelector('b'))) {
         // Found the Deals header, the table containing this or the next table is our target
         dealsTable = table;
+        dealsTableMethod = `Method 1 (header text) - Table ${tableIdx}`;
+        console.log(`Found Deals table via ${dealsTableMethod}`);
         break;
       }
     }
@@ -106,14 +115,40 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
 
   // Method 2: If no explicit Deals header found, look for table with Deal column header
   if (!dealsTable) {
-    for (const table of tables) {
+    for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
+      const table = tables[tableIdx];
       const headerRow = table.querySelector('tr');
       if (headerRow) {
         const headerText = headerRow.textContent?.toLowerCase() || '';
         // Deals table typically has columns: Time, Deal, Symbol, Type, Direction, Volume, Price, Order
         if (headerText.includes('deal') && headerText.includes('direction') && headerText.includes('volume')) {
           dealsTable = table;
+          dealsTableMethod = `Method 2 (column headers) - Table ${tableIdx}`;
+          console.log(`Found Deals table via ${dealsTableMethod}`);
           break;
+        }
+      }
+    }
+  }
+
+  // Method 3: Look for table with "Time" and "Volume" and has "out" in rows
+  if (!dealsTable) {
+    for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
+      const table = tables[tableIdx];
+      const firstRow = table.querySelector('tr');
+      if (firstRow) {
+        const headerText = firstRow.textContent?.toLowerCase() || '';
+        if (headerText.includes('time') && headerText.includes('volume')) {
+          // Check if this table has "out" direction rows
+          const hasOutRows = Array.from(table.querySelectorAll('td')).some(
+            td => td.textContent?.trim().toLowerCase() === 'out'
+          );
+          if (hasOutRows) {
+            dealsTable = table;
+            dealsTableMethod = `Method 3 (time+volume+out) - Table ${tableIdx}`;
+            console.log(`Found Deals table via ${dealsTableMethod}`);
+            break;
+          }
         }
       }
     }
@@ -122,6 +157,8 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
   // Parse the Deals table
   if (dealsTable) {
     const rows = dealsTable.querySelectorAll('tr');
+    console.log(`Deals table has ${rows.length} rows`);
+
     let headerIndexes = {
       direction: -1,
       volume: -1,
@@ -138,12 +175,15 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
         headerIndexes.direction = cellTexts.findIndex(t => t === 'direction');
         headerIndexes.volume = cellTexts.findIndex(t => t === 'volume');
         headerIndexes.order = cellTexts.findIndex(t => t === 'order');
+        console.log('Header indexes found:', headerIndexes);
+        console.log('Header row:', cellTexts.join(' | '));
         break;
       }
     }
 
     // If we found the column indexes, parse data rows
     if (headerIndexes.direction >= 0 && headerIndexes.volume >= 0) {
+      let rowCount = 0;
       for (const row of rows) {
         const cells = row.querySelectorAll('td');
         if (cells.length <= headerIndexes.direction || cells.length <= headerIndexes.volume) continue;
@@ -156,8 +196,10 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
 
         // Only count "out" direction (closed trades)
         if (direction === 'out') {
+          rowCount++;
           // Skip if we already processed this order (prevent duplicates)
           if (orderId && processedOrderIds.has(orderId)) {
+            console.log(`Row ${rowCount}: SKIPPED - duplicate order ${orderId}`);
             continue;
           }
           if (orderId) {
@@ -169,14 +211,22 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
           if (volume > 0) {
             totalLots += volume;
             totalTrades++;
+            console.log(`Row ${rowCount}: Direction=${direction}, Volume=${volumeText} (${volume}), Order=${orderId} - COUNTED`);
+          } else {
+            console.log(`Row ${rowCount}: Direction=${direction}, Volume=${volumeText} - SKIPPED (zero volume)`);
           }
         }
       }
+    } else {
+      console.log('Could not find header indexes - direction or volume column missing');
     }
+  } else {
+    console.log('No Deals table found using any method');
   }
 
   // Fallback: If no Deals table found or no data parsed, use old method but be more careful
   if (totalLots === 0 && totalTrades === 0) {
+    console.log('Using fallback method to find trades...');
     const rows = doc.querySelectorAll('tr');
     for (const row of rows) {
       const cells = row.querySelectorAll('td');
@@ -198,6 +248,7 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
             if (volume > 0 && volume <= 100) {
               totalLots += volume;
               totalTrades++;
+              console.log(`Fallback: Found trade with volume ${volume}`);
               break; // Only count once per row
             }
           }
@@ -205,6 +256,8 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
       }
     }
   }
+
+  console.log(`=== Final Result: ${totalTrades} trades, ${totalLots} lots ===`);
 
   // Convert cent lots to standard lots if this is a cent account
   // Cent accounts have lots that are 100x smaller (1 cent lot = 0.01 standard lot)

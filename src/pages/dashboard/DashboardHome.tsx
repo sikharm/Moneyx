@@ -244,11 +244,12 @@ const DashboardHome = () => {
                               {account.is_cent_account ? 'Cent' : 'Standard'}
                             </Badge>
                           </div>
-                          <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-muted-foreground">
                             <span>Balance: {formatCurrency(account.last_balance || account.initial_investment)}</span>
                             <span className={pl >= 0 ? 'text-green-500' : 'text-red-500'}>
                               P/L: {formatCurrency(pl)}
                             </span>
+                            <span>Lots: {(account.total_lots_traded || 0).toFixed(2)}</span>
                             <span className="text-green-500">Rebate: {formatCurrency(rebate)}</span>
                           </div>
                         </div>

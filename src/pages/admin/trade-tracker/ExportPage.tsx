@@ -11,7 +11,7 @@ import { format, startOfDay, startOfWeek, startOfMonth, startOfYear, endOfDay } 
 import { cn } from '@/lib/utils';
 import InfographicGenerator from '@/components/trade-tracker/InfographicGenerator';
 
-type PeriodType = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'all' | 'custom';
+export type PeriodType = 'daily' | 'weekly' | 'monthly' | 'yearly' | 'all' | 'custom';
 export type ExportLanguage = 'en' | 'lo' | 'th';
 
 interface Account {
@@ -267,6 +267,7 @@ const ExportPage = () => {
                 periodLabel={getPeriodLabel()}
                 showCombinedTotal={showCombinedTotal && selectedAccounts.length > 1}
                 language={language}
+                periodType={period}
               />
             </div>
           </div>

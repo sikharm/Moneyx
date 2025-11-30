@@ -2,11 +2,24 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wallet, TrendingUp, DollarSign, Plus } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Wallet, TrendingUp, DollarSign, Plus, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/mt5ReportParser';
+import AccountSummaryDialog from '@/components/investments/AccountSummaryDialog';
+
+interface MT5Account {
+  id: string;
+  nickname: string;
+  initial_investment: number;
+  rebate_rate_per_lot: number;
+  is_cent_account: boolean;
+  status: string;
+  last_balance: number | null;
+  total_lots_traded: number | null;
+}
 
 interface AccountSummary {
   total_accounts: number;
@@ -25,7 +38,9 @@ const DashboardHome = () => {
     total_rebate: 0,
     total_lots: 0,
   });
+  const [accounts, setAccounts] = useState<MT5Account[]>([]);
   const [loading, setLoading] = useState(true);
+  const [summaryAccount, setSummaryAccount] = useState<MT5Account | null>(null);
 
   useEffect(() => {
     loadSummary();
@@ -35,21 +50,25 @@ const DashboardHome = () => {
     if (!user) return;
     
     try {
-      // Get accounts
-      const { data: accounts, error: accountsError } = await supabase
+      // Get accounts with full data
+      const { data: accountsData, error: accountsError } = await supabase
         .from('user_mt5_accounts')
-        .select('id, initial_investment, rebate_rate_per_lot')
-        .eq('user_id', user.id);
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (accountsError) throw accountsError;
 
-      if (!accounts || accounts.length === 0) {
+      if (!accountsData || accountsData.length === 0) {
+        setAccounts([]);
         setLoading(false);
         return;
       }
 
+      setAccounts(accountsData);
+
       // Get latest report for each account
-      const accountIds = accounts.map(a => a.id);
+      const accountIds = accountsData.map(a => a.id);
       const { data: reports, error: reportsError } = await supabase
         .from('investment_reports')
         .select('*')
@@ -67,7 +86,7 @@ const DashboardHome = () => {
       });
 
       // Create rebate rate map
-      const rebateMap = new Map(accounts.map(a => [a.id, a.rebate_rate_per_lot]));
+      const rebateMap = new Map(accountsData.map(a => [a.id, a.rebate_rate_per_lot]));
 
       let combined_balance = 0;
       let total_net_profit = 0;
@@ -83,13 +102,13 @@ const DashboardHome = () => {
 
       // If no reports yet, use initial investments
       if (latestReports.size === 0) {
-        accounts.forEach(a => {
+        accountsData.forEach(a => {
           combined_balance += Number(a.initial_investment) || 0;
         });
       }
 
       setSummary({
-        total_accounts: accounts.length,
+        total_accounts: accountsData.length,
         combined_balance,
         total_net_profit,
         total_rebate,
@@ -185,7 +204,7 @@ const DashboardHome = () => {
             </Card>
           </div>
 
-          {summary.total_accounts === 0 && (
+          {summary.total_accounts === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-10">
                 <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
@@ -201,9 +220,60 @@ const DashboardHome = () => {
                 </Link>
               </CardContent>
             </Card>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Your Accounts</CardTitle>
+                <CardDescription>Click summary to view detailed performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {accounts.map((account) => {
+                    const pl = (account.last_balance || account.initial_investment) - account.initial_investment;
+                    const rebate = (account.total_lots_traded || 0) * account.rebate_rate_per_lot;
+                    
+                    return (
+                      <div 
+                        key={account.id}
+                        className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{account.nickname}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {account.is_cent_account ? 'Cent' : 'Standard'}
+                            </Badge>
+                          </div>
+                          <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+                            <span>Balance: {formatCurrency(account.last_balance || account.initial_investment)}</span>
+                            <span className={pl >= 0 ? 'text-green-500' : 'text-red-500'}>
+                              P/L: {formatCurrency(pl)}
+                            </span>
+                            <span className="text-green-500">Rebate: {formatCurrency(rebate)}</span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSummaryAccount(account)}
+                        >
+                          <BarChart3 className="h-4 w-4 mr-1" />
+                          Summary
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
           )}
         </>
       )}
+
+      <AccountSummaryDialog
+        account={summaryAccount}
+        onOpenChange={(open) => !open && setSummaryAccount(null)}
+      />
     </div>
   );
 };

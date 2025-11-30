@@ -121,10 +121,12 @@ const SettingsDropdown = ({ showViewSite = false, onNavigate }: SettingsDropdown
               <User className="h-4 w-4 mr-2" />
               <span>{t('nav.profile') === 'nav.profile' ? "My Profile" : t('nav.profile')}</span>
             </DropdownMenuItem>
+            {/* My Investments disabled until further notice
             <DropdownMenuItem onClick={handleInvestmentsClick} className="cursor-pointer">
               <Wallet className="h-4 w-4 mr-2" />
               <span>My Investments</span>
             </DropdownMenuItem>
+            */}
             {isAdmin && !showViewSite && (
               <DropdownMenuItem onClick={handleAdminClick} className="cursor-pointer">
                 <Shield className="h-4 w-4 mr-2" />

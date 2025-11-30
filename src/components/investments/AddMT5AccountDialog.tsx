@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,7 +21,6 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
     nickname: '',
     initial_investment: '',
     rebate_rate_per_lot: '',
-    is_cent_account: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,9 +40,8 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
           nickname: formData.nickname,
           initial_investment: parseFloat(formData.initial_investment) || 0,
           rebate_rate_per_lot: parseFloat(formData.rebate_rate_per_lot) || 0,
-          is_cent_account: formData.is_cent_account,
+          is_cent_account: true, // All accounts are cent accounts
           status: 'pending',
-          // Optional fields left null
           mt5_login: null,
           mt5_password: null,
           mt5_server: null,
@@ -57,7 +54,6 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
         nickname: '',
         initial_investment: '',
         rebate_rate_per_lot: '',
-        is_cent_account: false,
       });
       onOpenChange(false);
       onSuccess();
@@ -118,16 +114,9 @@ const AddMT5AccountDialog = ({ open, onOpenChange, onSuccess }: AddMT5AccountDia
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="is_cent_account"
-              checked={formData.is_cent_account}
-              onCheckedChange={(checked) => setFormData({ ...formData, is_cent_account: checked as boolean })}
-            />
-            <Label htmlFor="is_cent_account" className="text-sm font-normal">
-              This is a cent account (values will be converted to USD)
-            </Label>
-          </div>
+          <p className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+            All accounts are set as Cent accounts. Values from reports will be automatically converted to USD.
+          </p>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -1,11 +1,11 @@
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, FileText, Languages, Users } from 'lucide-react';
+import { LayoutDashboard, Wallet, TrendingUp } from 'lucide-react';
 import SettingsDropdown from '@/components/SettingsDropdown';
 
-const AdminLayout = () => {
-  const { user, isAdmin, loading, signOut } = useAuth();
+const DashboardLayout = () => {
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -16,25 +16,24 @@ const AdminLayout = () => {
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user) {
     return <Navigate to="/auth" replace />;
   }
 
   const navItems = [
-    { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/admin/files', icon: FileText, label: 'File Management' },
-    { to: '/admin/translations', icon: Languages, label: 'Translations' },
-    { to: '/admin/user-investments', icon: Users, label: 'User Investments' },
+    { to: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
+    { to: '/dashboard/accounts', icon: Wallet, label: 'MT5 Accounts' },
+    { to: '/dashboard/earnings', icon: TrendingUp, label: 'Earnings' },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Admin Header */}
-      <header className="border-b bg-card sticky top-0 z-50">
+    <div className="min-h-screen bg-background pt-16">
+      {/* Dashboard Header */}
+      <header className="border-b bg-card sticky top-16 z-40">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-6">
-            <Link to="/admin" className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
-              MoneyX Admin
+            <Link to="/dashboard" className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
+              My Investments
             </Link>
             <nav className="hidden md:flex gap-2">
               {navItems.map((item) => (
@@ -51,11 +50,11 @@ const AdminLayout = () => {
               ))}
             </nav>
           </div>
-          <SettingsDropdown showViewSite={true} />
+          <SettingsDropdown />
         </div>
       </header>
 
-      {/* Admin Content */}
+      {/* Dashboard Content */}
       <main className="container mx-auto px-4 py-8">
         <Outlet />
       </main>
@@ -63,4 +62,4 @@ const AdminLayout = () => {
   );
 };
 
-export default AdminLayout;
+export default DashboardLayout;

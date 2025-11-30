@@ -5,3 +5,12 @@ verify_jwt = true
 
 [functions.get-expected-translations]
 verify_jwt = true
+
+[functions.connect-mt5-account]
+verify_jwt = true
+
+[functions.sync-mt5-data]
+verify_jwt = true
+
+[functions.check-mt5-status]
+verify_jwt = true

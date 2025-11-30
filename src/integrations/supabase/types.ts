@@ -333,6 +333,59 @@ export type Database = {
           },
         ]
       }
+      user_account_earnings: {
+        Row: {
+          account_id: string
+          balance: number
+          created_at: string
+          equity: number
+          id: string
+          lots_traded: number
+          period_end: string
+          period_start: string
+          period_type: string
+          profit_loss: number
+          rebate: number
+          synced_at: string
+        }
+        Insert: {
+          account_id: string
+          balance?: number
+          created_at?: string
+          equity?: number
+          id?: string
+          lots_traded?: number
+          period_end: string
+          period_start: string
+          period_type?: string
+          profit_loss?: number
+          rebate?: number
+          synced_at?: string
+        }
+        Update: {
+          account_id?: string
+          balance?: number
+          created_at?: string
+          equity?: number
+          id?: string
+          lots_traded?: number
+          period_end?: string
+          period_start?: string
+          period_type?: string
+          profit_loss?: number
+          rebate?: number
+          synced_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_account_earnings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_mt5_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_downloads: {
         Row: {
           downloaded_at: string | null
@@ -361,6 +414,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_mt5_accounts: {
+        Row: {
+          created_at: string
+          id: string
+          initial_investment: number
+          is_cent_account: boolean
+          metaapi_account_id: string | null
+          mt5_login: string
+          mt5_password: string
+          mt5_server: string
+          nickname: string
+          rebate_rate_per_lot: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          initial_investment?: number
+          is_cent_account?: boolean
+          metaapi_account_id?: string | null
+          mt5_login: string
+          mt5_password: string
+          mt5_server: string
+          nickname: string
+          rebate_rate_per_lot?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          initial_investment?: number
+          is_cent_account?: boolean
+          metaapi_account_id?: string | null
+          mt5_login?: string
+          mt5_password?: string
+          mt5_server?: string
+          nickname?: string
+          rebate_rate_per_lot?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

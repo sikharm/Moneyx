@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, RefreshCw, Trash2, Edit2, Loader2 } from 'lucide-react';
+import { Plus, RefreshCw, Trash2, Edit2, Loader2, RotateCcw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -30,6 +30,7 @@ const AccountsPage = () => {
   const [editingAccount, setEditingAccount] = useState<MT5Account | null>(null);
   const [syncingId, setSyncingId] = useState<string | null>(null);
   const [checkingId, setCheckingId] = useState<string | null>(null);
+  const [redeployingId, setRedeployingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadAccounts();
@@ -116,12 +117,32 @@ const AccountsPage = () => {
     }
   };
 
+  const redeployAccount = async (account: MT5Account) => {
+    setRedeployingId(account.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('redeploy-mt5-account', {
+        body: { account_id: account.id },
+      });
+
+      if (error) throw error;
+      
+      toast.success('Redeploy initiated. Check status in 2-3 minutes.');
+      await loadAccounts();
+    } catch (error) {
+      console.error('Redeploy error:', error);
+      toast.error('Failed to redeploy account');
+    } finally {
+      setRedeployingId(null);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
       connected: { variant: 'default', label: 'Connected' },
       deployed: { variant: 'secondary', label: 'Deployed' },
       deploying: { variant: 'outline', label: 'Deploying...' },
       pending: { variant: 'outline', label: 'Pending' },
+      needs_redeploy: { variant: 'destructive', label: 'Needs Redeploy' },
       error: { variant: 'destructive', label: 'Error' },
     };
     const config = variants[status] || variants.pending;
@@ -200,7 +221,22 @@ const AccountsPage = () => {
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t">
-                  {account.status === 'deploying' ? (
+                  {(account.status === 'error' || account.status === 'needs_redeploy') ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => redeployAccount(account)}
+                      disabled={redeployingId === account.id}
+                    >
+                      {redeployingId === account.id ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-4 w-4 mr-1" />
+                      )}
+                      Redeploy
+                    </Button>
+                  ) : account.status === 'deploying' ? (
                     <Button
                       variant="outline"
                       size="sm"
@@ -221,7 +257,7 @@ const AccountsPage = () => {
                       size="sm"
                       className="flex-1"
                       onClick={() => syncAccount(account)}
-                      disabled={syncingId === account.id || account.status !== 'connected'}
+                      disabled={syncingId === account.id || !['connected', 'deployed'].includes(account.status)}
                     >
                       {syncingId === account.id ? (
                         <Loader2 className="h-4 w-4 mr-1 animate-spin" />

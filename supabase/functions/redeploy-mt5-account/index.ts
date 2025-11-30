@@ -28,6 +28,7 @@ serve(async (req) => {
     ).auth.getUser(token);
 
     if (userError || !user) {
+      console.error('Auth error:', userError);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -35,6 +36,7 @@ serve(async (req) => {
     }
 
     const { account_id } = await req.json();
+    console.log('Redeploying account:', account_id);
 
     // Get account from database
     const { data: account, error: accountError } = await supabaseClient
@@ -44,50 +46,67 @@ serve(async (req) => {
       .single();
 
     if (accountError || !account) {
+      console.error('Account not found:', accountError);
       return new Response(JSON.stringify({ error: 'Account not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Check account deployment status
-    const statusResponse = await fetch(
-      `https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${account.metaapi_account_id}`,
+    // Verify user owns this account
+    if (account.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!account.metaapi_account_id) {
+      return new Response(JSON.stringify({ error: 'No MetaAPI account linked' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Call MetaAPI deploy endpoint
+    console.log('Calling MetaAPI deploy for:', account.metaapi_account_id);
+    const deployResponse = await fetch(
+      `https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${account.metaapi_account_id}/deploy`,
       {
+        method: 'POST',
         headers: { 'auth-token': metaapiToken },
       }
     );
 
-    const statusData = await statusResponse.json();
-    console.log('Account status:', statusData.state, statusData.connectionStatus);
-
-    let newStatus = account.status;
-    if (statusData.state === 'DEPLOYED' && statusData.connectionStatus === 'CONNECTED') {
-      newStatus = 'connected';
-    } else if (statusData.state === 'DEPLOYED') {
-      newStatus = 'deployed';
-    } else if (statusData.state === 'DEPLOYING') {
-      newStatus = 'deploying';
-    } else if (statusData.state === 'UNDEPLOYING' || statusData.state === 'UNDEPLOYED') {
-      newStatus = 'needs_redeploy';
-      console.log('Account needs redeploy, state:', statusData.state);
-    } else {
-      newStatus = 'error';
-      console.log('Unknown state:', statusData.state);
+    if (!deployResponse.ok) {
+      const errorText = await deployResponse.text();
+      console.error('MetaAPI deploy error:', deployResponse.status, errorText);
+      
+      // If already deployed, that's fine
+      if (deployResponse.status === 409) {
+        console.log('Account already deployed, checking status...');
+      } else {
+        return new Response(JSON.stringify({ 
+          error: 'Failed to redeploy account',
+          details: errorText 
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
+
+    console.log('Deploy request sent, updating status to deploying');
 
     // Update status in database
-    if (newStatus !== account.status) {
-      await supabaseClient
-        .from('user_mt5_accounts')
-        .update({ status: newStatus })
-        .eq('id', account_id);
-    }
+    await supabaseClient
+      .from('user_mt5_accounts')
+      .update({ status: 'deploying' })
+      .eq('id', account_id);
 
     return new Response(JSON.stringify({
-      status: newStatus,
-      state: statusData.state,
-      connectionStatus: statusData.connectionStatus,
+      success: true,
+      message: 'Redeploy initiated. Please check status in a few minutes.',
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

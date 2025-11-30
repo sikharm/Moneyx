@@ -16,6 +16,20 @@ export interface ParseOptions {
   isCentAccount?: boolean;
 }
 
+/**
+ * MT5 Report Parser - Unified Core Logic
+ * 
+ * PRIMARY METHOD (MoneyX M1 style):
+ * - Look for "Deals" table with "Direction" column
+ * - Count rows where direction = "out" (closing trades)
+ * - Sum the "Volume" column for total lots
+ * - Track by Order ID to avoid duplicates
+ * 
+ * FALLBACK METHOD:
+ * - If no Deals table found, look for "Positions" table
+ * - Each row with valid Position ID = 1 trade
+ * - Sum Volume column for total lots
+ */
 export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}): ParsedReportData => {
   const { isCentAccount = false } = options;
   const parser = new DOMParser();
@@ -29,7 +43,6 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
     for (let i = 0; i < allTds.length; i++) {
       const td = allTds[i];
       if (td.textContent?.trim().toLowerCase().includes(label.toLowerCase())) {
-        // Look for the next cell with a bold value
         let sibling = td.nextElementSibling;
         while (sibling) {
           const boldEl = sibling.querySelector('b');
@@ -49,25 +62,18 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
   // Parse numeric value (handles spaces as thousands separators)
   const parseNumber = (value: string | null): number => {
     if (!value) return 0;
-    // Remove spaces, replace comma with dot for decimals
     const cleaned = value.replace(/\s/g, '').replace(',', '.');
     const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
   };
 
-  // Extract main values
-  const balanceStr = extractValue('Balance:');
-  const equityStr = extractValue('Equity:');
-  const grossProfitStr = extractValue('Gross Profit:');
-  const grossLossStr = extractValue('Gross Loss:');
-  const profitFactorStr = extractValue('Profit Factor:');
-
-  const balance = parseNumber(balanceStr);
-  const equity = parseNumber(equityStr);
-  const grossProfit = parseNumber(grossProfitStr);
-  const grossLoss = parseNumber(grossLossStr);
-  const netProfit = grossProfit + grossLoss; // grossLoss is usually negative
-  const profitFactor = parseNumber(profitFactorStr) || null;
+  // Extract main financial values
+  const balance = parseNumber(extractValue('Balance:'));
+  const equity = parseNumber(extractValue('Equity:'));
+  const grossProfit = parseNumber(extractValue('Gross Profit:'));
+  const grossLoss = parseNumber(extractValue('Gross Loss:'));
+  const netProfit = grossProfit + grossLoss;
+  const profitFactor = parseNumber(extractValue('Profit Factor:')) || null;
 
   // Store raw summary
   rawSummary.balance = balance;
@@ -77,198 +83,149 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
   rawSummary.netProfit = netProfit;
   if (profitFactor !== null) rawSummary.profitFactor = profitFactor;
 
-  // Find and parse trading data from MT5 reports
-  // MT5 reports can have different formats:
-  // Format A: Deals table with "direction" column (in/out) - count "out" rows
-  // Format B: Positions table with "position", "symbol", "type", "volume", "profit" columns
+  // ============================================
+  // CORE TRADING DATA PARSING - UNIFIED LOGIC
+  // ============================================
   let totalLots = 0;
   let totalTrades = 0;
-  const processedPositionIds = new Set<string>();
+  const processedIds = new Set<string>();
 
-  // Debug logging
-  console.log('=== MT5 Report Parser Debug ===');
+  console.log('=== MT5 Report Parser (Unified Core Logic) ===');
 
   const tables = doc.querySelectorAll('table');
-  console.log(`Found ${tables.length} tables in document`);
+  console.log(`Found ${tables.length} tables`);
 
-  // Try Format A: Look for Deals table with "direction" column
+  // STEP 1: Find Deals table with "Direction" column (PRIMARY METHOD)
   let dealsTable: Element | null = null;
-  let useDealsFormat = false;
-
-  for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
-    const table = tables[tableIdx];
+  
+  for (const table of tables) {
     const headerRow = table.querySelector('tr');
     if (headerRow) {
       const headerText = headerRow.textContent?.toLowerCase() || '';
-      // Deals table has: Time, Deal, Symbol, Type, Direction, Volume, Price, Order
       if (headerText.includes('direction') && headerText.includes('volume')) {
         dealsTable = table;
-        useDealsFormat = true;
-        console.log(`Found Deals table (Format A) at Table ${tableIdx}`);
+        console.log('✓ Found Deals table (Primary Method)');
         break;
       }
     }
   }
 
-  // Parse Deals format (Format A)
-  if (useDealsFormat && dealsTable) {
+  // STEP 2: Parse using PRIMARY METHOD (Deals table with Direction)
+  if (dealsTable) {
     const rows = dealsTable.querySelectorAll('tr');
-    console.log(`Deals table has ${rows.length} rows`);
+    let directionIdx = -1;
+    let volumeIdx = -1;
+    let orderIdx = -1;
 
-    let headerIndexes = { direction: -1, volume: -1, order: -1 };
-
+    // Find header indexes
     for (const row of rows) {
       const cells = row.querySelectorAll('td, th');
       const cellTexts = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '');
       
       if (cellTexts.includes('direction')) {
-        headerIndexes.direction = cellTexts.findIndex(t => t === 'direction');
-        headerIndexes.volume = cellTexts.findIndex(t => t === 'volume');
-        headerIndexes.order = cellTexts.findIndex(t => t === 'order');
-        console.log('Format A - Header indexes:', headerIndexes);
+        directionIdx = cellTexts.findIndex(t => t === 'direction');
+        volumeIdx = cellTexts.findIndex(t => t === 'volume');
+        orderIdx = cellTexts.findIndex(t => t === 'order');
+        console.log(`Header indexes - Direction: ${directionIdx}, Volume: ${volumeIdx}, Order: ${orderIdx}`);
         break;
       }
     }
 
-    if (headerIndexes.direction >= 0 && headerIndexes.volume >= 0) {
+    // Parse data rows - count "out" directions only
+    if (directionIdx >= 0 && volumeIdx >= 0) {
       for (const row of rows) {
         const cells = row.querySelectorAll('td');
-        if (cells.length <= Math.max(headerIndexes.direction, headerIndexes.volume)) continue;
+        if (cells.length <= Math.max(directionIdx, volumeIdx)) continue;
 
-        const direction = cells[headerIndexes.direction]?.textContent?.trim().toLowerCase();
-        const volumeText = cells[headerIndexes.volume]?.textContent?.trim() || '';
-        const orderId = headerIndexes.order >= 0 ? cells[headerIndexes.order]?.textContent?.trim() || '' : '';
+        const direction = cells[directionIdx]?.textContent?.trim().toLowerCase();
+        const volumeText = cells[volumeIdx]?.textContent?.trim() || '';
+        const orderId = orderIdx >= 0 ? cells[orderIdx]?.textContent?.trim() || '' : '';
 
+        // Only count "out" trades (closing trades)
         if (direction === 'out') {
-          if (orderId && processedPositionIds.has(orderId)) continue;
-          if (orderId) processedPositionIds.add(orderId);
+          // Skip duplicates by Order ID
+          if (orderId && processedIds.has(orderId)) continue;
+          if (orderId) processedIds.add(orderId);
 
           const volume = parseNumber(volumeText);
           if (volume > 0) {
             totalLots += volume;
             totalTrades++;
-            console.log(`Format A: Volume=${volume}, Order=${orderId}`);
           }
         }
       }
+      console.log(`Primary Method Result: ${totalTrades} trades, ${totalLots.toFixed(2)} lots`);
     }
   }
 
-  // Try Format B: Positions table (no direction column)
-  // Header: Time | Position | Symbol | Type | Volume | Price | S / L | T / P | Time | Price | Commission | Swap | Profit
+  // STEP 3: FALLBACK - Look for Positions table if Deals table not found/parsed
   if (totalLots === 0 && totalTrades === 0) {
-    console.log('Trying Format B (Positions table)...');
+    console.log('Primary method found no data, trying Fallback (Positions table)...');
     
-    for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
-      const table = tables[tableIdx];
+    for (const table of tables) {
       const rows = table.querySelectorAll('tr');
-      
-      let headerIndexes = { position: -1, volume: -1, profit: -1, symbol: -1 };
+      let positionIdx = -1;
+      let volumeIdx = -1;
       let headerRowIdx = -1;
 
-      // Find header row
-      for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
-        const cells = rows[rowIdx].querySelectorAll('td, th');
+      // Find header with "position" and "volume"
+      for (let i = 0; i < rows.length; i++) {
+        const cells = rows[i].querySelectorAll('td, th');
         const cellTexts = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '');
         
-        // Look for Positions table header
-        if (cellTexts.includes('position') && cellTexts.includes('volume') && cellTexts.includes('profit')) {
-          headerIndexes.position = cellTexts.findIndex(t => t === 'position');
-          headerIndexes.volume = cellTexts.findIndex(t => t === 'volume');
-          headerIndexes.profit = cellTexts.lastIndexOf('profit'); // Use last "profit" column
-          headerIndexes.symbol = cellTexts.findIndex(t => t === 'symbol');
-          headerRowIdx = rowIdx;
-          console.log(`Format B - Found header at Table ${tableIdx}, Row ${rowIdx}:`, headerIndexes);
-          console.log('Header:', cellTexts.join(' | '));
+        if (cellTexts.includes('position') && cellTexts.includes('volume')) {
+          positionIdx = cellTexts.findIndex(t => t === 'position');
+          volumeIdx = cellTexts.findIndex(t => t === 'volume');
+          headerRowIdx = i;
+          console.log(`Found Positions table header at row ${i}`);
           break;
         }
       }
 
-      if (headerRowIdx >= 0 && headerIndexes.volume >= 0) {
-        // Parse data rows after header
-        for (let rowIdx = headerRowIdx + 1; rowIdx < rows.length; rowIdx++) {
-          const cells = rows[rowIdx].querySelectorAll('td');
-          if (cells.length < headerIndexes.volume + 1) continue;
+      if (headerRowIdx >= 0 && volumeIdx >= 0) {
+        // Parse data rows
+        for (let i = headerRowIdx + 1; i < rows.length; i++) {
+          const cells = rows[i].querySelectorAll('td');
+          if (cells.length < volumeIdx + 1) continue;
 
-          const positionId = cells[headerIndexes.position]?.textContent?.trim() || '';
-          const volumeText = cells[headerIndexes.volume]?.textContent?.trim() || '';
-          const profitText = headerIndexes.profit >= 0 ? cells[headerIndexes.profit]?.textContent?.trim() || '' : '';
-          const symbol = headerIndexes.symbol >= 0 ? cells[headerIndexes.symbol]?.textContent?.trim() || '' : '';
+          const positionId = cells[positionIdx]?.textContent?.trim() || '';
+          const volumeText = cells[volumeIdx]?.textContent?.trim() || '';
 
-          // Skip empty rows, header-like rows, and summary rows
-          if (!positionId || positionId.toLowerCase() === 'position') continue;
-          if (positionId.toLowerCase().includes('total') || positionId.toLowerCase().includes('balance')) continue;
-          
-          // Must be a numeric position ID
-          if (!/^\d+$/.test(positionId)) continue;
-
-          // Skip if already processed
-          if (processedPositionIds.has(positionId)) continue;
-          processedPositionIds.add(positionId);
+          // Skip invalid rows
+          if (!positionId || !/^\d+$/.test(positionId)) continue;
+          if (processedIds.has(positionId)) continue;
+          processedIds.add(positionId);
 
           const volume = parseNumber(volumeText);
-          const profit = parseNumber(profitText);
-
-          // Valid trade: has volume and has a profit value (can be 0, positive, or negative)
           if (volume > 0) {
             totalLots += volume;
             totalTrades++;
-            console.log(`Format B: Position=${positionId}, Symbol=${symbol}, Volume=${volume}, Profit=${profit}`);
           }
         }
 
         if (totalTrades > 0) {
-          console.log(`Format B parsed ${totalTrades} trades from Table ${tableIdx}`);
+          console.log(`Fallback Result: ${totalTrades} trades, ${totalLots.toFixed(2)} lots`);
           break;
         }
       }
     }
   }
 
-  // Fallback: Look for "out" direction in any table
-  if (totalLots === 0 && totalTrades === 0) {
-    console.log('Using fallback method...');
-    const rows = doc.querySelectorAll('tr');
-    for (const row of rows) {
-      const cells = row.querySelectorAll('td');
-      if (cells.length < 6) continue;
+  console.log(`=== Final: ${totalTrades} trades, ${totalLots.toFixed(2)} lots ===`);
 
-      const cellTexts = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '');
-      const directionIdx = cellTexts.findIndex(t => t === 'out');
-      
-      if (directionIdx >= 0) {
-        for (let i = Math.max(0, directionIdx - 2); i <= Math.min(cells.length - 1, directionIdx + 2); i++) {
-          const text = cells[i]?.textContent?.trim() || '';
-          if (/^\d+\.\d{2}$/.test(text)) {
-            const volume = parseFloat(text);
-            if (volume > 0 && volume <= 100) {
-              totalLots += volume;
-              totalTrades++;
-              console.log(`Fallback: Found volume ${volume}`);
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-
-  console.log(`=== Final Result: ${totalTrades} trades, ${totalLots} lots ===`);
-
-  // Convert cent lots to standard lots if this is a cent account
-  // Cent accounts have lots that are 100x smaller (1 cent lot = 0.01 standard lot)
+  // Apply cent account conversion for lots
   if (isCentAccount) {
     totalLots = totalLots / 100;
+    console.log(`Cent account conversion: ${totalLots.toFixed(4)} standard lots`);
   }
 
-  // Try to extract date range from report title/header
+  // Extract date range from report
   let reportPeriodStart: string | null = null;
   let reportPeriodEnd: string | null = null;
   
   const titleElement = doc.querySelector('title');
   const headerText = titleElement?.textContent || doc.body.textContent || '';
   
-  // Look for date patterns like "2024.01.01 - 2024.12.31"
   const dateRangeMatch = headerText.match(/(\d{4}[.\-\/]\d{2}[.\-\/]\d{2})\s*[-–]\s*(\d{4}[.\-\/]\d{2}[.\-\/]\d{2})/);
   if (dateRangeMatch) {
     reportPeriodStart = dateRangeMatch[1].replace(/[.\-\/]/g, '-');

@@ -1,40 +1,35 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/utils/mt5ReportParser';
 
-interface EarningsData {
+interface ReportData {
   id: string;
   account_id: string;
   account_nickname: string;
-  period_type: string;
-  period_start: string;
-  period_end: string;
+  report_date: string;
   balance: number;
   equity: number;
-  profit_loss: number;
-  lots_traded: number;
+  net_profit: number;
+  total_lots: number;
   rebate: number;
-  synced_at: string;
+  rebate_rate: number;
 }
 
 const EarningsPage = () => {
   const { user } = useAuth();
-  const [earnings, setEarnings] = useState<EarningsData[]>([]);
+  const [reports, setReports] = useState<ReportData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [periodType, setPeriodType] = useState<string>('weekly');
-  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
-    loadEarnings();
-  }, [user, periodType]);
+    loadReports();
+  }, [user]);
 
-  const loadEarnings = async () => {
+  const loadReports = async () => {
     if (!user) return;
     setLoading(true);
     
@@ -42,125 +37,80 @@ const EarningsPage = () => {
       // Get accounts first
       const { data: accounts, error: accountsError } = await supabase
         .from('user_mt5_accounts')
-        .select('id, nickname')
+        .select('id, nickname, rebate_rate_per_lot')
         .eq('user_id', user.id);
 
       if (accountsError) throw accountsError;
       if (!accounts || accounts.length === 0) {
-        setEarnings([]);
+        setReports([]);
         setLoading(false);
         return;
       }
 
-      // Get earnings
+      // Get reports
       const accountIds = accounts.map(a => a.id);
-      const { data: earningsData, error: earningsError } = await supabase
-        .from('user_account_earnings')
+      const { data: reportsData, error: reportsError } = await supabase
+        .from('investment_reports')
         .select('*')
         .in('account_id', accountIds)
-        .eq('period_type', periodType)
-        .order('synced_at', { ascending: false });
+        .order('report_date', { ascending: false });
 
-      if (earningsError) throw earningsError;
+      if (reportsError) throw reportsError;
 
-      // Map account names to earnings
-      const accountMap = new Map(accounts.map(a => [a.id, a.nickname]));
-      const mappedEarnings = earningsData?.map(e => ({
-        ...e,
-        account_nickname: accountMap.get(e.account_id) || 'Unknown',
-      })) || [];
+      // Map account data to reports
+      const accountMap = new Map(accounts.map(a => [a.id, a]));
+      const mappedReports = reportsData?.map(r => {
+        const account = accountMap.get(r.account_id);
+        const rebate = Number(r.total_lots) * (account?.rebate_rate_per_lot || 0);
+        return {
+          id: r.id,
+          account_id: r.account_id,
+          account_nickname: account?.nickname || 'Unknown',
+          report_date: r.report_date,
+          balance: Number(r.balance),
+          equity: Number(r.equity),
+          net_profit: Number(r.net_profit),
+          total_lots: Number(r.total_lots),
+          rebate,
+          rebate_rate: account?.rebate_rate_per_lot || 0,
+        };
+      }) || [];
 
-      setEarnings(mappedEarnings);
+      setReports(mappedReports);
     } catch (error) {
-      console.error('Error loading earnings:', error);
+      console.error('Error loading reports:', error);
       toast.error('Failed to load earnings data');
     } finally {
       setLoading(false);
     }
   };
 
-  const syncAllAccounts = async () => {
-    if (!user) return;
-    setSyncing(true);
-
-    try {
-      const { data: accounts } = await supabase
-        .from('user_mt5_accounts')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'connected');
-
-      if (!accounts || accounts.length === 0) {
-        toast.info('No connected accounts to sync');
-        return;
-      }
-
-      for (const account of accounts) {
-        await supabase.functions.invoke('sync-mt5-data', {
-          body: { account_id: account.id, period_type: periodType },
-        });
-      }
-
-      toast.success('All accounts synced');
-      await loadEarnings();
-    } catch (error) {
-      console.error('Sync error:', error);
-      toast.error('Failed to sync accounts');
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
-
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
     });
   };
 
   // Calculate totals
-  const totals = earnings.reduce(
-    (acc, e) => ({
-      balance: acc.balance + Number(e.balance),
-      profit_loss: acc.profit_loss + Number(e.profit_loss),
-      lots_traded: acc.lots_traded + Number(e.lots_traded),
-      rebate: acc.rebate + Number(e.rebate),
+  const totals = reports.reduce(
+    (acc, r) => ({
+      balance: acc.balance + r.balance,
+      net_profit: acc.net_profit + r.net_profit,
+      total_lots: acc.total_lots + r.total_lots,
+      rebate: acc.rebate + r.rebate,
     }),
-    { balance: 0, profit_loss: 0, lots_traded: 0, rebate: 0 }
+    { balance: 0, net_profit: 0, total_lots: 0, rebate: 0 }
   );
 
-  const netTotal = totals.profit_loss + totals.rebate;
+  const netTotal = totals.net_profit + totals.rebate;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Earnings</h1>
-          <p className="text-muted-foreground">View your P/L and rebates</p>
-        </div>
-        <div className="flex gap-2">
-          <Select value={periodType} onValueChange={setPeriodType}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="weekly">Weekly</SelectItem>
-              <SelectItem value="monthly">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" onClick={syncAllAccounts} disabled={syncing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            Sync All
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Earnings</h1>
+        <p className="text-muted-foreground">View your P/L and rebates from uploaded reports</p>
       </div>
 
       {/* Summary Cards */}
@@ -175,11 +125,11 @@ const EarningsPage = () => {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Profit/Loss</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Net Profit</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totals.profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-              {formatCurrency(totals.profit_loss)}
+            <div className={`text-2xl font-bold ${totals.net_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+              {formatCurrency(totals.net_profit)}
             </div>
           </CardContent>
         </Card>
@@ -203,48 +153,46 @@ const EarningsPage = () => {
         </Card>
       </div>
 
-      {/* Earnings Table */}
+      {/* Reports Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Earnings by Account</CardTitle>
+          <CardTitle>Report History</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
             <div className="h-32 flex items-center justify-center">
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
-          ) : earnings.length === 0 ? (
+          ) : reports.length === 0 ? (
             <div className="h-32 flex items-center justify-center text-muted-foreground">
-              No earnings data yet. Sync your accounts to see data.
+              No reports yet. Upload a trade history report from your accounts page.
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Account</TableHead>
-                  <TableHead>Period</TableHead>
+                  <TableHead>Report Date</TableHead>
                   <TableHead className="text-right">Balance</TableHead>
-                  <TableHead className="text-right">P/L</TableHead>
+                  <TableHead className="text-right">Net P/L</TableHead>
                   <TableHead className="text-right">Lots</TableHead>
                   <TableHead className="text-right">Rebate</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {earnings.map((e) => {
-                  const total = Number(e.profit_loss) + Number(e.rebate);
+                {reports.map((r) => {
+                  const total = r.net_profit + r.rebate;
                   return (
-                    <TableRow key={e.id}>
-                      <TableCell className="font-medium">{e.account_nickname}</TableCell>
-                      <TableCell>
-                        {formatDate(e.period_start)} - {formatDate(e.period_end)}
+                    <TableRow key={r.id}>
+                      <TableCell className="font-medium">{r.account_nickname}</TableCell>
+                      <TableCell>{formatDate(r.report_date)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(r.balance)}</TableCell>
+                      <TableCell className={`text-right ${r.net_profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                        {formatCurrency(r.net_profit)}
                       </TableCell>
-                      <TableCell className="text-right">{formatCurrency(e.balance)}</TableCell>
-                      <TableCell className={`text-right ${e.profit_loss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                        {formatCurrency(e.profit_loss)}
-                      </TableCell>
-                      <TableCell className="text-right">{Number(e.lots_traded).toFixed(2)}</TableCell>
-                      <TableCell className="text-right text-green-500">{formatCurrency(e.rebate)}</TableCell>
+                      <TableCell className="text-right">{r.total_lots.toFixed(2)}</TableCell>
+                      <TableCell className="text-right text-green-500">{formatCurrency(r.rebate)}</TableCell>
                       <TableCell className={`text-right font-semibold ${total >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                         {formatCurrency(total)}
                       </TableCell>

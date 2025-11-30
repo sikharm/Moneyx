@@ -2,15 +2,16 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Wallet, TrendingUp, DollarSign, Plus, RefreshCw } from 'lucide-react';
+import { Wallet, TrendingUp, DollarSign, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/utils/mt5ReportParser';
 
 interface AccountSummary {
   total_accounts: number;
   combined_balance: number;
-  total_profit_loss: number;
+  total_net_profit: number;
   total_rebate: number;
   total_lots: number;
 }
@@ -20,12 +21,11 @@ const DashboardHome = () => {
   const [summary, setSummary] = useState<AccountSummary>({
     total_accounts: 0,
     combined_balance: 0,
-    total_profit_loss: 0,
+    total_net_profit: 0,
     total_rebate: 0,
     total_lots: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     loadSummary();
@@ -38,7 +38,7 @@ const DashboardHome = () => {
       // Get accounts
       const { data: accounts, error: accountsError } = await supabase
         .from('user_mt5_accounts')
-        .select('*')
+        .select('id, initial_investment, rebate_rate_per_lot')
         .eq('user_id', user.id);
 
       if (accountsError) throw accountsError;
@@ -48,38 +48,41 @@ const DashboardHome = () => {
         return;
       }
 
-      // Get latest earnings for each account
+      // Get latest report for each account
       const accountIds = accounts.map(a => a.id);
-      const { data: earnings, error: earningsError } = await supabase
-        .from('user_account_earnings')
+      const { data: reports, error: reportsError } = await supabase
+        .from('investment_reports')
         .select('*')
         .in('account_id', accountIds)
-        .order('synced_at', { ascending: false });
+        .order('report_date', { ascending: false });
 
-      if (earningsError) throw earningsError;
+      if (reportsError) throw reportsError;
 
-      // Calculate summary (use latest earning per account)
-      const latestEarnings = new Map();
-      earnings?.forEach(e => {
-        if (!latestEarnings.has(e.account_id)) {
-          latestEarnings.set(e.account_id, e);
+      // Get latest report per account
+      const latestReports = new Map();
+      reports?.forEach(r => {
+        if (!latestReports.has(r.account_id)) {
+          latestReports.set(r.account_id, r);
         }
       });
 
+      // Create rebate rate map
+      const rebateMap = new Map(accounts.map(a => [a.id, a.rebate_rate_per_lot]));
+
       let combined_balance = 0;
-      let total_profit_loss = 0;
+      let total_net_profit = 0;
       let total_rebate = 0;
       let total_lots = 0;
 
-      latestEarnings.forEach(e => {
-        combined_balance += Number(e.balance) || 0;
-        total_profit_loss += Number(e.profit_loss) || 0;
-        total_rebate += Number(e.rebate) || 0;
-        total_lots += Number(e.lots_traded) || 0;
+      latestReports.forEach((r, accountId) => {
+        combined_balance += Number(r.balance) || 0;
+        total_net_profit += Number(r.net_profit) || 0;
+        total_lots += Number(r.total_lots) || 0;
+        total_rebate += (Number(r.total_lots) || 0) * (rebateMap.get(accountId) || 0);
       });
 
-      // If no earnings yet, use initial investments
-      if (latestEarnings.size === 0) {
+      // If no reports yet, use initial investments
+      if (latestReports.size === 0) {
         accounts.forEach(a => {
           combined_balance += Number(a.initial_investment) || 0;
         });
@@ -88,7 +91,7 @@ const DashboardHome = () => {
       setSummary({
         total_accounts: accounts.length,
         combined_balance,
-        total_profit_loss,
+        total_net_profit,
         total_rebate,
         total_lots,
       });
@@ -100,67 +103,21 @@ const DashboardHome = () => {
     }
   };
 
-  const syncAllAccounts = async () => {
-    if (!user) return;
-    setSyncing(true);
-
-    try {
-      const { data: accounts } = await supabase
-        .from('user_mt5_accounts')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'connected');
-
-      if (!accounts || accounts.length === 0) {
-        toast.info('No connected accounts to sync');
-        return;
-      }
-
-      for (const account of accounts) {
-        await supabase.functions.invoke('sync-mt5-data', {
-          body: { account_id: account.id, period_type: 'weekly' },
-        });
-      }
-
-      toast.success('All accounts synced');
-      await loadSummary();
-    } catch (error) {
-      console.error('Sync error:', error);
-      toast.error('Failed to sync accounts');
-    } finally {
-      setSyncing(false);
-    }
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2,
-    }).format(value);
-  };
-
-  const netTotal = summary.total_profit_loss + summary.total_rebate;
+  const netTotal = summary.total_net_profit + summary.total_rebate;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Investment Dashboard</h1>
-          <p className="text-muted-foreground">Track your MT5 accounts and earnings</p>
+          <p className="text-muted-foreground">Track your accounts and earnings</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={syncAllAccounts} disabled={syncing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            Sync All
+        <Link to="/dashboard/accounts">
+          <Button className="bg-gradient-hero">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Account
           </Button>
-          <Link to="/dashboard/accounts">
-            <Button className="bg-gradient-hero">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Account
-            </Button>
-          </Link>
-        </div>
+        </Link>
       </div>
 
       {loading ? (
@@ -186,7 +143,7 @@ const DashboardHome = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{summary.total_accounts}</div>
-                <p className="text-xs text-muted-foreground">MT5 connected accounts</p>
+                <p className="text-xs text-muted-foreground">Investment accounts</p>
               </CardContent>
             </Card>
 
@@ -211,7 +168,7 @@ const DashboardHome = () => {
                   {formatCurrency(netTotal)}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  P/L: {formatCurrency(summary.total_profit_loss)} | Rebate: {formatCurrency(summary.total_rebate)}
+                  P/L: {formatCurrency(summary.total_net_profit)} | Rebate: {formatCurrency(summary.total_rebate)}
                 </p>
               </CardContent>
             </Card>
@@ -223,7 +180,7 @@ const DashboardHome = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{summary.total_lots.toFixed(2)}</div>
-                <p className="text-xs text-muted-foreground">Traded this period</p>
+                <p className="text-xs text-muted-foreground">From uploaded reports</p>
               </CardContent>
             </Card>
           </div>
@@ -234,12 +191,12 @@ const DashboardHome = () => {
                 <Wallet className="h-12 w-12 text-muted-foreground mb-4" />
                 <CardTitle className="mb-2">No accounts yet</CardTitle>
                 <CardDescription className="text-center mb-4">
-                  Connect your first MT5 account to start tracking your investments
+                  Add your first account to start tracking your investments
                 </CardDescription>
                 <Link to="/dashboard/accounts">
                   <Button className="bg-gradient-hero">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add MT5 Account
+                    Add Account
                   </Button>
                 </Link>
               </CardContent>

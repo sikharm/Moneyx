@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,12 +26,10 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
   const [parsedData, setParsedData] = useState<ParsedReportData | null>(null);
   const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
   const [parseError, setParseError] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = useCallback(async (file: File) => {
     setParseError(null);
     setParsedData(null);
 
@@ -54,7 +52,33 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
       console.error('Parse error:', error);
       setParseError('Failed to parse the report file');
     }
+  }, []);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
   };
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  }, [processFile]);
 
   const handleSubmit = async () => {
     if (!account || !parsedData) return;
@@ -142,16 +166,34 @@ const UploadReportDialog = ({ account, onOpenChange, onSuccess }: UploadReportDi
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="file">MT5 Report File (HTML)</Label>
-            <div className="flex items-center gap-2">
+            <Label>MT5 Report File (HTML)</Label>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`
+                border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
+                ${isDragging 
+                  ? 'border-primary bg-primary/10' 
+                  : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50'
+                }
+              `}
+            >
               <Input
-                id="file"
                 type="file"
                 accept=".html,.htm"
                 onChange={handleFileChange}
                 ref={fileInputRef}
-                className="flex-1"
+                className="hidden"
               />
+              <Upload className={`h-8 w-8 mx-auto mb-2 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+              <p className="text-sm font-medium">
+                {isDragging ? 'Drop file here' : 'Drag & drop or click to upload'}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                HTML report file from MT5
+              </p>
             </div>
             <p className="text-xs text-muted-foreground">
               Export from MT5: Account History → Right Click → Save as Detailed Report

@@ -230,9 +230,6 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
                       This Week Balance
                     </p>
                     <p className="text-xl font-bold">{formatCurrency(summary.thisWeekBalance, summary.currency)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Initial: {formatCurrency(summary.initialBalance, summary.currency)}
-                    </p>
                   </div>
                   <div className="p-4 bg-muted/50 rounded-lg">
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
@@ -241,6 +238,11 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
                     </p>
                     <p className={`text-xl font-bold ${summary.thisWeekNetProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                       {summary.thisWeekNetProfit >= 0 ? '+' : ''}{formatCurrency(summary.thisWeekNetProfit, summary.currency)}
+                      {summary.initialBalance > 0 && (
+                        <span className="text-sm ml-1">
+                          ({summary.thisWeekNetProfit >= 0 ? '+' : ''}{((summary.thisWeekNetProfit / summary.initialBalance) * 100).toFixed(2)}%)
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {summary.winningTrades}W / {summary.losingTrades}L ({summary.winRate.toFixed(1)}%)
@@ -253,6 +255,11 @@ const SummaryView = ({ accounts, selectedAccountId, dateRange, periodLabel }: Su
                     </p>
                     <p className={`text-xl font-bold ${summary.allTimeNetProfit >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                       {summary.allTimeNetProfit >= 0 ? '+' : ''}{formatCurrency(summary.allTimeNetProfit, summary.currency)}
+                      {summary.initialBalance > 0 && (
+                        <span className="text-sm ml-1">
+                          ({summary.allTimeNetProfit >= 0 ? '+' : ''}{((summary.allTimeNetProfit / summary.initialBalance) * 100).toFixed(2)}%)
+                        </span>
+                      )}
                     </p>
                   </div>
                 </div>

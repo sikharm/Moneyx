@@ -77,179 +77,175 @@ export const parseMT5Report = (htmlContent: string, options: ParseOptions = {}):
   rawSummary.netProfit = netProfit;
   if (profitFactor !== null) rawSummary.profitFactor = profitFactor;
 
-  // Find and parse the Deals section specifically
-  // MT5 reports have sections: Positions, Orders, Deals
-  // We only want to count lots from the Deals section with "out" direction
+  // Find and parse trading data from MT5 reports
+  // MT5 reports can have different formats:
+  // Format A: Deals table with "direction" column (in/out) - count "out" rows
+  // Format B: Positions table with "position", "symbol", "type", "volume", "profit" columns
   let totalLots = 0;
   let totalTrades = 0;
-  const processedOrderIds = new Set<string>();
+  const processedPositionIds = new Set<string>();
 
   // Debug logging
   console.log('=== MT5 Report Parser Debug ===');
 
-  // Find all tables and look for the Deals section
   const tables = doc.querySelectorAll('table');
-  let dealsTable: Element | null = null;
-  let dealsTableMethod = '';
-
   console.log(`Found ${tables.length} tables in document`);
 
-  // Method 1: Look for a row header containing "Deals"
+  // Try Format A: Look for Deals table with "direction" column
+  let dealsTable: Element | null = null;
+  let useDealsFormat = false;
+
   for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
     const table = tables[tableIdx];
-    const rows = table.querySelectorAll('tr');
-    for (const row of rows) {
-      const headerText = row.textContent?.trim() || '';
-      // Look for "Deals" section header - typically bold text
-      if (headerText.toLowerCase() === 'deals' || 
-          (headerText.toLowerCase().includes('deals') && row.querySelector('b'))) {
-        // Found the Deals header, the table containing this or the next table is our target
+    const headerRow = table.querySelector('tr');
+    if (headerRow) {
+      const headerText = headerRow.textContent?.toLowerCase() || '';
+      // Deals table has: Time, Deal, Symbol, Type, Direction, Volume, Price, Order
+      if (headerText.includes('direction') && headerText.includes('volume')) {
         dealsTable = table;
-        dealsTableMethod = `Method 1 (header text) - Table ${tableIdx}`;
-        console.log(`Found Deals table via ${dealsTableMethod}`);
+        useDealsFormat = true;
+        console.log(`Found Deals table (Format A) at Table ${tableIdx}`);
         break;
       }
     }
-    if (dealsTable) break;
   }
 
-  // Method 2: If no explicit Deals header found, look for table with Deal column header
-  if (!dealsTable) {
+  // Parse Deals format (Format A)
+  if (useDealsFormat && dealsTable) {
+    const rows = dealsTable.querySelectorAll('tr');
+    console.log(`Deals table has ${rows.length} rows`);
+
+    let headerIndexes = { direction: -1, volume: -1, order: -1 };
+
+    for (const row of rows) {
+      const cells = row.querySelectorAll('td, th');
+      const cellTexts = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '');
+      
+      if (cellTexts.includes('direction')) {
+        headerIndexes.direction = cellTexts.findIndex(t => t === 'direction');
+        headerIndexes.volume = cellTexts.findIndex(t => t === 'volume');
+        headerIndexes.order = cellTexts.findIndex(t => t === 'order');
+        console.log('Format A - Header indexes:', headerIndexes);
+        break;
+      }
+    }
+
+    if (headerIndexes.direction >= 0 && headerIndexes.volume >= 0) {
+      for (const row of rows) {
+        const cells = row.querySelectorAll('td');
+        if (cells.length <= Math.max(headerIndexes.direction, headerIndexes.volume)) continue;
+
+        const direction = cells[headerIndexes.direction]?.textContent?.trim().toLowerCase();
+        const volumeText = cells[headerIndexes.volume]?.textContent?.trim() || '';
+        const orderId = headerIndexes.order >= 0 ? cells[headerIndexes.order]?.textContent?.trim() || '' : '';
+
+        if (direction === 'out') {
+          if (orderId && processedPositionIds.has(orderId)) continue;
+          if (orderId) processedPositionIds.add(orderId);
+
+          const volume = parseNumber(volumeText);
+          if (volume > 0) {
+            totalLots += volume;
+            totalTrades++;
+            console.log(`Format A: Volume=${volume}, Order=${orderId}`);
+          }
+        }
+      }
+    }
+  }
+
+  // Try Format B: Positions table (no direction column)
+  // Header: Time | Position | Symbol | Type | Volume | Price | S / L | T / P | Time | Price | Commission | Swap | Profit
+  if (totalLots === 0 && totalTrades === 0) {
+    console.log('Trying Format B (Positions table)...');
+    
     for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
       const table = tables[tableIdx];
-      const headerRow = table.querySelector('tr');
-      if (headerRow) {
-        const headerText = headerRow.textContent?.toLowerCase() || '';
-        // Deals table typically has columns: Time, Deal, Symbol, Type, Direction, Volume, Price, Order
-        if (headerText.includes('deal') && headerText.includes('direction') && headerText.includes('volume')) {
-          dealsTable = table;
-          dealsTableMethod = `Method 2 (column headers) - Table ${tableIdx}`;
-          console.log(`Found Deals table via ${dealsTableMethod}`);
+      const rows = table.querySelectorAll('tr');
+      
+      let headerIndexes = { position: -1, volume: -1, profit: -1, symbol: -1 };
+      let headerRowIdx = -1;
+
+      // Find header row
+      for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
+        const cells = rows[rowIdx].querySelectorAll('td, th');
+        const cellTexts = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '');
+        
+        // Look for Positions table header
+        if (cellTexts.includes('position') && cellTexts.includes('volume') && cellTexts.includes('profit')) {
+          headerIndexes.position = cellTexts.findIndex(t => t === 'position');
+          headerIndexes.volume = cellTexts.findIndex(t => t === 'volume');
+          headerIndexes.profit = cellTexts.lastIndexOf('profit'); // Use last "profit" column
+          headerIndexes.symbol = cellTexts.findIndex(t => t === 'symbol');
+          headerRowIdx = rowIdx;
+          console.log(`Format B - Found header at Table ${tableIdx}, Row ${rowIdx}:`, headerIndexes);
+          console.log('Header:', cellTexts.join(' | '));
+          break;
+        }
+      }
+
+      if (headerRowIdx >= 0 && headerIndexes.volume >= 0) {
+        // Parse data rows after header
+        for (let rowIdx = headerRowIdx + 1; rowIdx < rows.length; rowIdx++) {
+          const cells = rows[rowIdx].querySelectorAll('td');
+          if (cells.length < headerIndexes.volume + 1) continue;
+
+          const positionId = cells[headerIndexes.position]?.textContent?.trim() || '';
+          const volumeText = cells[headerIndexes.volume]?.textContent?.trim() || '';
+          const profitText = headerIndexes.profit >= 0 ? cells[headerIndexes.profit]?.textContent?.trim() || '' : '';
+          const symbol = headerIndexes.symbol >= 0 ? cells[headerIndexes.symbol]?.textContent?.trim() || '' : '';
+
+          // Skip empty rows, header-like rows, and summary rows
+          if (!positionId || positionId.toLowerCase() === 'position') continue;
+          if (positionId.toLowerCase().includes('total') || positionId.toLowerCase().includes('balance')) continue;
+          
+          // Must be a numeric position ID
+          if (!/^\d+$/.test(positionId)) continue;
+
+          // Skip if already processed
+          if (processedPositionIds.has(positionId)) continue;
+          processedPositionIds.add(positionId);
+
+          const volume = parseNumber(volumeText);
+          const profit = parseNumber(profitText);
+
+          // Valid trade: has volume and has a profit value (can be 0, positive, or negative)
+          if (volume > 0) {
+            totalLots += volume;
+            totalTrades++;
+            console.log(`Format B: Position=${positionId}, Symbol=${symbol}, Volume=${volume}, Profit=${profit}`);
+          }
+        }
+
+        if (totalTrades > 0) {
+          console.log(`Format B parsed ${totalTrades} trades from Table ${tableIdx}`);
           break;
         }
       }
     }
   }
 
-  // Method 3: Look for table with "Time" and "Volume" and has "out" in rows
-  if (!dealsTable) {
-    for (let tableIdx = 0; tableIdx < tables.length; tableIdx++) {
-      const table = tables[tableIdx];
-      const firstRow = table.querySelector('tr');
-      if (firstRow) {
-        const headerText = firstRow.textContent?.toLowerCase() || '';
-        if (headerText.includes('time') && headerText.includes('volume')) {
-          // Check if this table has "out" direction rows
-          const hasOutRows = Array.from(table.querySelectorAll('td')).some(
-            td => td.textContent?.trim().toLowerCase() === 'out'
-          );
-          if (hasOutRows) {
-            dealsTable = table;
-            dealsTableMethod = `Method 3 (time+volume+out) - Table ${tableIdx}`;
-            console.log(`Found Deals table via ${dealsTableMethod}`);
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  // Parse the Deals table
-  if (dealsTable) {
-    const rows = dealsTable.querySelectorAll('tr');
-    console.log(`Deals table has ${rows.length} rows`);
-
-    let headerIndexes = {
-      direction: -1,
-      volume: -1,
-      order: -1,
-    };
-
-    // First, find the header row and column indexes
-    for (const row of rows) {
-      const cells = row.querySelectorAll('td, th');
-      const cellTexts = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '');
-      
-      // Check if this is a header row
-      if (cellTexts.includes('direction') || cellTexts.includes('volume')) {
-        headerIndexes.direction = cellTexts.findIndex(t => t === 'direction');
-        headerIndexes.volume = cellTexts.findIndex(t => t === 'volume');
-        headerIndexes.order = cellTexts.findIndex(t => t === 'order');
-        console.log('Header indexes found:', headerIndexes);
-        console.log('Header row:', cellTexts.join(' | '));
-        break;
-      }
-    }
-
-    // If we found the column indexes, parse data rows
-    if (headerIndexes.direction >= 0 && headerIndexes.volume >= 0) {
-      let rowCount = 0;
-      for (const row of rows) {
-        const cells = row.querySelectorAll('td');
-        if (cells.length <= headerIndexes.direction || cells.length <= headerIndexes.volume) continue;
-
-        const direction = cells[headerIndexes.direction]?.textContent?.trim().toLowerCase();
-        const volumeText = cells[headerIndexes.volume]?.textContent?.trim() || '';
-        const orderId = headerIndexes.order >= 0 && cells[headerIndexes.order] 
-          ? cells[headerIndexes.order].textContent?.trim() || ''
-          : '';
-
-        // Only count "out" direction (closed trades)
-        if (direction === 'out') {
-          rowCount++;
-          // Skip if we already processed this order (prevent duplicates)
-          if (orderId && processedOrderIds.has(orderId)) {
-            console.log(`Row ${rowCount}: SKIPPED - duplicate order ${orderId}`);
-            continue;
-          }
-          if (orderId) {
-            processedOrderIds.add(orderId);
-          }
-
-          // Parse volume
-          const volume = parseNumber(volumeText);
-          if (volume > 0) {
-            totalLots += volume;
-            totalTrades++;
-            console.log(`Row ${rowCount}: Direction=${direction}, Volume=${volumeText} (${volume}), Order=${orderId} - COUNTED`);
-          } else {
-            console.log(`Row ${rowCount}: Direction=${direction}, Volume=${volumeText} - SKIPPED (zero volume)`);
-          }
-        }
-      }
-    } else {
-      console.log('Could not find header indexes - direction or volume column missing');
-    }
-  } else {
-    console.log('No Deals table found using any method');
-  }
-
-  // Fallback: If no Deals table found or no data parsed, use old method but be more careful
+  // Fallback: Look for "out" direction in any table
   if (totalLots === 0 && totalTrades === 0) {
-    console.log('Using fallback method to find trades...');
+    console.log('Using fallback method...');
     const rows = doc.querySelectorAll('tr');
     for (const row of rows) {
       const cells = row.querySelectorAll('td');
       if (cells.length < 6) continue;
 
-      // Look for rows with "out" in direction column
       const cellTexts = Array.from(cells).map(c => c.textContent?.trim().toLowerCase() || '');
       const directionIdx = cellTexts.findIndex(t => t === 'out');
       
-      if (directionIdx >= 0 && directionIdx < cells.length - 1) {
-        // Volume is typically right before or after direction column
-        // Try to find a valid volume value (small decimal number)
+      if (directionIdx >= 0) {
         for (let i = Math.max(0, directionIdx - 2); i <= Math.min(cells.length - 1, directionIdx + 2); i++) {
           const text = cells[i]?.textContent?.trim() || '';
-          // Volume format: X.XX (e.g., 0.01, 0.10, 1.00)
           if (/^\d+\.\d{2}$/.test(text)) {
             const volume = parseFloat(text);
-            // Valid lot sizes are typically between 0.01 and 100
             if (volume > 0 && volume <= 100) {
               totalLots += volume;
               totalTrades++;
-              console.log(`Fallback: Found trade with volume ${volume}`);
-              break; // Only count once per row
+              console.log(`Fallback: Found volume ${volume}`);
+              break;
             }
           }
         }

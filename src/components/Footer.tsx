@@ -8,13 +8,13 @@ const Footer = () => {
   const { t } = useLanguage();
 
   const quickLinks = [
-    { to: '/', label: t('nav.home') },
-    { to: '/about', label: t('nav.about') },
-    { to: '/auto-mode', label: t('nav.autoMode') },
-    { to: '/hybrid-mode', label: t('nav.hybridMode') },
-    { to: '/performance', label: t('nav.performance') },
-    { to: '/download', label: t('nav.download') },
-    { to: '/contact', label: t('nav.contact') },
+    { to: '/', label: t('nav.home') || 'Home' },
+    { to: '/about', label: t('nav.about') || 'About' },
+    { to: '/auto-mode', label: t('nav.autoMode') === 'nav.autoMode' ? 'Auto Mode' : t('nav.autoMode') },
+    { to: '/hybrid-mode', label: t('nav.hybridMode') === 'nav.hybridMode' ? 'Hybrid Mode' : t('nav.hybridMode') },
+    { to: '/performance', label: t('nav.performance') || 'Performance' },
+    { to: '/download', label: t('nav.download') || 'Download' },
+    { to: '/contact', label: t('nav.contact') || 'Contact' },
   ];
 
   return (

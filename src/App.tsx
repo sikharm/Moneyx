@@ -10,6 +10,8 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import Navigation from "@/components/Navigation";
 import AdminEditToggle from "@/components/AdminEditToggle";
 import ScrollToTop from "@/components/ScrollToTop";
+import PageTransition from "@/components/PageTransition";
+import Footer from "@/components/Footer";
 import Home from "./pages/Home";
 import About from "./pages/About";
 import AutoMode from "./pages/AutoMode";
@@ -51,43 +53,48 @@ const App = () => (
                 <ScrollToTop />
                 <Navigation />
                 <AdminEditToggle />
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/auto-mode" element={<AutoMode />} />
-                <Route path="/hybrid-mode" element={<HybridMode />} />
-                <Route path="/performance" element={<Performance />} />
-                <Route path="/download" element={<Download />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/profile" element={<Profile />} />
-                
-                {/* User Dashboard Routes */}
-                <Route path="/dashboard" element={<DashboardLayout />}>
-                  <Route index element={<DashboardHome />} />
-                  <Route path="accounts" element={<UserAccountsPage />} />
-                  <Route path="earnings" element={<EarningsPage />} />
-                </Route>
-                
-                {/* Admin Routes */}
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="files" element={<FileManagement />} />
-                  <Route path="translations" element={<Translations />} />
-                  <Route path="user-investments" element={<UserInvestments />} />
-                </Route>
+              <div className="flex flex-col min-h-screen">
+                <PageTransition>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/auto-mode" element={<AutoMode />} />
+                    <Route path="/hybrid-mode" element={<HybridMode />} />
+                    <Route path="/performance" element={<Performance />} />
+                    <Route path="/download" element={<Download />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/profile" element={<Profile />} />
+                    
+                    {/* User Dashboard Routes */}
+                    <Route path="/dashboard" element={<DashboardLayout />}>
+                      <Route index element={<DashboardHome />} />
+                      <Route path="accounts" element={<UserAccountsPage />} />
+                      <Route path="earnings" element={<EarningsPage />} />
+                    </Route>
+                    
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={<AdminLayout />}>
+                      <Route index element={<Dashboard />} />
+                      <Route path="files" element={<FileManagement />} />
+                      <Route path="translations" element={<Translations />} />
+                      <Route path="user-investments" element={<UserInvestments />} />
+                    </Route>
 
-                {/* Trade Tracker Routes */}
-                <Route path="/admin/trade-tracker" element={<TradeTrackerLayout />}>
-                  <Route index element={<TradeTrackerDashboard />} />
-                  <Route path="accounts" element={<AccountsPage />} />
-                  <Route path="summary" element={<SummaryPage />} />
-                  <Route path="export" element={<ExportPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                </Route>
-                
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+                    {/* Trade Tracker Routes */}
+                    <Route path="/admin/trade-tracker" element={<TradeTrackerLayout />}>
+                      <Route index element={<TradeTrackerDashboard />} />
+                      <Route path="accounts" element={<AccountsPage />} />
+                      <Route path="summary" element={<SummaryPage />} />
+                      <Route path="export" element={<ExportPage />} />
+                      <Route path="settings" element={<SettingsPage />} />
+                    </Route>
+                    
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </PageTransition>
+                <Footer />
+              </div>
               </AdminEditProvider>
             </LanguageProvider>
           </AuthProvider>

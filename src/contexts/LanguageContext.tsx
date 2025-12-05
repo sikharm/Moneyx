@@ -108,20 +108,15 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
     return translations[key] || englishFallback[key] || key;
   };
 
-  // Show loading screen while translations are loading
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      </div>
-    );
-  }
-
   return (
     <LanguageContext.Provider value={{ currentLanguage, languages, setLanguage, t, isLoading }}>
-      {children}
+      {isLoading ? (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        children
+      )}
     </LanguageContext.Provider>
   );
 };

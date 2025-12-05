@@ -12,6 +12,7 @@ interface LanguageContextType {
   languages: Language[];
   setLanguage: (code: string) => void;
   t: (key: string) => string;
+  isLoading: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -23,14 +24,25 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   const [languages, setLanguages] = useState<Language[]>([]);
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [englishFallback, setEnglishFallback] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadLanguages();
-    loadEnglishFallback();
+    const init = async () => {
+      setIsLoading(true);
+      await Promise.all([
+        loadLanguages(),
+        loadEnglishFallback(),
+        loadTranslations(currentLanguage)
+      ]);
+      setIsLoading(false);
+    };
+    init();
   }, []);
 
   useEffect(() => {
-    loadTranslations(currentLanguage);
+    if (!isLoading) {
+      loadTranslations(currentLanguage);
+    }
   }, [currentLanguage]);
 
   const loadLanguages = async () => {
@@ -96,8 +108,19 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
     return translations[key] || englishFallback[key] || key;
   };
 
+  // Show loading screen while translations are loading
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <LanguageContext.Provider value={{ currentLanguage, languages, setLanguage, t }}>
+    <LanguageContext.Provider value={{ currentLanguage, languages, setLanguage, t, isLoading }}>
       {children}
     </LanguageContext.Provider>
   );

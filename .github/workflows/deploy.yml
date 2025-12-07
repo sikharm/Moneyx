@@ -33,8 +33,8 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: https://wegarlqeuyqeegcktrnc.supabase.co
+          VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndlZ2FybHFldXlxZWVnY2t0cm5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQxOTM5NTIsImV4cCI6MjA3OTc2OTk1Mn0.XPf2j9rKfu8gFujxUJyrp-VPkcONQu6LBvhwNzRqO0Q
 
       - name: Copy 404 page for SPA routing
         run: cp dist/index.html dist/404.html

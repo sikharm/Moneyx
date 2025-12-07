@@ -19,7 +19,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentLanguage, setCurrentLanguage] = useState(() => {
-    return localStorage.getItem('language') || 'en';
+    return localStorage.getItem('language') || 'lo';
   });
   const [languages, setLanguages] = useState<Language[]>([]);
   const [translations, setTranslations] = useState<Record<string, string>>({});
@@ -88,20 +88,25 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
     setCurrentLanguage(code);
     localStorage.setItem('language', code);
     
-    // Apply Lao font when Lao language is selected
+    // Apply Lao font and lang attribute when Lao language is selected
     if (code === 'lo') {
       document.documentElement.classList.add('lang-lao');
+      document.documentElement.setAttribute('lang', 'lo');
     } else {
       document.documentElement.classList.remove('lang-lao');
+      document.documentElement.setAttribute('lang', code);
     }
   };
 
-  // Apply font on initial load
+  // Apply font and lang attribute on initial load
   useEffect(() => {
     if (currentLanguage === 'lo') {
       document.documentElement.classList.add('lang-lao');
+      document.documentElement.setAttribute('lang', 'lo');
+    } else {
+      document.documentElement.setAttribute('lang', currentLanguage);
     }
-  }, []);
+  }, [currentLanguage]);
 
   // Translation function with fallback to English, then to key
   const t = (key: string): string => {

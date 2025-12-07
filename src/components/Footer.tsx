@@ -24,7 +24,7 @@ const Footer = () => {
           {/* About Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-foreground">
-              <EditableText tKey="site.title" fallback="Thoum EA" />
+              <EditableText tKey="site.title" fallback="Moneyx" />
             </h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
               <EditableText 
@@ -61,7 +61,7 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-center gap-3 text-muted-foreground text-sm">
                 <Mail className="h-4 w-4 text-primary flex-shrink-0" />
-                <EditableSetting settingKey="contact_email" fallback="contact@thoumea.com" />
+                <EditableSetting settingKey="contact_email" fallback="contact@moneyx.com" />
               </li>
               <li className="flex items-center gap-3 text-muted-foreground text-sm">
                 <Phone className="h-4 w-4 text-primary flex-shrink-0" />
@@ -97,7 +97,7 @@ const Footer = () => {
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-muted-foreground text-sm">
             © {new Date().getFullYear()}{' '}
-            <EditableText tKey="site.title" fallback="Thoum EA" />
+            <EditableText tKey="site.title" fallback="Moneyx" />
             . <EditableText tKey="footer.allRightsReserved" fallback="All rights reserved." />
           </p>
           <div className="flex gap-6">

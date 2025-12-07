@@ -2,7 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Phetsarath font for Lao language - loaded from Google Fonts */
+/* Phetsarath font for Lao language - loaded from Google Fonts with local fallback */
+@font-face {
+  font-family: 'Phetsarath';
+  src: local('Phetsarath'),
+       url('/fonts/Phetsarath-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Phetsarath';
+  src: local('Phetsarath Bold'),
+       url('/fonts/Phetsarath-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -114,8 +131,9 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
-  /* Apply Phetsarath font for Lao language */
-  .lang-lao {
-    font-family: 'Phetsarath', sans-serif;
+  /* Apply Phetsarath font for Lao language - works across all browsers */
+  .lang-lao,
+  .lang-lao * {
+    font-family: "Phetsarath", sans-serif !important;
   }
 }

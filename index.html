@@ -1,17 +1,27 @@
 <!doctype html>
-<html lang="en" suppressHydrationWarning>
+<html lang="lo" suppressHydrationWarning class="lang-lao">
   <head>
     <meta charset="UTF-8" />
     <script>
       (function() {
-        const theme = localStorage.getItem('theme');
-        if (theme === 'light') {
-          document.documentElement.classList.remove('dark');
+        const theme = localStorage.getItem('vite-ui-theme');
+        // Default to light theme
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
         } else if (theme === 'system') {
           const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
           if (systemDark) document.documentElement.classList.add('dark');
+        }
+        // Light theme is default, no 'dark' class needed
+        
+        // Apply Lao language class if needed
+        const lang = localStorage.getItem('language') || 'lo';
+        if (lang === 'lo') {
+          document.documentElement.classList.add('lang-lao');
+          document.documentElement.setAttribute('lang', 'lo');
         } else {
-          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('lang-lao');
+          document.documentElement.setAttribute('lang', lang);
         }
       })();
     </script>

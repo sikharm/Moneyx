@@ -2,7 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Phetsarath font for Lao language - loaded from Google Fonts only (no local fallback to prevent Safari issues) */
+/* Phetsarath font for Lao language - Safari-compatible approach */
+/* Force Google Fonts version with explicit @font-face for better Safari compatibility */
+@font-face {
+  font-family: 'Phetsarath';
+  src: url('https://fonts.gstatic.com/s/phetsarath/v25/K2F0fZ5fZ_kBfi8dEQu6Acy4.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0E80-0EFF, U+200C-200D, U+25CC;
+}
+
+@font-face {
+  font-family: 'Phetsarath';
+  src: url('https://fonts.gstatic.com/s/phetsarath/v25/K2F2fZ5fZ_kBfi8dEQu6B7-oIqw.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0E80-0EFF, U+200C-200D, U+25CC;
+}
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -114,9 +132,13 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 
-  /* Apply Phetsarath font for Lao language - works across all browsers */
+  /* Apply Phetsarath font for Lao language - Safari-compatible with multiple selectors */
   .lang-lao,
-  .lang-lao * {
-    font-family: "Phetsarath", sans-serif !important;
+  .lang-lao *,
+  [lang="lo"],
+  [lang="lo"] *,
+  html[lang="lo"],
+  html[lang="lo"] * {
+    font-family: "Phetsarath", "Noto Sans Lao", sans-serif !important;
   }
 }

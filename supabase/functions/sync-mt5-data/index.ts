@@ -54,6 +54,15 @@ serve(async (req) => {
       });
     }
 
+    // Verify the authenticated user owns this account
+    if (account.user_id !== user.id) {
+      console.error('Unauthorized: User does not own this account');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Check account deployment status
     const statusResponse = await fetch(
       `https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${account.metaapi_account_id}`,

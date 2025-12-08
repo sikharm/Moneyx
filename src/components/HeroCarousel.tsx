@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Autoplay from "embla-carousel-autoplay";
 import { TrendingUp, Bot, Sliders, Download } from "lucide-react";
@@ -13,7 +13,12 @@ import {
 import { Button } from "@/components/ui/button";
 import EditableText from "@/components/EditableText";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect } from "react";
+
+// Import hero images
+import heroPerformance from "@/assets/hero-slide-performance.jpg";
+import heroAuto from "@/assets/hero-slide-auto.jpg";
+import heroHybrid from "@/assets/hero-slide-hybrid.jpg";
+import heroDownload from "@/assets/hero-slide-download.jpg";
 
 const slides = [
   {
@@ -23,7 +28,7 @@ const slides = [
     icon: TrendingUp,
     link: "/performance",
     buttonKey: "home.hero.slide1.button",
-    gradient: "from-primary/20 via-background to-background",
+    image: heroPerformance,
   },
   {
     id: 2,
@@ -32,7 +37,7 @@ const slides = [
     icon: Bot,
     link: "/auto-mode",
     buttonKey: "home.hero.slide2.button",
-    gradient: "from-emerald-500/20 via-background to-background",
+    image: heroAuto,
   },
   {
     id: 3,
@@ -41,7 +46,7 @@ const slides = [
     icon: Sliders,
     link: "/hybrid-mode",
     buttonKey: "home.hero.slide3.button",
-    gradient: "from-amber-500/20 via-background to-background",
+    image: heroHybrid,
   },
   {
     id: 4,
@@ -50,7 +55,7 @@ const slides = [
     icon: Download,
     link: "/download",
     buttonKey: "home.hero.slide4.button",
-    gradient: "from-blue-500/20 via-background to-background",
+    image: heroDownload,
   },
 ];
 
@@ -89,16 +94,25 @@ export function HeroCarousel() {
             return (
               <CarouselItem key={slide.id} className="pl-0">
                 <div
-                  className={`relative min-h-[60vh] md:min-h-[70vh] flex items-center justify-center bg-gradient-to-br ${slide.gradient}`}
+                  className="relative min-h-[60vh] md:min-h-[70vh] flex items-center justify-center overflow-hidden"
                 >
-                  <div className="container mx-auto px-4 text-center space-y-6 animate-fade-in">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-4">
+                  {/* Background Image */}
+                  <div 
+                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url(${slide.image})` }}
+                  />
+                  {/* Dark Overlay for text readability */}
+                  <div className="absolute inset-0 bg-black/50" />
+                  
+                  {/* Content */}
+                  <div className="container mx-auto px-4 text-center space-y-6 animate-fade-in relative z-10">
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/20 backdrop-blur-sm mb-4">
                       <Icon className="w-10 h-10 text-primary" />
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+                    <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white drop-shadow-lg">
                       <EditableText tKey={slide.titleKey} />
                     </h1>
-                    <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+                    <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto drop-shadow-md">
                       <EditableText tKey={slide.subtitleKey} />
                     </p>
                     <div className="pt-4">
@@ -116,12 +130,12 @@ export function HeroCarousel() {
         </CarouselContent>
         
         {/* Navigation Arrows */}
-        <CarouselPrevious className="left-4 bg-background/80 hover:bg-background border-border" />
-        <CarouselNext className="right-4 bg-background/80 hover:bg-background border-border" />
+        <CarouselPrevious className="left-4 bg-white/20 hover:bg-white/40 border-white/30 text-white" />
+        <CarouselNext className="right-4 bg-white/20 hover:bg-white/40 border-white/30 text-white" />
       </Carousel>
 
       {/* Dot Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
         {slides.map((_, index) => (
           <button
             key={index}
@@ -129,7 +143,7 @@ export function HeroCarousel() {
             className={`w-3 h-3 rounded-full transition-all duration-300 ${
               current === index
                 ? "bg-primary w-8"
-                : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
+                : "bg-white/50 hover:bg-white/70"
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

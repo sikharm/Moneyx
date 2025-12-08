@@ -19,6 +19,8 @@ import HybridMode from "./pages/HybridMode";
 import Performance from "./pages/Performance";
 import Download from "./pages/Download";
 import Contact from "./pages/Contact";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -63,6 +65,8 @@ const App = () => (
                     <Route path="/performance" element={<Performance />} />
                     <Route path="/download" element={<Download />} />
                     <Route path="/contact" element={<Contact />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     

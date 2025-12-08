@@ -29,11 +29,40 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   useEffect(() => {
     const init = async () => {
       setIsLoading(true);
-      await Promise.all([
-        loadLanguages(),
-        loadEnglishFallback(),
-        loadTranslations(currentLanguage)
-      ]);
+      try {
+        // Load all data in parallel
+        const [, englishData, currentData] = await Promise.all([
+          loadLanguages(),
+          supabase
+            .from('translations')
+            .select('translation_key, translation_value')
+            .eq('language_code', 'en'),
+          supabase
+            .from('translations')
+            .select('translation_key, translation_value')
+            .eq('language_code', currentLanguage)
+        ]);
+        
+        // Set English fallback
+        if (englishData.data) {
+          const englishMap: Record<string, string> = {};
+          englishData.data.forEach(t => {
+            englishMap[t.translation_key] = t.translation_value;
+          });
+          setEnglishFallback(englishMap);
+        }
+        
+        // Set current language translations
+        if (currentData.data) {
+          const translationMap: Record<string, string> = {};
+          currentData.data.forEach(t => {
+            translationMap[t.translation_key] = t.translation_value;
+          });
+          setTranslations(translationMap);
+        }
+      } catch (error) {
+        console.error('Error loading translations:', error);
+      }
       setIsLoading(false);
     };
     init();

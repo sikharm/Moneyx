@@ -128,10 +128,10 @@ const Footer = () => {
           </div>
           
           <div className="flex gap-6">
-            <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+            <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               <EditableText tKey="footer.privacy" fallback="Privacy Policy" />
             </Link>
-            <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+            <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors text-sm">
               <EditableText tKey="footer.terms" fallback="Terms of Service" />
             </Link>
           </div>

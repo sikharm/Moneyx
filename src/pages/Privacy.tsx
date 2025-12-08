@@ -1,54 +1,57 @@
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Shield, Database, Lock, Users, Mail, Clock } from "lucide-react";
 
 const Privacy = () => {
+  const { t } = useLanguage();
+
   const sections = [
     {
       icon: Database,
-      title: "Information We Collect",
+      title: t("privacy.collection.title"),
       content: [
-        "Personal information (name, email) when you create an account",
-        "MT5 account details for EA connectivity",
-        "Trading activity data for rebate calculations",
-        "Device and browser information for security",
+        t("privacy.collection.item1"),
+        t("privacy.collection.item2"),
+        t("privacy.collection.item3"),
+        t("privacy.collection.item4"),
       ],
     },
     {
       icon: Shield,
-      title: "How We Use Your Data",
+      title: t("privacy.usage.title"),
       content: [
-        "Provide and improve our Expert Advisor services",
-        "Calculate and process rebate payments",
-        "Send important service updates",
-        "Ensure platform security and prevent fraud",
+        t("privacy.usage.item1"),
+        t("privacy.usage.item2"),
+        t("privacy.usage.item3"),
+        t("privacy.usage.item4"),
       ],
     },
     {
       icon: Lock,
-      title: "Data Security",
+      title: t("privacy.security.title"),
       content: [
-        "All data is encrypted in transit and at rest",
-        "MT5 credentials are securely stored and never shared",
-        "Regular security audits and monitoring",
-        "Access controls limit data to authorized personnel only",
+        t("privacy.security.item1"),
+        t("privacy.security.item2"),
+        t("privacy.security.item3"),
+        t("privacy.security.item4"),
       ],
     },
     {
       icon: Users,
-      title: "Third-Party Services",
+      title: t("privacy.thirdparty.title"),
       content: [
-        "MetaTrader 5 platform for trading execution",
-        "Secure payment processors for rebate disbursement",
-        "We do not sell your personal data to third parties",
+        t("privacy.thirdparty.item1"),
+        t("privacy.thirdparty.item2"),
+        t("privacy.thirdparty.item3"),
       ],
     },
     {
       icon: Mail,
-      title: "Your Rights",
+      title: t("privacy.rights.title"),
       content: [
-        "Request access to your personal data",
-        "Request correction of inaccurate data",
-        "Request deletion of your account and data",
-        "Contact us at: privacy@moneyx.la",
+        t("privacy.rights.item1"),
+        t("privacy.rights.item2"),
+        t("privacy.rights.item3"),
+        t("privacy.rights.item4"),
       ],
     },
   ];
@@ -62,18 +65,18 @@ const Privacy = () => {
             <Shield className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Privacy Policy
+            {t("privacy.title")}
           </h1>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
-            <span>Last updated: December 2024</span>
+            <span>{t("privacy.lastUpdated")}: {t("privacy.updateDate")}</span>
           </div>
         </div>
 
         {/* Introduction */}
         <div className="bg-card rounded-xl p-6 mb-8 border border-border">
           <p className="text-muted-foreground leading-relaxed">
-            MoneyX is committed to protecting your privacy. This policy explains how we collect, use, and safeguard your information when you use our Expert Advisor services.
+            {t("privacy.intro")}
           </p>
         </div>
 
@@ -110,7 +113,7 @@ const Privacy = () => {
         {/* Contact */}
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">
-            Questions about this policy? Contact us at{" "}
+            {t("privacy.contact")}{" "}
             <a
               href="mailto:privacy@moneyx.la"
               className="text-primary hover:underline"

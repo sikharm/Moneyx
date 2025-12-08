@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Autoplay from "embla-carousel-autoplay";
 import { TrendingUp, Bot, Sliders, Download } from "lucide-react";
@@ -19,6 +19,8 @@ import heroPerformance from "@/assets/hero-slide-performance.jpg";
 import heroAuto from "@/assets/hero-slide-auto.jpg";
 import heroHybrid from "@/assets/hero-slide-hybrid.jpg";
 import heroDownload from "@/assets/hero-slide-download.jpg";
+
+const AUTOPLAY_DELAY = 5000; // 5 seconds
 
 const slides = [
   {
@@ -63,22 +65,50 @@ export function HeroCarousel() {
   const { t } = useLanguage();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   
   const autoplayPlugin = useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: false, stopOnMouseEnter: true })
+    Autoplay({ delay: AUTOPLAY_DELAY, stopOnInteraction: false, stopOnMouseEnter: true })
   );
+
+  // Reset progress when slide changes
+  const resetProgress = useCallback(() => {
+    setProgress(0);
+  }, []);
 
   useEffect(() => {
     if (!api) return;
 
     setCurrent(api.selectedScrollSnap());
+    resetProgress();
+    
     api.on("select", () => {
       setCurrent(api.selectedScrollSnap());
+      resetProgress();
     });
-  }, [api]);
+  }, [api, resetProgress]);
+
+  // Progress bar animation
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) return 0;
+        return prev + (100 / (AUTOPLAY_DELAY / 50)); // Update every 50ms
+      });
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [current, isPaused]);
 
   return (
-    <section className="relative w-full">
+    <section 
+      className="relative w-full"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <Carousel
         setApi={setApi}
         plugins={[autoplayPlugin.current]}
@@ -134,19 +164,31 @@ export function HeroCarousel() {
         <CarouselNext className="right-4 bg-white/20 hover:bg-white/40 border-white/30 text-white" />
       </Carousel>
 
-      {/* Dot Indicators */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+      {/* Progress Indicators */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-10">
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => api?.scrollTo(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              current === index
-                ? "bg-primary w-8"
-                : "bg-white/50 hover:bg-white/70"
-            }`}
+            onClick={() => {
+              api?.scrollTo(index);
+              resetProgress();
+            }}
+            className="group relative flex flex-col items-center gap-1"
             aria-label={`Go to slide ${index + 1}`}
-          />
+          >
+            {/* Progress bar container */}
+            <div className={`h-1 rounded-full overflow-hidden transition-all duration-300 ${
+              current === index ? "w-12 bg-white/30" : "w-3 bg-white/20"
+            }`}>
+              {/* Progress fill - only show on active slide */}
+              {current === index && (
+                <div 
+                  className="h-full bg-primary transition-all duration-75 ease-linear"
+                  style={{ width: `${progress}%` }}
+                />
+              )}
+            </div>
+          </button>
         ))}
       </div>
     </section>

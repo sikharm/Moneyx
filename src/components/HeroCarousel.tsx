@@ -118,7 +118,7 @@ export function HeroCarousel() {
         }}
         className="w-full"
       >
-        <CarouselContent className="-ml-0">
+        <CarouselContent className="-ml-0 touch-pan-y">
           {slides.map((slide, index) => {
             const Icon = slide.icon;
             const isActive = current === index;

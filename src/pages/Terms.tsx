@@ -70,7 +70,7 @@ const Terms = () => {
           </h1>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
-            <span>{t("terms.lastUpdated") || "Last updated"}: December 2024</span>
+            <span>{t("terms.lastUpdated") || "Last updated"}: {t("terms.updateDate") || "January 2025"}</span>
           </div>
         </div>
 
@@ -139,10 +139,10 @@ const Terms = () => {
           <p className="text-muted-foreground">
             {t("terms.contact") || "Questions about these terms? Contact us at"}{" "}
             <a
-              href="mailto:legal@moneyx.la"
+              href="mailto:moneyxwhale@gmail.com"
               className="text-primary hover:underline"
             >
-              legal@moneyx.la
+              moneyxwhale@gmail.com
             </a>
           </p>
         </div>

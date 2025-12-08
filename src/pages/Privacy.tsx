@@ -115,10 +115,10 @@ const Privacy = () => {
           <p className="text-muted-foreground">
             {t("privacy.contact")}{" "}
             <a
-              href="mailto:privacy@moneyx.la"
+              href="mailto:moneyxwhale@gmail.com"
               className="text-primary hover:underline"
             >
-              privacy@moneyx.la
+              moneyxwhale@gmail.com
             </a>
           </p>
         </div>

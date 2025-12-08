@@ -119,23 +119,28 @@ export function HeroCarousel() {
         className="w-full"
       >
         <CarouselContent className="-ml-0">
-          {slides.map((slide) => {
+          {slides.map((slide, index) => {
             const Icon = slide.icon;
+            const isActive = current === index;
             return (
               <CarouselItem key={slide.id} className="pl-0">
                 <div
                   className="relative min-h-[60vh] md:min-h-[70vh] flex items-center justify-center overflow-hidden"
                 >
-                  {/* Background Image */}
+                  {/* Background Image with Ken Burns zoom effect */}
                   <div 
-                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                    className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[5000ms] ease-linear ${
+                      isActive ? "scale-110" : "scale-100"
+                    }`}
                     style={{ backgroundImage: `url(${slide.image})` }}
                   />
                   {/* Dark Overlay for text readability */}
                   <div className="absolute inset-0 bg-black/50" />
                   
-                  {/* Content */}
-                  <div className="container mx-auto px-4 text-center space-y-6 animate-fade-in relative z-10">
+                  {/* Content with fade-in animation */}
+                  <div className={`container mx-auto px-4 text-center space-y-6 relative z-10 transition-all duration-700 ${
+                    isActive ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                  }`}>
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/20 backdrop-blur-sm mb-4">
                       <Icon className="w-10 h-10 text-primary" />
                     </div>

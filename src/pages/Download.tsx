@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +9,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import EditableText from "@/components/EditableText";
+import TermsAcceptanceDialog from "@/components/TermsAcceptanceDialog";
+import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 
 interface FileData {
   id: string;
@@ -34,6 +36,9 @@ const Download = () => {
   const [olderAutoOpen, setOlderAutoOpen] = useState(false);
   const [olderHybridOpen, setOlderHybridOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [termsDialogOpen, setTermsDialogOpen] = useState(false);
+  const [pendingDownload, setPendingDownload] = useState<FileData | null>(null);
+  const { checkAcceptance, saveAcceptance } = useTermsAcceptance();
 
   useEffect(() => {
     loadFiles();
@@ -92,7 +97,7 @@ const Download = () => {
     }
   };
 
-  const handleDownload = async (file: FileData) => {
+  const executeDownload = useCallback(async (file: FileData) => {
     try {
       await supabase.rpc('increment_download_count', { file_id: file.id });
       
@@ -116,7 +121,37 @@ const Download = () => {
     } catch (error) {
       console.error('Download error:', error);
     }
-  };
+  }, [user]);
+
+  const handleDownload = useCallback(async (file: FileData) => {
+    // If user is logged in, check if they've already accepted terms
+    if (user) {
+      const hasAccepted = await checkAcceptance();
+      if (hasAccepted) {
+        // User already accepted, proceed with download
+        executeDownload(file);
+        return;
+      }
+    }
+    
+    // Show terms dialog (for guests or users who haven't accepted)
+    setPendingDownload(file);
+    setTermsDialogOpen(true);
+  }, [user, checkAcceptance, executeDownload]);
+
+  const handleTermsAccepted = useCallback(async () => {
+    if (!pendingDownload) return;
+    
+    // If user is logged in, save their acceptance
+    if (user) {
+      await saveAcceptance();
+    }
+    
+    // Proceed with download
+    setTermsDialogOpen(false);
+    executeDownload(pendingDownload);
+    setPendingDownload(null);
+  }, [user, pendingDownload, saveAcceptance, executeDownload]);
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return 'N/A';
@@ -458,6 +493,14 @@ const Download = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Terms Acceptance Dialog */}
+      <TermsAcceptanceDialog
+        open={termsDialogOpen}
+        onOpenChange={setTermsDialogOpen}
+        onAccept={handleTermsAccepted}
+        fileName={pendingDownload?.file_name}
+      />
     </div>
   );
 };

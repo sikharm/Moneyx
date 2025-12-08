@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import FacebookWidget from "@/components/FacebookWidget";
 import EconomicCalendarWidget from "@/components/EconomicCalendarWidget";
 import EditableText from "@/components/EditableText";
+import { HeroCarousel } from "@/components/HeroCarousel";
 
 const Home = () => {
   const { t } = useLanguage();
@@ -20,24 +21,8 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-hero opacity-5"></div>
-        <div className="container mx-auto text-center relative z-10">
-          <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
-            <EditableText tKey="home.hero.title" />
-            <br />
-            <span className="bg-gradient-hero bg-clip-text text-transparent">
-              <EditableText tKey="home.hero.title_highlight" />
-            </span>
-          </h1>
-          <Button size="lg" className="bg-gradient-hero hover:opacity-90 text-lg px-8" asChild>
-            <Link to="/download">
-              <EditableText tKey="common.download_now" /> <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
-        </div>
-      </section>
+      {/* Hero Carousel */}
+      <HeroCarousel />
 
       {/* Economic Calendar Section */}
       <section className="py-16 px-4 bg-gradient-card">

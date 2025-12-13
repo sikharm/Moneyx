@@ -25,7 +25,7 @@ interface FacebookWidgetProps {
   showCard?: boolean;
 }
 
-const FACEBOOK_PAGE_URL = "https://www.facebook.com/SabuyHUBlao";
+const FACEBOOK_PAGE_URL = "https://www.facebook.com/MonXGold";
 const SDK_LOAD_TIMEOUT = 8000; // 8 seconds to show loading
 
 const FacebookWidget = ({ width: propWidth, height: propHeight, showCard = true }: FacebookWidgetProps) => {

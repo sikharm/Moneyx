@@ -130,6 +130,19 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background-image: url('@/assets/bg-pattern.png');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+    background-blend-mode: overlay;
+  }
+
+  .dark body {
+    background-image: url('@/assets/bg-pattern-dark.png');
+    background-repeat: repeat;
+    background-size: 300px;
+    background-attachment: fixed;
+    background-blend-mode: overlay;
   }
 
   /* Apply Phetsarath font for Lao language - Safari-compatible with multiple selectors */

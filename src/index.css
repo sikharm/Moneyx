@@ -141,6 +141,7 @@ All colors MUST be HSL.
     background-repeat: repeat;
     background-size: 150px;
     background-attachment: fixed;
+    background-color: transparent;
   }
 
   /* Apply Phetsarath font for Lao language - Safari-compatible with multiple selectors */

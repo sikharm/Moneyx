@@ -487,7 +487,6 @@ export type Database = {
           last_report_date: string | null
           metaapi_account_id: string | null
           mt5_login: string | null
-          mt5_password: string | null
           mt5_server: string | null
           nickname: string
           rebate_rate_per_lot: number
@@ -505,7 +504,6 @@ export type Database = {
           last_report_date?: string | null
           metaapi_account_id?: string | null
           mt5_login?: string | null
-          mt5_password?: string | null
           mt5_server?: string | null
           nickname: string
           rebate_rate_per_lot?: number
@@ -523,7 +521,6 @@ export type Database = {
           last_report_date?: string | null
           metaapi_account_id?: string | null
           mt5_login?: string | null
-          mt5_password?: string | null
           mt5_server?: string | null
           nickname?: string
           rebate_rate_per_lot?: number

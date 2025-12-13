@@ -25,47 +25,49 @@ const Home = () => {
       <HeroCarousel />
 
       {/* Economic Calendar Section */}
-      <section className="py-16 px-4 bg-gradient-card">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Calendar className="h-6 w-6 text-primary" />
-                <h2 className="text-3xl md:text-4xl font-bold">
-                  <EditableText tKey="home.calendar.title" fallback="Economic Calendar" />
-                </h2>
-              </div>
-              <Button variant="outline" className="gap-2" asChild>
-                <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener noreferrer">
-                  <Calendar className="h-4 w-4" />
-                  <EditableText tKey="home.calendar.view_full" fallback="View Full Calendar on Forex Factory" />
-                </a>
-              </Button>
-            </div>
-            <EconomicCalendarWidget showCard={false} height={350} />
+      <section className="py-12 px-4">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-semibold inline-flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <EditableText tKey="home.calendar.title" fallback="Economic Calendar" />
+            </h2>
+          </div>
+          <div className="rounded-xl border border-border/50 overflow-hidden bg-card/50 backdrop-blur-sm">
+            <EconomicCalendarWidget showCard={false} height={320} />
+          </div>
+          <div className="text-center mt-4">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary gap-1.5" asChild>
+              <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener noreferrer">
+                <EditableText tKey="home.calendar.view_full" fallback="View Full Calendar" />
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Social Updates Section */}
-      <section className="py-16 px-4">
-        <div className="container mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 items-center max-w-5xl mx-auto">
-            <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Facebook className="h-6 w-6 text-primary" />
-                <h2 className="text-3xl md:text-4xl font-bold">
-                  <EditableText tKey="home.updates.title" fallback="Latest Updates" />
-                </h2>
-              </div>
-              <Button variant="outline" className="gap-2" asChild>
-                <a href="https://www.facebook.com/SabuyHUBlao" target="_blank" rel="noopener noreferrer">
-                  <Facebook className="h-4 w-4" />
-                  <EditableText tKey="home.updates.follow_button" fallback="Follow Us on Facebook" />
-                </a>
-              </Button>
+      <section className="py-12 px-4 bg-muted/30">
+        <div className="container mx-auto max-w-4xl">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-semibold inline-flex items-center gap-2">
+              <Facebook className="h-5 w-5 text-[#1877F2]" />
+              <EditableText tKey="home.updates.title" fallback="Latest Updates" />
+            </h2>
+          </div>
+          <div className="flex justify-center">
+            <div className="rounded-xl border border-border/50 overflow-hidden bg-card/50 backdrop-blur-sm">
+              <FacebookWidget showCard={false} />
             </div>
-            <FacebookWidget showCard={false} />
+          </div>
+          <div className="text-center mt-4">
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-[#1877F2] gap-1.5" asChild>
+              <a href="https://www.facebook.com/MonXGold" target="_blank" rel="noopener noreferrer">
+                <EditableText tKey="home.updates.follow_button" fallback="Follow Us on Facebook" />
+                <ArrowRight className="h-3.5 w-3.5" />
+              </a>
+            </Button>
           </div>
         </div>
       </section>

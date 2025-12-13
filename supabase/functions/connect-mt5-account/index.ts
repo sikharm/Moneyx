@@ -38,7 +38,6 @@ serve(async (req) => {
     const { 
       nickname, 
       mt5_login, 
-      mt5_password, 
       mt5_server, 
       initial_investment, 
       rebate_rate_per_lot,
@@ -48,52 +47,23 @@ serve(async (req) => {
     console.log('Creating MetaAPI account for user:', user.id);
     console.log('MT5 Login:', mt5_login, 'Server:', mt5_server);
 
-    // Create MetaAPI account
-    const metaapiResponse = await fetch('https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'auth-token': metaapiToken,
-      },
-      body: JSON.stringify({
-        name: `${nickname} - ${user.id.slice(0, 8)}`,
-        type: 'cloud',
-        login: mt5_login,
-        password: mt5_password,
-        server: mt5_server,
-        platform: 'mt5',
-        magic: 0,
-        quoteStreamingIntervalInSeconds: 2.5,
-        reliability: 'regular',
-      }),
-    });
+    // Note: MetaAPI integration disabled - no longer collecting MT5 passwords
+    // Accounts are now created manually with fake/test data only
+    const metaapiAccountId = `manual-${Date.now()}`;
 
-    if (!metaapiResponse.ok) {
-      const errorText = await metaapiResponse.text();
-      console.error('MetaAPI error:', errorText);
-      return new Response(JSON.stringify({ error: 'Failed to create MetaAPI account', details: errorText }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const metaapiAccount = await metaapiResponse.json();
-    console.log('MetaAPI account created:', metaapiAccount.id);
-
-    // Store account in database
+    // Store account in database (without password)
     const { data: account, error: dbError } = await supabaseClient
       .from('user_mt5_accounts')
       .insert({
         user_id: user.id,
         nickname,
         mt5_login,
-        mt5_password,
         mt5_server,
-        metaapi_account_id: metaapiAccount.id,
+        metaapi_account_id: metaapiAccountId,
         initial_investment,
         rebate_rate_per_lot,
         is_cent_account,
-        status: 'deploying',
+        status: 'active',
       })
       .select()
       .single();
@@ -108,27 +78,10 @@ serve(async (req) => {
 
     console.log('Account saved to database:', account.id);
 
-    // Deploy the account (async - will take 2-3 minutes)
-    const deployResponse = await fetch(
-      `https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai/users/current/accounts/${metaapiAccount.id}/deploy`,
-      {
-        method: 'POST',
-        headers: {
-          'auth-token': metaapiToken,
-        },
-      }
-    );
-
-    if (!deployResponse.ok) {
-      console.error('Deploy error:', await deployResponse.text());
-    } else {
-      console.log('Account deployment started');
-    }
-
     return new Response(JSON.stringify({ 
       success: true, 
       account,
-      message: 'Account created and deployment started. It may take 2-3 minutes to connect.'
+      message: 'Account created successfully.'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -110,7 +110,7 @@ const Subscription = () => {
                 key={plan.key}
                 className={`group relative overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
                   plan.popular 
-                    ? 'border-primary/50 shadow-2xl shadow-primary/20 ring-1 ring-primary/30 scale-105 z-10' 
+                    ? 'border-primary/50 shadow-2xl shadow-primary/20 ring-1 ring-primary/30' 
                     : 'border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
                 }`}
                 style={{ animationDelay: `${index * 100}ms` }}
@@ -120,13 +120,13 @@ const Subscription = () => {
                 
                 {/* Glow Effect for Popular */}
                 {plan.popular && (
-                  <div className="absolute -inset-px bg-gradient-to-r from-primary/50 via-emerald-500/50 to-primary/50 rounded-xl blur-sm opacity-50 group-hover:opacity-75 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-emerald-500/10" />
                 )}
                 
                 {/* Popular Badge */}
                 {plan.popular && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                    <div className="bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-primary/30 flex items-center gap-1.5">
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
+                    <div className="bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-primary/30 flex items-center gap-1">
                       <Star className="w-3 h-3 fill-current" />
                       {t('subscription.popular')}
                     </div>
@@ -134,15 +134,15 @@ const Subscription = () => {
                 )}
 
                 {/* Savings Badge */}
-                {savings && !plan.popular && (
-                  <div className="absolute top-3 right-3">
+                {savings && (
+                  <div className="absolute top-3 right-3 z-10">
                     <div className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">
                       -{savings}%
                     </div>
                   </div>
                 )}
                 
-                <CardHeader className={`relative text-center ${plan.popular ? 'pt-8' : 'pt-6'} pb-2`}>
+                <CardHeader className="relative text-center pt-10 pb-2">
                   {/* Icon with Gradient */}
                   <div className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-gradient-to-br ${plan.iconGradient} shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
                     <Icon className="w-7 h-7 text-white" />

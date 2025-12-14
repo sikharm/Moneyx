@@ -28,6 +28,7 @@ const Navigation = () => {
     { to: "/", label: t('nav.home') },
     { to: "/about", label: t('nav.about') },
     { to: "/performance", label: t('nav.performance') },
+    { to: "/subscription", label: t('nav.subscription') },
     { to: "/download", label: t('nav.download') },
     { to: "/contact", label: t('nav.contact') },
   ];

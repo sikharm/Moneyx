@@ -1,7 +1,7 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Zap, Clock, Crown, Infinity } from 'lucide-react';
+import { Check, Zap, Clock, Crown, Infinity, Sparkles, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const plans = [
@@ -11,6 +11,8 @@ const plans = [
     price: 3000,
     icon: Clock,
     popular: false,
+    gradient: 'from-slate-500/10 to-slate-600/5',
+    iconGradient: 'from-slate-400 to-slate-600',
   },
   {
     key: '3months',
@@ -18,13 +20,17 @@ const plans = [
     price: 8000,
     icon: Zap,
     popular: false,
+    gradient: 'from-blue-500/10 to-cyan-500/5',
+    iconGradient: 'from-blue-400 to-cyan-500',
   },
   {
     key: '6months',
     duration: 6,
     price: 15000,
-    icon: Zap,
+    icon: Star,
     popular: true,
+    gradient: 'from-primary/20 to-emerald-500/10',
+    iconGradient: 'from-primary to-emerald-400',
   },
   {
     key: '12months',
@@ -32,6 +38,8 @@ const plans = [
     price: 25000,
     icon: Crown,
     popular: false,
+    gradient: 'from-amber-500/10 to-orange-500/5',
+    iconGradient: 'from-amber-400 to-orange-500',
   },
   {
     key: 'lifetime',
@@ -39,6 +47,8 @@ const plans = [
     price: 35000,
     icon: Infinity,
     popular: false,
+    gradient: 'from-purple-500/10 to-pink-500/5',
+    iconGradient: 'from-purple-400 to-pink-500',
   },
 ];
 
@@ -61,13 +71,27 @@ const Subscription = () => {
     return Math.round(price / months);
   };
 
+  const calculateSavings = (price: number, months: number | null) => {
+    if (!months || months === 1) return null;
+    const monthlyRate = 3000;
+    const fullPrice = monthlyRate * months;
+    const savings = Math.round(((fullPrice - price) / fullPrice) * 100);
+    return savings > 0 ? savings : null;
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-20 px-4">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+        <div className="text-center mb-16 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <Sparkles className="w-4 h-4" />
             {t('subscription.title')}
+          </div>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <span className="bg-gradient-hero bg-clip-text text-transparent">
+              {t('subscription.title')}
+            </span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t('subscription.subtitle')}
@@ -75,60 +99,108 @@ const Subscription = () => {
         </div>
 
         {/* Pricing Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
-          {plans.map((plan) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-16">
+          {plans.map((plan, index) => {
             const Icon = plan.icon;
             const monthlyPrice = calculateMonthlyPrice(plan.price, plan.duration);
+            const savings = calculateSavings(plan.price, plan.duration);
             
             return (
               <Card 
                 key={plan.key}
-                className={`relative overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+                className={`group relative overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
                   plan.popular 
-                    ? 'border-primary shadow-lg ring-2 ring-primary/20' 
-                    : 'border-border'
+                    ? 'border-primary/50 shadow-2xl shadow-primary/20 ring-1 ring-primary/30 scale-105 z-10' 
+                    : 'border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
                 }`}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
+                {/* Gradient Background */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${plan.gradient} opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
+                
+                {/* Glow Effect for Popular */}
                 {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-bl-lg">
-                    {t('subscription.popular')}
+                  <div className="absolute -inset-px bg-gradient-to-r from-primary/50 via-emerald-500/50 to-primary/50 rounded-xl blur-sm opacity-50 group-hover:opacity-75 transition-opacity" />
+                )}
+                
+                {/* Popular Badge */}
+                {plan.popular && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                    <div className="bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-primary/30 flex items-center gap-1.5">
+                      <Star className="w-3 h-3 fill-current" />
+                      {t('subscription.popular')}
+                    </div>
+                  </div>
+                )}
+
+                {/* Savings Badge */}
+                {savings && !plan.popular && (
+                  <div className="absolute top-3 right-3">
+                    <div className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">
+                      -{savings}%
+                    </div>
                   </div>
                 )}
                 
-                <CardHeader className="text-center pb-2">
-                  <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3 ${
-                    plan.popular ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    <Icon className="w-6 h-6" />
+                <CardHeader className={`relative text-center ${plan.popular ? 'pt-8' : 'pt-6'} pb-2`}>
+                  {/* Icon with Gradient */}
+                  <div className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-4 bg-gradient-to-br ${plan.iconGradient} shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+                    <Icon className="w-7 h-7 text-white" />
                   </div>
-                  <CardTitle className="text-lg">
+                  <CardTitle className="text-xl font-bold">
                     {t(`subscription.plan.${plan.key}`)}
                   </CardTitle>
                 </CardHeader>
                 
-                <CardContent className="text-center">
-                  <div className="mb-4">
-                    <span className="text-3xl font-bold text-foreground">
-                      ฿{formatPrice(plan.price)}
-                    </span>
+                <CardContent className="relative text-center pt-0">
+                  {/* Price */}
+                  <div className="mb-6">
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-sm font-medium text-muted-foreground">฿</span>
+                      <span className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+                        {formatPrice(plan.price)}
+                      </span>
+                    </div>
                     {monthlyPrice && (
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-muted-foreground mt-2">
                         ≈ ฿{formatPrice(monthlyPrice)}/{t('subscription.per_month')}
+                      </p>
+                    )}
+                    {plan.key === 'lifetime' && (
+                      <p className="text-xs text-primary font-medium mt-2">
+                        One-time payment
                       </p>
                     )}
                   </div>
                   
-                  <ul className="space-y-2 text-sm text-left mb-6">
-                    {features.map((feature) => (
-                      <li key={feature} className="flex items-center gap-2">
-                        <Check className="w-4 h-4 text-primary flex-shrink-0" />
-                        <span className="text-muted-foreground">{t(feature)}</span>
+                  {/* Divider */}
+                  <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-6" />
+                  
+                  {/* Features */}
+                  <ul className="space-y-3 text-sm text-left mb-6">
+                    {features.map((feature, i) => (
+                      <li 
+                        key={feature} 
+                        className="flex items-center gap-3 group/item"
+                        style={{ animationDelay: `${(index * 100) + (i * 50)}ms` }}
+                      >
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                        <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                          {t(feature)}
+                        </span>
                       </li>
                     ))}
                   </ul>
                   
+                  {/* CTA Button */}
                   <Button 
-                    className={`w-full ${plan.popular ? '' : 'variant-outline'}`}
+                    className={`w-full font-semibold transition-all duration-300 ${
+                      plan.popular 
+                        ? 'bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40' 
+                        : 'hover:bg-primary hover:text-primary-foreground'
+                    }`}
                     variant={plan.popular ? 'default' : 'outline'}
                     asChild
                   >
@@ -143,15 +215,18 @@ const Subscription = () => {
         </div>
 
         {/* Bottom Info */}
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">
-            {t('subscription.note')}
-          </p>
-          <Button variant="link" asChild>
-            <Link to="/contact" className="text-primary">
-              {t('subscription.questions')}
-            </Link>
-          </Button>
+        <div className="text-center animate-fade-in">
+          <div className="inline-flex flex-col items-center gap-4 p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
+            <p className="text-muted-foreground">
+              {t('subscription.note')}
+            </p>
+            <Button variant="link" asChild className="text-primary font-semibold hover:text-primary/80">
+              <Link to="/contact" className="flex items-center gap-2">
+                {t('subscription.questions')}
+                <Sparkles className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

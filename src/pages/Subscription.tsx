@@ -62,7 +62,7 @@ const Subscription = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-16 px-4">
+    <div className="min-h-screen pt-24 pb-20 px-4">
       <div className="container mx-auto max-w-6xl">
         {/* Header */}
         <div className="text-center mb-12">

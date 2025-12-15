@@ -8,6 +8,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { AdminEditProvider } from "./contexts/AdminEditContext";
 import { ThemeProvider } from "./components/ThemeProvider";
 import Navigation from "@/components/Navigation";
+import GlobalSidebar from "@/components/GlobalSidebar";
 import AdminEditToggle from "@/components/AdminEditToggle";
 import ScrollToTop from "@/components/ScrollToTop";
 import PageTransition from "@/components/PageTransition";
@@ -23,12 +24,14 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Auth from "./pages/Auth";
 import Subscription from "./pages/Subscription";
+import Partners from "./pages/Partners";
 import Profile from "./pages/Profile";
 import AdminLayout from "./pages/admin/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import FileManagement from "./pages/admin/FileManagement";
 import Translations from "./pages/admin/Translations";
 import UserInvestments from "./pages/admin/UserInvestments";
+import AdminPartners from "./pages/admin/Partners";
 import TradeTrackerLayout from "./pages/admin/trade-tracker/TradeTrackerLayout";
 import TradeTrackerDashboard from "./pages/admin/trade-tracker/TradeTrackerDashboard";
 import AccountsPage from "./pages/admin/trade-tracker/AccountsPage";
@@ -55,8 +58,9 @@ const App = () => (
               <AdminEditProvider>
                 <ScrollToTop />
                 <Navigation />
+                <GlobalSidebar />
                 <AdminEditToggle />
-              <div className="flex flex-col min-h-screen">
+              <div className="flex flex-col min-h-screen xl:mr-80">
                 <PageTransition>
                   <Routes>
                     <Route path="/" element={<Home />} />
@@ -69,6 +73,7 @@ const App = () => (
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<Terms />} />
                     <Route path="/subscription" element={<Subscription />} />
+                    <Route path="/partners" element={<Partners />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />} />
                     
@@ -85,6 +90,7 @@ const App = () => (
                       <Route path="files" element={<FileManagement />} />
                       <Route path="translations" element={<Translations />} />
                       <Route path="user-investments" element={<UserInvestments />} />
+                      <Route path="partners" element={<AdminPartners />} />
                     </Route>
 
                     {/* Trade Tracker Routes */}

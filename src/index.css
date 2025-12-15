@@ -61,6 +61,7 @@ All colors MUST be HSL.
     --gradient-hero: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(142, 71%, 45%));
     --gradient-success: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(142, 71%, 45%));
     --gradient-card: linear-gradient(180deg, hsl(120, 20%, 98%), hsl(120, 15%, 96%));
+    --gradient-page: linear-gradient(135deg, hsl(120, 20%, 98%) 0%, hsl(160, 30%, 95%) 50%, hsl(142, 25%, 92%) 100%);
     
     --shadow-soft: 0 4px 6px -1px hsl(150 10% 15% / 0.08), 0 2px 4px -1px hsl(150 10% 15% / 0.04);
     --shadow-strong: 0 20px 25px -5px hsl(150 10% 15% / 0.08), 0 10px 10px -5px hsl(150 10% 15% / 0.03);
@@ -100,6 +101,7 @@ All colors MUST be HSL.
     --gradient-hero: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(142, 71%, 45%));
     --gradient-success: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(142, 71%, 45%));
     --gradient-card: linear-gradient(180deg, hsl(150, 10%, 10%), hsl(150, 10%, 15%));
+    --gradient-page: linear-gradient(135deg, hsl(150, 15%, 6%) 0%, hsl(160, 20%, 8%) 50%, hsl(142, 15%, 10%) 100%);
   }
 }
 
@@ -130,18 +132,15 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    background-image: url('/bg-pattern.png') !important;
-    background-repeat: repeat;
-    background-size: 150px;
+    background: var(--gradient-page);
     background-attachment: fixed;
+    min-height: 100vh;
   }
 
   .dark body {
-    background-image: url('/bg-pattern-dark.png') !important;
-    background-repeat: repeat;
-    background-size: 150px;
+    background: var(--gradient-page);
     background-attachment: fixed;
-    background-color: transparent;
+    min-height: 100vh;
   }
 
   /* Apply Phetsarath font for Lao language - Safari-compatible with multiple selectors */

@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Clock, Facebook, Calendar } from "lucide-react";
+import { ArrowRight, BarChart3, Zap, Shield, TrendingUp, Clock } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import FacebookWidget from "@/components/FacebookWidget";
-import EconomicCalendarWidget from "@/components/EconomicCalendarWidget";
 import EditableText from "@/components/EditableText";
 import { HeroCarousel } from "@/components/HeroCarousel";
 
@@ -23,53 +21,6 @@ const Home = () => {
     <div className="min-h-screen">
       {/* Hero Carousel */}
       <HeroCarousel />
-
-      {/* Calendar & Social Section */}
-      <section className="py-12 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Economic Calendar */}
-            <div className="rounded-xl border border-border/50 overflow-hidden bg-card/50 backdrop-blur-sm">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
-                <Calendar className="h-4 w-4 text-primary" />
-                <span className="font-medium text-sm">
-                  <EditableText tKey="home.calendar.title" fallback="Economic Calendar" />
-                </span>
-              </div>
-              <EconomicCalendarWidget showCard={false} height={280} />
-              <div className="px-4 py-2 border-t border-border/50 bg-muted/20">
-                <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-primary gap-1 p-0" asChild>
-                  <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener noreferrer">
-                    <EditableText tKey="home.calendar.view_full" fallback="View Full Calendar" />
-                    <ArrowRight className="h-3 w-3" />
-                  </a>
-                </Button>
-              </div>
-            </div>
-
-            {/* Social Updates */}
-            <div className="rounded-xl border border-border/50 overflow-hidden bg-card/50 backdrop-blur-sm">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
-                <Facebook className="h-4 w-4 text-[#1877F2]" />
-                <span className="font-medium text-sm">
-                  <EditableText tKey="home.updates.title" fallback="Latest Updates" />
-                </span>
-              </div>
-              <div className="h-[280px] overflow-hidden">
-                <FacebookWidget showCard={false} />
-              </div>
-              <div className="px-4 py-2 border-t border-border/50 bg-muted/20">
-                <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-[#1877F2] gap-1 p-0" asChild>
-                  <a href="https://www.facebook.com/MonXGold" target="_blank" rel="noopener noreferrer">
-                    <EditableText tKey="home.updates.follow_button" fallback="Follow Us" />
-                    <ArrowRight className="h-3 w-3" />
-                  </a>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section className="py-20 px-4">

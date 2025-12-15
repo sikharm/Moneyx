@@ -30,6 +30,7 @@ const Navigation = () => {
     { to: "/performance", label: t('nav.performance') },
     { to: "/subscription", label: t('nav.subscription') },
     { to: "/download", label: t('nav.download') },
+    { to: "/partners", label: t('nav.partners') || "Partners" },
     { to: "/contact", label: t('nav.contact') },
   ];
 
@@ -57,25 +58,27 @@ const Navigation = () => {
   const isTradingModeActive = tradingModes.some(mode => isActive(mode.to));
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <nav className="fixed top-0 left-0 right-0 z-50">
+      <div className="container mx-auto px-4 py-2">
+        <div className="flex items-center justify-between h-14 bg-card/90 backdrop-blur-md rounded-full px-6 shadow-lg border border-border/50">
           <Link to="/" className="flex items-center gap-3 font-bold text-xl">
-            <div className="h-14 w-14 rounded-full overflow-hidden border-2 border-primary/50 bg-card">
+            <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-primary/50 bg-card">
               <img src={logo} alt="MoneyX Logo" className="h-full w-full object-cover" />
             </div>
-            <span className="bg-gradient-hero bg-clip-text text-transparent">MoneyX</span>
+            <span className="bg-gradient-hero bg-clip-text text-transparent hidden sm:inline">MoneyX</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-5 ml-8">
+          <div className="hidden lg:flex items-center gap-1">
             {navLinks.slice(0, 2).map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap",
-                  isActive(link.to) ? "text-primary" : "text-muted-foreground"
+                  "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                  isActive(link.to) 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 {link.label}
@@ -87,21 +90,23 @@ const Navigation = () => {
               <DropdownMenuTrigger asChild>
                 <button
                   className={cn(
-                    "flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary focus:outline-none whitespace-nowrap",
-                    isTradingModeActive ? "text-primary" : "text-muted-foreground"
+                    "flex items-center gap-1 px-4 py-2 rounded-full text-sm font-medium transition-all focus:outline-none",
+                    isTradingModeActive 
+                      ? "bg-primary text-primary-foreground" 
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
                   {t('nav.trading_modes') === 'nav.trading_modes' ? "Trading Modes" : t('nav.trading_modes')}
                   <ChevronDown className="h-4 w-4" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="center" className="w-64 bg-popover border border-border z-50">
+              <DropdownMenuContent align="center" className="w-64 bg-popover border border-border z-50 rounded-xl">
                 {tradingModes.map((mode) => (
                   <DropdownMenuItem key={mode.to} asChild>
                     <Link
                       to={mode.to}
                       className={cn(
-                        "flex items-start gap-3 p-3 cursor-pointer",
+                        "flex items-start gap-3 p-3 cursor-pointer rounded-lg",
                         isActive(mode.to) && "bg-accent"
                       )}
                     >
@@ -121,15 +126,19 @@ const Navigation = () => {
                 key={link.to}
                 to={link.to}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary whitespace-nowrap",
-                  isActive(link.to) ? "text-primary" : "text-muted-foreground"
+                  "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                  isActive(link.to) 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 {link.label}
               </Link>
             ))}
             
-            <SettingsDropdown />
+            <div className="ml-2 pl-2 border-l border-border">
+              <SettingsDropdown />
+            </div>
           </div>
 
           {/* Mobile/Tablet Menu Button */}

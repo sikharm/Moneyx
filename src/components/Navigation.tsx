@@ -153,17 +153,17 @@ const Navigation = () => {
 
         {/* Mobile/Tablet Navigation */}
         {isOpen && (
-          <div className="lg:hidden py-4 space-y-3 border-t border-border">
+          <div className="lg:hidden mt-2 bg-card/95 backdrop-blur-md rounded-2xl shadow-lg border border-border/50 py-4 space-y-1">
             {navLinks.slice(0, 2).map((link) => (
               <Link
                 key={link.to}
                 to={link.to}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  "block py-2 px-4 rounded-lg transition-colors",
+                  "block py-3 px-6 mx-2 rounded-xl transition-colors",
                   isActive(link.to)
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground font-medium"
+                    : "text-foreground hover:bg-muted"
                 )}
               >
                 {link.label}
@@ -174,10 +174,10 @@ const Navigation = () => {
             <Collapsible open={isTradingModesOpen} onOpenChange={setIsTradingModesOpen}>
               <CollapsibleTrigger
                 className={cn(
-                  "flex items-center justify-between w-full py-2 px-4 rounded-lg transition-colors",
+                  "flex items-center justify-between w-[calc(100%-1rem)] py-3 px-6 mx-2 rounded-xl transition-colors",
                   isTradingModeActive
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground font-medium"
+                    : "text-foreground hover:bg-muted"
                 )}
               >
                 <span>{t('nav.trading_modes') === 'nav.trading_modes' ? "Trading Modes" : t('nav.trading_modes')}</span>
@@ -186,23 +186,23 @@ const Navigation = () => {
                   isTradingModesOpen && "rotate-180"
                 )} />
               </CollapsibleTrigger>
-              <CollapsibleContent className="pl-4 mt-2 space-y-2">
+              <CollapsibleContent className="mt-1 mx-4 space-y-1 bg-muted/50 rounded-xl p-2">
                 {tradingModes.map((mode) => (
                   <Link
                     key={mode.to}
                     to={mode.to}
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "flex items-start gap-3 py-2 px-4 rounded-lg transition-colors",
+                      "flex items-start gap-3 py-3 px-4 rounded-lg transition-colors",
                       isActive(mode.to)
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground font-medium"
+                        : "text-foreground hover:bg-muted"
                     )}
                   >
-                    <mode.icon className="h-5 w-5 mt-0.5 text-primary" />
+                    <mode.icon className={cn("h-5 w-5 mt-0.5", isActive(mode.to) ? "text-primary-foreground" : "text-primary")} />
                     <div className="flex flex-col">
                       <span className="font-medium">{mode.label}</span>
-                      <span className="text-xs text-muted-foreground">{mode.description}</span>
+                      <span className={cn("text-xs", isActive(mode.to) ? "text-primary-foreground/80" : "text-muted-foreground")}>{mode.description}</span>
                     </div>
                   </Link>
                 ))}
@@ -215,17 +215,17 @@ const Navigation = () => {
                 to={link.to}
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  "block py-2 px-4 rounded-lg transition-colors",
+                  "block py-3 px-6 mx-2 rounded-xl transition-colors",
                   isActive(link.to)
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground font-medium"
+                    : "text-foreground hover:bg-muted"
                 )}
               >
                 {link.label}
               </Link>
             ))}
 
-            <div className="px-4 pt-2">
+            <div className="px-4 pt-3 mt-2 border-t border-border/50 mx-2">
               <SettingsDropdown onNavigate={() => setIsOpen(false)} />
             </div>
           </div>

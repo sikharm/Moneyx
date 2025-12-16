@@ -30,7 +30,7 @@ const Navigation = () => {
     { to: "/performance", label: t('nav.performance') },
     { to: "/subscription", label: t('nav.subscription') },
     { to: "/download", label: t('nav.download') },
-    { to: "/partners", label: t('nav.partners') || "Partners" },
+    { to: "/partners", label: t('nav.partners') },
     { to: "/contact", label: t('nav.contact') },
   ];
 

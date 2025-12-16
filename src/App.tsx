@@ -60,7 +60,7 @@ const App = () => (
                 <Navigation />
                 <GlobalSidebar />
                 <AdminEditToggle />
-              <div className="flex flex-col min-h-screen xl:mr-80">
+              <div className="flex flex-col min-h-screen">
                 <PageTransition>
                   <Routes>
                     <Route path="/" element={<Home />} />

@@ -9,10 +9,10 @@ const MYFXBOOK_ACCOUNTS = {
   hybrid: [
     { id: "11691566", name: "MoneyX", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx/11691566" },
     { id: "11775709", name: "MoneyX Max Profit", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx-max-profit/11775709" },
-    { id: "11808475", name: "MoneyX N M4", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx-n-m4/11808475" },
   ],
   auto: [
     { id: "11808434", name: "MoneyX C M3", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx-c-m3/11808434" },
+    { id: "11808475", name: "MoneyX N M4", url: "https://www.myfxbook.com/members/SikharmThongin/moneyx-n-m4/11808475" },
   ],
 };
 

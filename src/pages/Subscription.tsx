@@ -1,8 +1,67 @@
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Check, Zap, Clock, Crown, Infinity, Sparkles, Star } from 'lucide-react';
+import { Check, Zap, Clock, Crown, Infinity, Sparkles, Star, Shield, TrendingUp, Settings2, Bot, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
+
+const products = [
+  {
+    key: 'M1',
+    name: 'MoneyX M1',
+    riskLevel: 'low',
+    riskDescription: 'SL 40% of initial amount',
+    system: 'hybrid',
+    suitableFor: 'People with trading experience',
+    icon: Settings2,
+    gradient: 'from-blue-500/20 to-cyan-500/10',
+    iconGradient: 'from-blue-400 to-cyan-500',
+  },
+  {
+    key: 'M2',
+    name: 'MoneyX M2 (MaxProfit)',
+    riskLevel: 'medium',
+    riskDescription: 'SL $1,000',
+    system: 'hybrid',
+    suitableFor: 'People with at least 1 year trading experience and money management skills',
+    icon: TrendingUp,
+    gradient: 'from-amber-500/20 to-orange-500/10',
+    iconGradient: 'from-amber-400 to-orange-500',
+  },
+  {
+    key: 'C-M3',
+    name: 'MoneyX C-M3 (Correlation)',
+    riskLevel: 'low',
+    riskDescription: 'Low risk, highly secure system',
+    system: 'auto',
+    suitableFor: 'People with little trading experience who don\'t have much time. Results visible in 2-3 months.',
+    icon: Shield,
+    gradient: 'from-emerald-500/20 to-green-500/10',
+    iconGradient: 'from-emerald-400 to-green-500',
+  },
+  {
+    key: 'N-M4',
+    name: 'MoneyX N-M4 (Non-stop)',
+    riskLevel: 'medium',
+    riskDescription: 'SL $1,000',
+    system: 'auto',
+    suitableFor: 'People with at least 1 year trading experience who don\'t have much time',
+    icon: Zap,
+    gradient: 'from-purple-500/20 to-pink-500/10',
+    iconGradient: 'from-purple-400 to-pink-500',
+  },
+  {
+    key: 'G1',
+    name: 'MoneyX G1',
+    riskLevel: 'low',
+    riskDescription: 'SL 20%',
+    system: 'auto',
+    suitableFor: 'People with little trading experience who don\'t have much time',
+    icon: Bot,
+    gradient: 'from-slate-500/20 to-gray-500/10',
+    iconGradient: 'from-slate-400 to-gray-500',
+  },
+];
 
 const plans = [
   {
@@ -79,6 +138,30 @@ const Subscription = () => {
     return savings > 0 ? savings : null;
   };
 
+  const getRiskBadgeStyles = (level: string) => {
+    switch (level) {
+      case 'low':
+        return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+      case 'medium':
+        return 'bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30';
+      case 'high':
+        return 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
+  const getSystemBadgeStyles = (system: string) => {
+    switch (system) {
+      case 'hybrid':
+        return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30';
+      case 'auto':
+        return 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30';
+      default:
+        return 'bg-muted text-muted-foreground';
+    }
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-20 px-4">
       <div className="container mx-auto max-w-6xl">
@@ -96,6 +179,84 @@ const Subscription = () => {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             {t('subscription.subtitle')}
           </p>
+        </div>
+
+        {/* Products Section */}
+        <div className="mb-20">
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">
+            <span className="bg-gradient-success bg-clip-text text-transparent">
+              {t('subscription.choose_product') || 'Choose Your Trading System'}
+            </span>
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {products.map((product, index) => {
+              const Icon = product.icon;
+              
+              return (
+                <Card 
+                  key={product.key}
+                  className="group relative overflow-hidden transition-all duration-500 hover:-translate-y-2 border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Gradient Background */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${product.gradient} opacity-50 group-hover:opacity-100 transition-opacity duration-500`} />
+                  
+                  <CardHeader className="relative pb-2">
+                    <div className="flex items-start justify-between gap-3">
+                      {/* Icon */}
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center bg-gradient-to-br ${product.iconGradient} shadow-lg transition-transform duration-300 group-hover:scale-110`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      
+                      {/* Badges */}
+                      <div className="flex flex-col gap-2 items-end">
+                        <Badge variant="outline" className={`text-xs font-medium ${getRiskBadgeStyles(product.riskLevel)}`}>
+                          {product.riskLevel === 'low' ? (t('subscription.risk.low') || 'Low Risk') : 
+                           product.riskLevel === 'medium' ? (t('subscription.risk.medium') || 'Medium Risk') : 
+                           (t('subscription.risk.high') || 'High Risk')}
+                        </Badge>
+                        <Badge variant="outline" className={`text-xs font-medium ${getSystemBadgeStyles(product.system)}`}>
+                          {product.system === 'hybrid' ? 'Hybrid' : 'Auto'}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <CardTitle className="text-lg font-bold mt-3">
+                      {product.name}
+                    </CardTitle>
+                  </CardHeader>
+                  
+                  <CardContent className="relative pt-0 space-y-4">
+                    {/* Risk Description */}
+                    <div className="flex items-start gap-2 text-sm">
+                      <AlertTriangle className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <span className="text-muted-foreground">{product.riskDescription}</span>
+                    </div>
+                    
+                    {/* Suitable For */}
+                    <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
+                      <p className="text-xs text-muted-foreground uppercase font-medium mb-1">
+                        {t('subscription.suitable_for') || 'Suitable For'}
+                      </p>
+                      <p className="text-sm text-foreground">
+                        {product.suitableFor}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Pricing Section Header */}
+        <div className="text-center mb-10">
+          <h2 className="text-2xl md:text-3xl font-bold">
+            <span className="bg-gradient-hero bg-clip-text text-transparent">
+              {t('subscription.pricing_title') || 'Subscription Plans'}
+            </span>
+          </h2>
         </div>
 
         {/* Pricing Grid */}

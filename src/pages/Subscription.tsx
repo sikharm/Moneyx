@@ -7,56 +7,56 @@ import { Badge } from '@/components/ui/badge';
 
 const products = [
   {
-    key: 'M1',
+    key: 'm1',
     name: 'MoneyX M1',
     riskLevel: 'low',
-    riskDescription: 'SL 40% of initial amount',
+    riskDescKey: 'subscription.product.m1.risk_desc',
     system: 'hybrid',
-    suitableFor: 'People with trading experience',
+    suitableKey: 'subscription.product.m1.suitable',
     icon: Settings2,
     gradient: 'from-blue-500/20 to-cyan-500/10',
     iconGradient: 'from-blue-400 to-cyan-500',
   },
   {
-    key: 'M2',
+    key: 'm2',
     name: 'MoneyX M2 (MaxProfit)',
     riskLevel: 'medium',
-    riskDescription: 'SL $1,000',
+    riskDescKey: 'subscription.product.m2.risk_desc',
     system: 'hybrid',
-    suitableFor: 'People with at least 1 year trading experience and money management skills',
+    suitableKey: 'subscription.product.m2.suitable',
     icon: TrendingUp,
     gradient: 'from-amber-500/20 to-orange-500/10',
     iconGradient: 'from-amber-400 to-orange-500',
   },
   {
-    key: 'C-M3',
+    key: 'cm3',
     name: 'MoneyX C-M3 (Correlation)',
     riskLevel: 'low',
-    riskDescription: 'Low risk, highly secure system',
+    riskDescKey: 'subscription.product.cm3.risk_desc',
     system: 'auto',
-    suitableFor: 'People with little trading experience who don\'t have much time. Results visible in 2-3 months.',
+    suitableKey: 'subscription.product.cm3.suitable',
     icon: Shield,
     gradient: 'from-emerald-500/20 to-green-500/10',
     iconGradient: 'from-emerald-400 to-green-500',
   },
   {
-    key: 'N-M4',
+    key: 'nm4',
     name: 'MoneyX N-M4 (Non-stop)',
     riskLevel: 'medium',
-    riskDescription: 'SL $1,000',
+    riskDescKey: 'subscription.product.nm4.risk_desc',
     system: 'auto',
-    suitableFor: 'People with at least 1 year trading experience who don\'t have much time',
+    suitableKey: 'subscription.product.nm4.suitable',
     icon: Zap,
     gradient: 'from-purple-500/20 to-pink-500/10',
     iconGradient: 'from-purple-400 to-pink-500',
   },
   {
-    key: 'G1',
+    key: 'g1',
     name: 'MoneyX G1',
     riskLevel: 'low',
-    riskDescription: 'SL 20%',
+    riskDescKey: 'subscription.product.g1.risk_desc',
     system: 'auto',
-    suitableFor: 'People with little trading experience who don\'t have much time',
+    suitableKey: 'subscription.product.g1.suitable',
     icon: Bot,
     gradient: 'from-slate-500/20 to-gray-500/10',
     iconGradient: 'from-slate-400 to-gray-500',
@@ -231,16 +231,16 @@ const Subscription = () => {
                     {/* Risk Description */}
                     <div className="flex items-start gap-2 text-sm">
                       <AlertTriangle className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                      <span className="text-muted-foreground">{product.riskDescription}</span>
+                      <span className="text-muted-foreground">{t(product.riskDescKey)}</span>
                     </div>
                     
                     {/* Suitable For */}
                     <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
                       <p className="text-xs text-muted-foreground uppercase font-medium mb-1">
-                        {t('subscription.suitable_for') || 'Suitable For'}
+                        {t('subscription.suitable_for')}
                       </p>
                       <p className="text-sm text-foreground">
-                        {product.suitableFor}
+                        {t(product.suitableKey)}
                       </p>
                     </div>
                   </CardContent>

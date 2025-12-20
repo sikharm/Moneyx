@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          related_subscription_id: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          related_subscription_id?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          related_subscription_id?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_related_subscription_id_fkey"
+            columns: ["related_subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           created_at: string | null
@@ -328,6 +366,38 @@ export type Database = {
         }
         Relationships: []
       }
+      subscription_notifications: {
+        Row: {
+          id: string
+          notification_type: string
+          sent_at: string
+          sent_via: string
+          subscription_id: string
+        }
+        Insert: {
+          id?: string
+          notification_type: string
+          sent_at?: string
+          sent_via: string
+          subscription_id: string
+        }
+        Update: {
+          id?: string
+          notification_type?: string
+          sent_at?: string
+          sent_via?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_notifications_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trader_preferences: {
         Row: {
           created_at: string
@@ -618,6 +688,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          amount_paid: number | null
+          created_at: string
+          end_date: string
+          id: string
+          notes: string | null
+          plan_duration: string
+          product_key: string
+          start_date: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          created_at?: string
+          end_date: string
+          id?: string
+          notes?: string | null
+          plan_duration: string
+          product_key: string
+          start_date: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number | null
+          created_at?: string
+          end_date?: string
+          id?: string
+          notes?: string | null
+          plan_duration?: string
+          product_key?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_terms_acceptance: {
         Row: {
           accepted_at: string
@@ -668,6 +780,7 @@ export type Database = {
         | "images"
         | "videos"
         | "set_files"
+      subscription_status: "active" | "expiring_soon" | "expired" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -798,6 +911,7 @@ export const Constants = {
       app_role: ["admin", "user"],
       ea_mode_type: ["auto", "hybrid"],
       file_category: ["ea_files", "documents", "images", "videos", "set_files"],
+      subscription_status: ["active", "expiring_soon", "expired", "cancelled"],
     },
   },
 } as const

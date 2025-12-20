@@ -1,8 +1,9 @@
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, FileText, Languages, Users, Handshake } from 'lucide-react';
+import { LayoutDashboard, FileText, Languages, Users, Handshake, CreditCard } from 'lucide-react';
 import SettingsDropdown from '@/components/SettingsDropdown';
+import AdminNotificationBell from '@/components/admin/AdminNotificationBell';
 
 const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -25,6 +26,7 @@ const AdminLayout = () => {
     { to: '/admin/files', icon: FileText, label: 'File Management' },
     { to: '/admin/translations', icon: Languages, label: 'Translations' },
     { to: '/admin/user-investments', icon: Users, label: 'User Investments' },
+    { to: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
     { to: '/admin/partners', icon: Handshake, label: 'Partners' },
   ];
 
@@ -52,7 +54,10 @@ const AdminLayout = () => {
               ))}
             </nav>
           </div>
-          <SettingsDropdown showViewSite={true} />
+          <div className="flex items-center gap-2">
+            <AdminNotificationBell />
+            <SettingsDropdown showViewSite={true} />
+          </div>
         </div>
       </header>
 

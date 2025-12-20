@@ -32,6 +32,7 @@ import FileManagement from "./pages/admin/FileManagement";
 import Translations from "./pages/admin/Translations";
 import UserInvestments from "./pages/admin/UserInvestments";
 import AdminPartners from "./pages/admin/Partners";
+import Subscriptions from "./pages/admin/Subscriptions";
 import TradeTrackerLayout from "./pages/admin/trade-tracker/TradeTrackerLayout";
 import TradeTrackerDashboard from "./pages/admin/trade-tracker/TradeTrackerDashboard";
 import AccountsPage from "./pages/admin/trade-tracker/AccountsPage";

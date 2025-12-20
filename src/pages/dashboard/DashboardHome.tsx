@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/mt5ReportParser';
 import AccountSummaryDialog from '@/components/investments/AccountSummaryDialog';
+import SubscriptionStatusCard from '@/components/dashboard/SubscriptionStatusCard';
 
 interface MT5Account {
   id: string;

@@ -185,30 +185,47 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
           </div>
 
           <div className="space-y-2">
-            <Label>Expire Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
+            <Label>Expire Date (Optional)</Label>
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "flex-1 justify-start text-left font-normal",
+                      !formData.expire_date && "text-muted-foreground"
+                    )}
+                    disabled={loading}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.expire_date ? format(formData.expire_date, "PPP") : "No expire date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.expire_date}
+                    onSelect={(date) => setFormData({ ...formData, expire_date: date })}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              {formData.expire_date && (
                 <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.expire_date && "text-muted-foreground"
-                  )}
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setFormData({ ...formData, expire_date: undefined })}
                   disabled={loading}
+                  className="shrink-0"
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.expire_date ? format(formData.expire_date, "PPP") : "Select date"}
+                  <span className="sr-only">Clear date</span>
+                  ×
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={formData.expire_date}
-                  onSelect={(date) => setFormData({ ...formData, expire_date: date })}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Leave empty for no expiration</p>
           </div>
 
           <div className="space-y-2">

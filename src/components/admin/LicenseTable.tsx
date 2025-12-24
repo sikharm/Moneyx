@@ -3,6 +3,7 @@ import { format, differenceInDays, parseISO } from "date-fns";
 import { Edit, Trash2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { TRADING_SYSTEMS } from "./AddLicenseDialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,8 @@ export interface License {
   expire_date: string | null;
   broker: string | null;
   user_name: string | null;
+  trading_system: string | null;
+  account_size: number | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -77,6 +80,17 @@ export function LicenseTable({ licenses, loading, onEdit, onRefresh }: LicenseTa
     }
   };
 
+  const getTradingSystemLabel = (system: string | null) => {
+    if (!system) return <span className="text-muted-foreground">-</span>;
+    const found = TRADING_SYSTEMS.find(s => s.value === system);
+    return found ? found.label : system;
+  };
+
+  const formatAccountSize = (size: number | null) => {
+    if (!size) return <span className="text-muted-foreground">-</span>;
+    return `$${size.toLocaleString()}`;
+  };
+
   const getDaysLeftDisplay = (expireDate: string | null) => {
     if (!expireDate) return <span className="text-muted-foreground">No expiry</span>;
     
@@ -119,10 +133,11 @@ export function LicenseTable({ licenses, loading, onEdit, onRefresh }: LicenseTa
               <TableRow className="border-border/50 hover:bg-transparent">
                 <TableHead className="text-muted-foreground">Account ID</TableHead>
                 <TableHead className="text-muted-foreground">License Type</TableHead>
+                <TableHead className="text-muted-foreground">Trading System</TableHead>
+                <TableHead className="text-muted-foreground">Account Size</TableHead>
                 <TableHead className="text-muted-foreground">Expire Date</TableHead>
                 <TableHead className="text-muted-foreground">Status</TableHead>
                 <TableHead className="text-muted-foreground">Broker</TableHead>
-                <TableHead className="text-muted-foreground">User Name</TableHead>
                 <TableHead className="text-muted-foreground text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -131,6 +146,8 @@ export function LicenseTable({ licenses, loading, onEdit, onRefresh }: LicenseTa
                 <TableRow key={license.id} className="border-border/50">
                   <TableCell className="font-mono font-medium">{license.account_id}</TableCell>
                   <TableCell>{getLicenseTypeBadge(license.license_type)}</TableCell>
+                  <TableCell>{getTradingSystemLabel(license.trading_system)}</TableCell>
+                  <TableCell>{formatAccountSize(license.account_size)}</TableCell>
                   <TableCell>
                     {license.expire_date 
                       ? format(parseISO(license.expire_date), "MMM dd, yyyy")
@@ -139,7 +156,6 @@ export function LicenseTable({ licenses, loading, onEdit, onRefresh }: LicenseTa
                   </TableCell>
                   <TableCell>{getDaysLeftDisplay(license.expire_date)}</TableCell>
                   <TableCell>{license.broker || <span className="text-muted-foreground">-</span>}</TableCell>
-                  <TableCell>{license.user_name || <span className="text-muted-foreground">-</span>}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Button

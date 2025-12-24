@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { LicenseTable, License } from "@/components/admin/LicenseTable";
-import { AddLicenseDialog } from "@/components/admin/AddLicenseDialog";
+import { License } from "@/components/admin/LicenseTable";
+import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicenseDialog";
+import { CustomerLicenseCard } from "@/components/admin/CustomerLicenseCard";
 
 interface DashboardStats {
   total: number;
   fullLicenses: number;
   demoLicenses: number;
   expiringSoon: number;
+  totalCustomers: number;
 }
 
 export default function Subscriptions() {
@@ -32,9 +34,11 @@ export default function Subscriptions() {
     fullLicenses: 0,
     demoLicenses: 0,
     expiringSoon: 0,
+    totalCustomers: 0,
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [licenseTypeFilter, setLicenseTypeFilter] = useState<string>("all");
+  const [tradingSystemFilter, setTradingSystemFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
 
@@ -63,11 +67,15 @@ export default function Subscriptions() {
         return daysLeft >= 0 && daysLeft <= 7;
       }).length;
 
+      // Count unique customers
+      const uniqueCustomers = new Set(licensesData.map(l => l.user_name || "Unknown")).size;
+
       setStats({
         total: licensesData.length,
         fullLicenses: licensesData.filter(l => l.license_type === 'full').length,
         demoLicenses: licensesData.filter(l => l.license_type === 'demo').length,
         expiringSoon,
+        totalCustomers: uniqueCustomers,
       });
     } catch (error: any) {
       toast.error("Failed to load licenses: " + error.message);
@@ -97,13 +105,15 @@ export default function Subscriptions() {
 
   const handleExportCSV = () => {
     const csvContent = [
-      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName'].join(','),
+      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName', 'TradingSystem', 'AccountSize'].join(','),
       ...filteredLicenses.map(l => [
         l.account_id,
         l.license_type,
         l.expire_date || '',
         l.broker || '',
-        l.user_name || ''
+        l.user_name || '',
+        l.trading_system || '',
+        l.account_size?.toString() || '0'
       ].join(','))
     ].join('\n');
 
@@ -134,9 +144,39 @@ export default function Subscriptions() {
       (license.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
     const matchesType = licenseTypeFilter === "all" || license.license_type === licenseTypeFilter;
+    const matchesTradingSystem = tradingSystemFilter === "all" || license.trading_system === tradingSystemFilter;
 
-    return matchesSearch && matchesType;
+    return matchesSearch && matchesType && matchesTradingSystem;
   });
+
+  // Group licenses by customer name
+  const customerGroups = useMemo(() => {
+    const groups = new Map<string, License[]>();
+    
+    filteredLicenses.forEach(license => {
+      const customerName = license.user_name || "Unknown";
+      const existing = groups.get(customerName) || [];
+      groups.set(customerName, [...existing, license]);
+    });
+
+    return Array.from(groups.entries())
+      .map(([userName, licenses]) => {
+        const now = new Date();
+        const expiringSoon = licenses.filter(l => {
+          if (!l.expire_date) return false;
+          const daysLeft = differenceInDays(parseISO(l.expire_date), now);
+          return daysLeft >= 0 && daysLeft <= 7;
+        }).length;
+
+        return {
+          userName,
+          licenses,
+          totalAccounts: licenses.length,
+          expiringSoon,
+        };
+      })
+      .sort((a, b) => a.userName.localeCompare(b.userName));
+  }, [filteredLicenses]);
 
   return (
     <div className="space-y-6">
@@ -205,6 +245,16 @@ export default function Subscriptions() {
 
         <Card className="bg-card/50 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Customers</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Expiring Soon</CardTitle>
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
@@ -233,15 +283,44 @@ export default function Subscriptions() {
             <SelectItem value="demo">Demo</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={tradingSystemFilter} onValueChange={setTradingSystemFilter}>
+          <SelectTrigger className="md:w-[220px]">
+            <SelectValue placeholder="Trading System" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Systems</SelectItem>
+            {TRADING_SYSTEMS.map((system) => (
+              <SelectItem key={system.value} value={system.value}>
+                {system.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* License Table */}
-      <LicenseTable
-        licenses={filteredLicenses}
-        loading={loading}
-        onEdit={handleEdit}
-        onRefresh={loadLicenses}
-      />
+      {/* Customer Groups */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : customerGroups.length === 0 ? (
+        <Card className="bg-card/50 border-border/50">
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">No licenses found. Add your first license to get started.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {customerGroups.map((customer) => (
+            <CustomerLicenseCard
+              key={customer.userName}
+              customer={customer}
+              onEdit={handleEdit}
+              onRefresh={loadLicenses}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Add/Edit Dialog */}
       <AddLicenseDialog

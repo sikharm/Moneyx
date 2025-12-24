@@ -37,12 +37,22 @@ interface AddLicenseDialogProps {
   onSuccess: () => void;
 }
 
+export const TRADING_SYSTEMS = [
+  { value: "moneyx_m1", label: "MoneyX M1" },
+  { value: "moneyx_m2", label: "MoneyX M2 (MaxProfit)" },
+  { value: "moneyx_c_m3", label: "MoneyX C-M3 (Correlation)" },
+  { value: "moneyx_n_m4", label: "MoneyX N-M4 (Non-stop)" },
+  { value: "moneyx_g1", label: "MoneyX G1" },
+];
+
 interface FormData {
   account_id: string;
   license_type: string;
   expire_date: Date | undefined;
   broker: string;
   user_name: string;
+  trading_system: string;
+  account_size: string;
 }
 
 export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: AddLicenseDialogProps) {
@@ -53,6 +63,8 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
     expire_date: undefined,
     broker: "",
     user_name: "",
+    trading_system: "",
+    account_size: "",
   });
 
   useEffect(() => {
@@ -63,6 +75,8 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         expire_date: license.expire_date ? new Date(license.expire_date) : undefined,
         broker: license.broker || "",
         user_name: license.user_name || "",
+        trading_system: license.trading_system || "",
+        account_size: license.account_size?.toString() || "",
       });
     } else {
       setFormData({
@@ -71,6 +85,8 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         expire_date: undefined,
         broker: "",
         user_name: "",
+        trading_system: "",
+        account_size: "",
       });
     }
   }, [license, open]);
@@ -92,6 +108,8 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         expire_date: formData.expire_date ? format(formData.expire_date, "yyyy-MM-dd") : null,
         broker: formData.broker.trim() || null,
         user_name: formData.user_name.trim() || null,
+        trading_system: formData.trading_system || null,
+        account_size: formData.account_size ? parseFloat(formData.account_size) : 0,
       };
 
       if (license) {
@@ -211,6 +229,38 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
               value={formData.user_name}
               onChange={(e) => setFormData({ ...formData, user_name: e.target.value })}
               placeholder="e.g., John Doe"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="trading_system">Trading System</Label>
+            <Select
+              value={formData.trading_system}
+              onValueChange={(value) => setFormData({ ...formData, trading_system: value })}
+              disabled={loading}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select trading system" />
+              </SelectTrigger>
+              <SelectContent>
+                {TRADING_SYSTEMS.map((system) => (
+                  <SelectItem key={system.value} value={system.value}>
+                    {system.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="account_size">Account Size</Label>
+            <Input
+              id="account_size"
+              type="number"
+              value={formData.account_size}
+              onChange={(e) => setFormData({ ...formData, account_size: e.target.value })}
+              placeholder="e.g., 10000"
               disabled={loading}
             />
           </div>

@@ -88,7 +88,9 @@ export function LicenseTable({ licenses, loading, onEdit, onRefresh }: LicenseTa
 
   const formatAccountSize = (size: number | null) => {
     if (!size) return <span className="text-muted-foreground">-</span>;
-    return `$${size.toLocaleString()}`;
+    // Size is in cents, convert to dollars for display
+    const dollars = size / 100;
+    return `$${dollars.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
   const getDaysLeftDisplay = (expireDate: string | null) => {

@@ -104,13 +104,23 @@ export default function Subscriptions() {
     }
   };
 
+  const formatDateToDDMMYYYY = (dateStr: string | null) => {
+    if (!dateStr) return '';
+    const date = parseISO(dateStr);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  };
+
   const handleExportCSV = () => {
     const csvContent = [
-      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName', 'TradingSystem', 'AccountSize'].join(','),
+      ['AccountID', 'LicenseType (Full / Demo)', 'ExpireDate (DD.MM.YYYY)', 'VPSExpireDate (DD.MM.YYYY)', 'Broker', 'UserName', 'TradingSystem', 'AccountSize'].join(','),
       ...filteredLicenses.map(l => [
         l.account_id,
-        l.license_type,
-        l.expire_date || '',
+        l.license_type === 'full' ? 'Full' : 'Demo',
+        formatDateToDDMMYYYY(l.expire_date),
+        formatDateToDDMMYYYY(l.vps_expire_date),
         l.broker || '',
         l.user_name || '',
         l.trading_system || '',

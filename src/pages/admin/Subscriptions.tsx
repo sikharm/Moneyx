@@ -127,20 +127,23 @@ export default function Subscriptions() {
     return size.toLocaleString('en-US');
   };
 
+  // CSV Export - Updated format v2
   const handleExportCSV = () => {
-    const csvContent = [
-      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName', 'TradingSystem', 'AccountSize(cents)', 'VPS ExpireDate'].join(','),
-      ...filteredLicenses.map(l => [
-        l.account_id,
-        l.license_type === 'full' ? 'Full' : 'Demo',
-        formatDateToDDMMYYYY(l.expire_date),
-        l.broker || '',
-        l.user_name || '',
-        formatTradingSystem(l.trading_system),
-        formatAccountSize(l.account_size),
-        formatDateToDDMMYYYY(l.vps_expire_date)
-      ].join(','))
-    ].join('\n');
+    const headers = ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName', 'TradingSystem', 'AccountSize(cents)', 'VPS ExpireDate'];
+    
+    const rows = filteredLicenses.map(l => {
+      const licenseType = l.license_type === 'full' ? 'Full' : 'Demo';
+      const expireDate = formatDateToDDMMYYYY(l.expire_date);
+      const broker = l.broker || '';
+      const userName = l.user_name || '';
+      const tradingSystem = formatTradingSystem(l.trading_system);
+      const accountSize = formatAccountSize(l.account_size);
+      const vpsExpireDate = formatDateToDDMMYYYY(l.vps_expire_date);
+      
+      return [l.account_id, licenseType, expireDate, broker, userName, tradingSystem, accountSize, vpsExpireDate].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');

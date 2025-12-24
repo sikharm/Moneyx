@@ -124,17 +124,22 @@ const Download = () => {
   }, [user]);
 
   const handleDownload = useCallback(async (file: FileData) => {
-    // If user is logged in, check if they've already accepted terms
-    if (user) {
-      const hasAccepted = await checkAcceptance();
-      if (hasAccepted) {
-        // User already accepted, proceed with download
-        executeDownload(file);
-        return;
-      }
+    // Only registered users can download
+    if (!user) {
+      // Redirect to auth page
+      window.location.href = '/auth?redirect=/download';
+      return;
     }
     
-    // Show terms dialog (for guests or users who haven't accepted)
+    // Check if user has already accepted terms
+    const hasAccepted = await checkAcceptance();
+    if (hasAccepted) {
+      // User already accepted, proceed with download
+      executeDownload(file);
+      return;
+    }
+    
+    // Show terms dialog for users who haven't accepted
     setPendingDownload(file);
     setTermsDialogOpen(true);
   }, [user, checkAcceptance, executeDownload]);

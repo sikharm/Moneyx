@@ -75,9 +75,19 @@ const products = [
 
 const plans = [
   {
+    key: 'demo',
+    duration: 0.5, // 2 weeks
+    price: 500,
+    icon: Sparkles,
+    popular: false,
+    isDemo: true,
+    gradient: 'from-rose-500/10 to-pink-500/5',
+    iconGradient: 'from-rose-400 to-pink-500',
+  },
+  {
     key: '1month',
     duration: 1,
-    price: 3000,
+    price: 3500, // +500 THB
     icon: Clock,
     popular: false,
     gradient: 'from-slate-500/10 to-slate-600/5',
@@ -86,7 +96,7 @@ const plans = [
   {
     key: '3months',
     duration: 3,
-    price: 8000,
+    price: 8500, // +500 THB
     icon: Zap,
     popular: false,
     gradient: 'from-blue-500/10 to-cyan-500/5',
@@ -95,7 +105,7 @@ const plans = [
   {
     key: '6months',
     duration: 6,
-    price: 15000,
+    price: 15500, // +500 THB
     icon: Star,
     popular: true,
     gradient: 'from-primary/20 to-emerald-500/10',
@@ -104,7 +114,7 @@ const plans = [
   {
     key: '12months',
     duration: 12,
-    price: 25000,
+    price: 25500, // +500 THB
     icon: Crown,
     popular: false,
     gradient: 'from-amber-500/10 to-orange-500/5',
@@ -113,7 +123,7 @@ const plans = [
   {
     key: 'lifetime',
     duration: null,
-    price: 35000,
+    price: 35000, // No change for Lifetime
     icon: Infinity,
     popular: false,
     gradient: 'from-purple-500/10 to-pink-500/5',
@@ -131,9 +141,9 @@ const Subscription = () => {
     return Math.round(price / months);
   };
 
-  const calculateSavings = (price: number, months: number | null) => {
-    if (!months || months === 1) return null;
-    const monthlyRate = 3000;
+  const calculateSavings = (price: number, months: number | null, key: string) => {
+    if (!months || months === 1 || key === 'demo') return null;
+    const monthlyRate = 3500; // Updated base rate
     const fullPrice = monthlyRate * months;
     const savings = Math.round(((fullPrice - price) / fullPrice) * 100);
     return savings > 0 ? savings : null;
@@ -267,11 +277,12 @@ const Subscription = () => {
         </div>
 
         {/* Pricing Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-16">
           {plans.map((plan, index) => {
             const Icon = plan.icon;
-            const monthlyPrice = calculateMonthlyPrice(plan.price, plan.duration);
-            const savings = calculateSavings(plan.price, plan.duration);
+            const isDemo = 'isDemo' in plan && plan.isDemo;
+            const monthlyPrice = !isDemo ? calculateMonthlyPrice(plan.price, plan.duration) : null;
+            const savings = calculateSavings(plan.price, plan.duration, plan.key);
             
             return (
               <Card 
@@ -279,6 +290,8 @@ const Subscription = () => {
                 className={`group relative overflow-hidden transition-all duration-500 hover:-translate-y-2 ${
                   plan.popular 
                     ? 'border-primary/50 shadow-2xl shadow-primary/20 ring-1 ring-primary/30' 
+                    : isDemo
+                    ? 'border-rose-500/30 hover:border-rose-500/50 hover:shadow-xl hover:shadow-rose-500/10'
                     : 'border-border/50 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/10'
                 }`}
                 style={{ animationDelay: `${index * 100}ms` }}
@@ -289,6 +302,16 @@ const Subscription = () => {
                 {/* Glow Effect for Popular */}
                 {plan.popular && (
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-emerald-500/10" />
+                )}
+
+                {/* Demo Badge */}
+                {isDemo && (
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
+                    <div className="bg-gradient-to-r from-rose-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-rose-500/30 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 fill-current" />
+                      <EditableText tKey="subscription.demo_badge" fallback="Try It" />
+                    </div>
+                  </div>
                 )}
                 
                 {/* Popular Badge */}
@@ -302,7 +325,7 @@ const Subscription = () => {
                 )}
 
                 {/* Savings Badge */}
-                {savings && (
+                {savings && !isDemo && (
                   <div className="absolute top-3 right-3 z-10">
                     <div className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold px-2 py-1 rounded-full">
                       -{savings}%
@@ -318,7 +341,8 @@ const Subscription = () => {
                   <CardTitle className="text-xl font-bold">
                     <EditableText 
                       tKey={`subscription.plan.${plan.key}`} 
-                      fallback={plan.key === '1month' ? '1 Month' : 
+                      fallback={plan.key === 'demo' ? 'Demo' :
+                               plan.key === '1month' ? '1 Month' : 
                                plan.key === '3months' ? '3 Months' :
                                plan.key === '6months' ? '6 Months' :
                                plan.key === '12months' ? '12 Months' : 'Lifetime'} 
@@ -335,9 +359,14 @@ const Subscription = () => {
                         {formatPrice(plan.price)}
                       </span>
                     </div>
-                    {monthlyPrice && (
+                    {monthlyPrice && !isDemo && (
                       <p className="text-sm text-muted-foreground mt-2">
                         ≈ ฿{formatPrice(monthlyPrice)}/<EditableText tKey="subscription.per_month" fallback="month" />
+                      </p>
+                    )}
+                    {isDemo && (
+                      <p className="text-xs text-rose-500 font-medium mt-2">
+                        <EditableText tKey="subscription.demo_duration" fallback="2 Weeks (Demo Account Only)" />
                       </p>
                     )}
                     {plan.key === 'lifetime' && (
@@ -352,38 +381,85 @@ const Subscription = () => {
                   
                   {/* Features */}
                   <ul className="space-y-3 text-sm text-left mb-6">
-                    <li className="flex items-center gap-3 group/item">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
-                        <EditableText tKey="subscription.feature.auto_mode" fallback="Auto Mode Access" />
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-3 group/item">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
-                        <EditableText tKey="subscription.feature.hybrid_mode" fallback="Hybrid Mode Access" />
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-3 group/item">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
-                        <EditableText tKey="subscription.feature.updates" fallback="Free Updates" />
-                      </span>
-                    </li>
-                    <li className="flex items-center gap-3 group/item">
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
-                        <Check className="w-3 h-3 text-white" />
-                      </div>
-                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
-                        <EditableText tKey="subscription.feature.support" fallback="24/7 Support" />
-                      </span>
-                    </li>
+                    {isDemo ? (
+                      <>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.choose_one_ea" fallback="Choose 1 EA System" />
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.demo_only" fallback="Demo Account Only" />
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.vps_1month" fallback="Free VPS Setup (1 Month)" />
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.support" fallback="24/7 Support" />
+                          </span>
+                        </li>
+                      </>
+                    ) : (
+                      <>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.auto_mode" fallback="Auto Mode Access" />
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.hybrid_mode" fallback="Hybrid Mode Access" />
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.free_vps" fallback="Free Setup VPS" />
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.updates" fallback="Free Updates" />
+                          </span>
+                        </li>
+                        <li className="flex items-center gap-3 group/item">
+                          <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                            <Check className="w-3 h-3 text-white" />
+                          </div>
+                          <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                            <EditableText tKey="subscription.feature.support" fallback="24/7 Support" />
+                          </span>
+                        </li>
+                      </>
+                    )}
                   </ul>
                   
                   {/* CTA Button */}
@@ -391,9 +467,11 @@ const Subscription = () => {
                     className={`w-full font-semibold transition-all duration-300 ${
                       plan.popular 
                         ? 'bg-gradient-to-r from-primary to-emerald-500 hover:from-primary/90 hover:to-emerald-500/90 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40' 
+                        : isDemo
+                        ? 'bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-500/90 hover:to-pink-500/90 text-white shadow-lg shadow-rose-500/30'
                         : 'hover:bg-primary hover:text-primary-foreground'
                     }`}
-                    variant={plan.popular ? 'default' : 'outline'}
+                    variant={plan.popular || isDemo ? 'default' : 'outline'}
                     asChild
                   >
                     <Link to="/contact">

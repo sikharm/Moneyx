@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { LogIn, UserPlus, KeyRound, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import EditableText from '@/components/EditableText';
 
 const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -99,13 +100,19 @@ const Auth = () => {
             <div className="bg-gradient-hero p-3 rounded-2xl w-fit mx-auto mb-4">
               <KeyRound className="h-8 w-8 text-primary-foreground" />
             </div>
-            <CardTitle className="text-2xl">{t('auth.reset.title')}</CardTitle>
-            <CardDescription>{t('auth.reset.subtitle')}</CardDescription>
+            <CardTitle className="text-2xl">
+              <EditableText tKey="auth.reset.title" fallback="Reset Password" />
+            </CardTitle>
+            <CardDescription>
+              <EditableText tKey="auth.reset.subtitle" fallback="Enter your email to receive a reset link" as="span" />
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleResetPassword} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="reset-email">{t('common.email')}</Label>
+                <Label htmlFor="reset-email">
+                  <EditableText tKey="common.email" fallback="Email" as="span" />
+                </Label>
                 <Input
                   id="reset-email"
                   type="email"
@@ -119,10 +126,10 @@ const Auth = () => {
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('auth.reset.sending')}
+                    <EditableText tKey="auth.reset.sending" fallback="Sending..." as="span" />
                   </>
                 ) : (
-                  t('auth.reset.send_link')
+                  <EditableText tKey="auth.reset.send_link" fallback="Send Reset Link" as="span" />
                 )}
               </Button>
               <Button 
@@ -132,7 +139,7 @@ const Auth = () => {
                 onClick={() => setShowResetPassword(false)}
               >
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                {t('auth.reset.back_to_login')}
+                <EditableText tKey="auth.reset.back_to_login" fallback="Back to Login" as="span" />
               </Button>
             </form>
           </CardContent>
@@ -148,20 +155,30 @@ const Auth = () => {
           <div className="bg-gradient-hero p-3 rounded-2xl w-fit mx-auto mb-4">
             <LogIn className="h-8 w-8 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl">{t('auth.title')}</CardTitle>
-          <CardDescription>{t('auth.subtitle')}</CardDescription>
+          <CardTitle className="text-2xl">
+            <EditableText tKey="auth.title" fallback="Welcome to MoneyX" />
+          </CardTitle>
+          <CardDescription>
+            <EditableText tKey="auth.subtitle" fallback="Sign in to access your account" as="span" />
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">{t('auth.tab.sign_in')}</TabsTrigger>
-              <TabsTrigger value="signup">{t('auth.tab.sign_up')}</TabsTrigger>
+              <TabsTrigger value="login">
+                <EditableText tKey="auth.tab.sign_in" fallback="Sign In" as="span" />
+              </TabsTrigger>
+              <TabsTrigger value="signup">
+                <EditableText tKey="auth.tab.sign_up" fallback="Sign Up" as="span" />
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">{t('common.email')}</Label>
+                  <Label htmlFor="login-email">
+                    <EditableText tKey="common.email" fallback="Email" as="span" />
+                  </Label>
                   <Input
                     id="login-email"
                     type="email"
@@ -173,14 +190,16 @@ const Auth = () => {
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password">{t('common.password')}</Label>
+                    <Label htmlFor="login-password">
+                      <EditableText tKey="common.password" fallback="Password" as="span" />
+                    </Label>
                     <Button 
                       type="button" 
                       variant="link" 
                       className="px-0 h-auto text-sm text-muted-foreground hover:text-primary"
                       onClick={() => setShowResetPassword(true)}
                     >
-                      {t('auth.forgot_password')}
+                      <EditableText tKey="auth.forgot_password" fallback="Forgot password?" as="span" />
                     </Button>
                   </div>
                   <Input
@@ -196,12 +215,12 @@ const Auth = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t('auth.button.signing_in')}
+                      <EditableText tKey="auth.button.signing_in" fallback="Signing in..." as="span" />
                     </>
                   ) : (
                     <>
                       <LogIn className="mr-2 h-4 w-4" />
-                      {t('auth.button.sign_in')}
+                      <EditableText tKey="auth.button.sign_in" fallback="Sign In" as="span" />
                     </>
                   )}
                 </Button>
@@ -211,7 +230,9 @@ const Auth = () => {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">{t('auth.full_name')}</Label>
+                  <Label htmlFor="signup-name">
+                    <EditableText tKey="auth.full_name" fallback="Full Name" as="span" />
+                  </Label>
                   <Input
                     id="signup-name"
                     type="text"
@@ -222,7 +243,9 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">{t('common.email')}</Label>
+                  <Label htmlFor="signup-email">
+                    <EditableText tKey="common.email" fallback="Email" as="span" />
+                  </Label>
                   <Input
                     id="signup-email"
                     type="email"
@@ -233,7 +256,9 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">{t('common.password')}</Label>
+                  <Label htmlFor="signup-password">
+                    <EditableText tKey="common.password" fallback="Password" as="span" />
+                  </Label>
                   <Input
                     id="signup-password"
                     type="password"
@@ -244,7 +269,9 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="signup-confirm">{t('auth.confirm_password')}</Label>
+                  <Label htmlFor="signup-confirm">
+                    <EditableText tKey="auth.confirm_password" fallback="Confirm Password" as="span" />
+                  </Label>
                   <Input
                     id="signup-confirm"
                     type="password"
@@ -258,12 +285,12 @@ const Auth = () => {
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      {t('auth.button.creating_account')}
+                      <EditableText tKey="auth.button.creating_account" fallback="Creating account..." as="span" />
                     </>
                   ) : (
                     <>
                       <UserPlus className="mr-2 h-4 w-4" />
-                      {t('auth.button.create_account')}
+                      <EditableText tKey="auth.button.create_account" fallback="Create Account" as="span" />
                     </>
                   )}
                 </Button>

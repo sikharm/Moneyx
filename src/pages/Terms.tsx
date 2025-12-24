@@ -1,62 +1,7 @@
-import { useLanguage } from "@/contexts/LanguageContext";
 import { FileText, AlertTriangle, Scale, UserCheck, Copyright, ShieldX, Clock } from "lucide-react";
+import EditableText from "@/components/EditableText";
 
 const Terms = () => {
-  const { t } = useLanguage();
-
-  const sections = [
-    {
-      icon: FileText,
-      title: t("terms.service.title") || "Service Description",
-      content: [
-        t("terms.service.item1") || "MoneyX provides Expert Advisor (EA) software for automated forex trading",
-        t("terms.service.item2") || "Available in Auto Mode and Hybrid Mode configurations",
-        t("terms.service.item3") || "Rebate program based on trading volume",
-        t("terms.service.item4") || "Compatible with MetaTrader 5 platform",
-      ],
-    },
-    {
-      icon: UserCheck,
-      title: t("terms.eligibility.title") || "User Responsibilities",
-      content: [
-        t("terms.eligibility.item1") || "You must be at least 18 years old to use our services",
-        t("terms.eligibility.item2") || "Provide accurate account information",
-        t("terms.eligibility.item3") || "Maintain security of your MT5 credentials",
-        t("terms.eligibility.item4") || "Comply with your broker's terms and regulations",
-      ],
-    },
-    {
-      icon: Copyright,
-      title: t("terms.ip.title") || "Intellectual Property",
-      content: [
-        t("terms.ip.item1") || "MoneyX EA software is proprietary and protected by copyright",
-        t("terms.ip.item2") || "License is non-transferable and for personal use only",
-        t("terms.ip.item3") || "Reverse engineering or redistribution is prohibited",
-        t("terms.ip.item4") || "All trademarks and logos are property of MoneyX",
-      ],
-    },
-    {
-      icon: ShieldX,
-      title: t("terms.liability.title") || "Limitation of Liability",
-      content: [
-        t("terms.liability.item1") || "MoneyX is not liable for trading losses or missed opportunities",
-        t("terms.liability.item2") || "Service interruptions due to technical issues or maintenance",
-        t("terms.liability.item3") || "Actions taken by your broker or the MetaTrader platform",
-        t("terms.liability.item4") || "Maximum liability limited to fees paid in the last 12 months",
-      ],
-    },
-    {
-      icon: Scale,
-      title: t("terms.governing.title") || "Governing Law",
-      content: [
-        t("terms.governing.item1") || "These terms are governed by the laws of Lao PDR",
-        t("terms.governing.item2") || "Disputes will be resolved in Vientiane, Laos",
-        t("terms.governing.item3") || "We may update these terms with 30 days notice",
-        t("terms.governing.item4") || "Continued use after updates constitutes acceptance",
-      ],
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-background pt-24 pb-16">
       <div className="container mx-auto px-4 max-w-4xl">
@@ -66,11 +11,13 @@ const Terms = () => {
             <FileText className="w-8 h-8 text-primary" />
           </div>
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            {t("terms.title") || "Terms of Service"}
+            <EditableText tKey="terms.title" fallback="Terms of Service" />
           </h1>
           <div className="flex items-center justify-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4" />
-            <span>{t("terms.lastUpdated") || "Last updated"}: {t("terms.updateDate") || "January 2025"}</span>
+            <span>
+              <EditableText tKey="terms.lastUpdated" fallback="Last updated" as="span" />: <EditableText tKey="terms.updateDate" fallback="January 2025" as="span" />
+            </span>
           </div>
         </div>
 
@@ -82,15 +29,21 @@ const Terms = () => {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-foreground mb-2">
-                {t("terms.risk.title") || "Risk Disclaimer"}
+                <EditableText tKey="terms.risk.title" fallback="Risk Disclaimer" />
               </h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
-                {t("terms.risk.content1") ||
-                  "Forex trading involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results."}
+                <EditableText 
+                  tKey="terms.risk.content1" 
+                  fallback="Forex trading involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results." 
+                  as="span"
+                />
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                {t("terms.risk.content2") ||
-                  "You should carefully consider whether trading is appropriate for you. Never trade with money you cannot afford to lose. MoneyX EA does not guarantee profits."}
+                <EditableText 
+                  tKey="terms.risk.content2" 
+                  fallback="You should carefully consider whether trading is appropriate for you. Never trade with money you cannot afford to lose. MoneyX EA does not guarantee profits." 
+                  as="span"
+                />
               </p>
             </div>
           </div>
@@ -99,45 +52,170 @@ const Terms = () => {
         {/* Introduction */}
         <div className="bg-card rounded-xl p-6 mb-8 border border-border">
           <p className="text-muted-foreground leading-relaxed">
-            {t("terms.intro") ||
-              "By using MoneyX services, you agree to these terms. Please read them carefully before downloading or using our Expert Advisor software."}
+            <EditableText 
+              tKey="terms.intro" 
+              fallback="By using MoneyX services, you agree to these terms. Please read them carefully before downloading or using our Expert Advisor software." 
+              as="span"
+            />
           </p>
         </div>
 
-        {/* Sections */}
+        {/* Section 1: Service Description */}
         <div className="space-y-6">
-          {sections.map((section, index) => (
-            <div
-              key={index}
-              className="bg-card rounded-xl p-6 border border-border"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <section.icon className="w-5 h-5 text-primary" />
-                </div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  {section.title}
-                </h2>
+          <div className="bg-card rounded-xl p-6 border border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-primary" />
               </div>
-              <ul className="space-y-3">
-                {section.content.map((item, itemIndex) => (
-                  <li
-                    key={itemIndex}
-                    className="flex items-start gap-3 text-muted-foreground"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+              <h2 className="text-xl font-semibold text-foreground">
+                <EditableText tKey="terms.service.title" fallback="Service Description" />
+              </h2>
             </div>
-          ))}
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.service.item1" fallback="MoneyX provides Expert Advisor (EA) software for automated forex trading" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.service.item2" fallback="Available in Auto Mode and Hybrid Mode configurations" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.service.item3" fallback="Rebate program based on trading volume" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.service.item4" fallback="Compatible with MetaTrader 5 platform" as="span" />
+              </li>
+            </ul>
+          </div>
+
+          {/* Section 2: User Responsibilities */}
+          <div className="bg-card rounded-xl p-6 border border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <UserCheck className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground">
+                <EditableText tKey="terms.eligibility.title" fallback="User Responsibilities" />
+              </h2>
+            </div>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.eligibility.item1" fallback="You must be at least 18 years old to use our services" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.eligibility.item2" fallback="Provide accurate account information" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.eligibility.item3" fallback="Maintain security of your MT5 credentials" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.eligibility.item4" fallback="Comply with your broker's terms and regulations" as="span" />
+              </li>
+            </ul>
+          </div>
+
+          {/* Section 3: Intellectual Property */}
+          <div className="bg-card rounded-xl p-6 border border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Copyright className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground">
+                <EditableText tKey="terms.ip.title" fallback="Intellectual Property" />
+              </h2>
+            </div>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.ip.item1" fallback="MoneyX EA software is proprietary and protected by copyright" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.ip.item2" fallback="License is non-transferable and for personal use only" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.ip.item3" fallback="Reverse engineering or redistribution is prohibited" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.ip.item4" fallback="All trademarks and logos are property of MoneyX" as="span" />
+              </li>
+            </ul>
+          </div>
+
+          {/* Section 4: Limitation of Liability */}
+          <div className="bg-card rounded-xl p-6 border border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <ShieldX className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground">
+                <EditableText tKey="terms.liability.title" fallback="Limitation of Liability" />
+              </h2>
+            </div>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.liability.item1" fallback="MoneyX is not liable for trading losses or missed opportunities" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.liability.item2" fallback="Service interruptions due to technical issues or maintenance" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.liability.item3" fallback="Actions taken by your broker or the MetaTrader platform" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.liability.item4" fallback="Maximum liability limited to fees paid in the last 12 months" as="span" />
+              </li>
+            </ul>
+          </div>
+
+          {/* Section 5: Governing Law */}
+          <div className="bg-card rounded-xl p-6 border border-border">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Scale className="w-5 h-5 text-primary" />
+              </div>
+              <h2 className="text-xl font-semibold text-foreground">
+                <EditableText tKey="terms.governing.title" fallback="Governing Law" />
+              </h2>
+            </div>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.governing.item1" fallback="These terms are governed by the laws of Lao PDR" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.governing.item2" fallback="Disputes will be resolved in Vientiane, Laos" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.governing.item3" fallback="We may update these terms with 30 days notice" as="span" />
+              </li>
+              <li className="flex items-start gap-3 text-muted-foreground">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                <EditableText tKey="terms.governing.item4" fallback="Continued use after updates constitutes acceptance" as="span" />
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Contact */}
         <div className="mt-12 text-center">
           <p className="text-muted-foreground">
-            {t("terms.contact") || "Questions about these terms? Contact us at"}{" "}
+            <EditableText tKey="terms.contact" fallback="Questions about these terms? Contact us at" as="span" />{" "}
             <a
               href="mailto:moneyxwhale@gmail.com"
               className="text-primary hover:underline"

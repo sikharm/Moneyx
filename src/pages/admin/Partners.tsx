@@ -506,14 +506,17 @@ const AdminPartners = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="map_embed_url">Google Maps Embed URL</Label>
-              <Input
+              <Label htmlFor="map_embed_url">Google Maps Embed</Label>
+              <Textarea
                 id="map_embed_url"
                 value={formData.map_embed_url || ''}
                 onChange={(e) => setFormData({ ...formData, map_embed_url: e.target.value })}
-                placeholder="https://www.google.com/maps/embed?..."
+                placeholder='Paste iframe code or embed URL...'
+                rows={2}
               />
-              <p className="text-xs text-muted-foreground">Get embed URL from Google Maps → Share → Embed a map</p>
+              <p className="text-xs text-muted-foreground">
+                Go to Google Maps → Share → Embed a map → Copy the full iframe code or just the URL
+              </p>
             </div>
 
             <div className="flex items-center gap-2 pt-2">

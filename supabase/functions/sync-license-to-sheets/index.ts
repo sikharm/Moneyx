@@ -15,16 +15,15 @@ serve(async (req) => {
   try {
     console.log("Starting license sync to Google Sheets...");
 
-    // Get secrets
+    // Get Google credentials from secrets
     const googleCredentials = Deno.env.get('GOOGLE_SHEETS_CREDENTIALS');
-    const sheetId = Deno.env.get('GOOGLE_SHEET_ID');
-
-    if (!googleCredentials || !sheetId) {
-      console.error("Missing Google Sheets credentials or Sheet ID");
+    
+    if (!googleCredentials) {
+      console.error("Missing Google Sheets credentials");
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Google Sheets credentials not configured. Please add GOOGLE_SHEETS_CREDENTIALS and GOOGLE_SHEET_ID secrets.' 
+          error: 'Google Sheets credentials not configured. Please add GOOGLE_SHEETS_CREDENTIALS secret.' 
         }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -34,6 +33,35 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // First, try to get sheet ID from app_settings table
+    let sheetId: string | null = null;
+    
+    const { data: settingData, error: settingError } = await supabase
+      .from('app_settings')
+      .select('setting_value')
+      .eq('setting_key', 'google_sheet_id')
+      .maybeSingle();
+
+    if (!settingError && settingData?.setting_value) {
+      sheetId = settingData.setting_value;
+      console.log("Using Sheet ID from app_settings");
+    } else {
+      // Fallback to environment variable/secret
+      sheetId = Deno.env.get('GOOGLE_SHEET_ID') || null;
+      console.log("Using Sheet ID from environment secret");
+    }
+
+    if (!sheetId) {
+      console.error("Missing Google Sheet ID");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Google Sheet ID not configured. Please configure it in Admin > Subscriptions > Settings.' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Fetch all licenses
     const { data: licenses, error: fetchError } = await supabase

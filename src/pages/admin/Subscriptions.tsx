@@ -110,21 +110,35 @@ export default function Subscriptions() {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
-    return `${day}.${month}.${year}`;
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatTradingSystem = (system: string | null) => {
+    if (!system) return '';
+    // Convert "moneyx_g1" to "Moneyx G1"
+    return system
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const formatAccountSize = (size: number | null) => {
+    if (!size) return '0';
+    return size.toLocaleString('en-US');
   };
 
   const handleExportCSV = () => {
     const csvContent = [
-      ['AccountID', 'LicenseType (Full / Demo)', 'ExpireDate (DD.MM.YYYY)', 'VPSExpireDate (DD.MM.YYYY)', 'Broker', 'UserName', 'TradingSystem', 'AccountSize'].join(','),
+      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName', 'TradingSystem', 'AccountSize(cents)', 'VPS ExpireDate'].join(','),
       ...filteredLicenses.map(l => [
         l.account_id,
         l.license_type === 'full' ? 'Full' : 'Demo',
         formatDateToDDMMYYYY(l.expire_date),
-        formatDateToDDMMYYYY(l.vps_expire_date),
         l.broker || '',
         l.user_name || '',
-        l.trading_system || '',
-        l.account_size?.toString() || '0'
+        formatTradingSystem(l.trading_system),
+        formatAccountSize(l.account_size),
+        formatDateToDDMMYYYY(l.vps_expire_date)
       ].join(','))
     ].join('\n');
 

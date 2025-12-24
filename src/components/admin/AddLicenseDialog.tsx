@@ -254,15 +254,16 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="account_size">Account Size</Label>
+            <Label htmlFor="account_size">Account Size (Cents)</Label>
             <Input
               id="account_size"
               type="number"
               value={formData.account_size}
               onChange={(e) => setFormData({ ...formData, account_size: e.target.value })}
-              placeholder="e.g., 10000"
+              placeholder="e.g., 10000 (= $100)"
               disabled={loading}
             />
+            <p className="text-xs text-muted-foreground">Enter amount in cents (e.g., 10000 cents = $100)</p>
           </div>
 
           <DialogFooter>

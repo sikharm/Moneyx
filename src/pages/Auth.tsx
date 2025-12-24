@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,10 @@ const Auth = () => {
   const { signIn, signUp } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  // Get redirect URL from query params (e.g., /auth?redirect=/download)
+  const redirectUrl = searchParams.get('redirect') || '/';
 
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [signupData, setSignupData] = useState({ email: '', password: '', fullName: '', confirmPassword: '' });
@@ -28,7 +32,7 @@ const Auth = () => {
     try {
       await signIn(loginData.email, loginData.password);
       toast.success(t('auth.toast.welcome_back'));
-      navigate('/');
+      navigate(redirectUrl);
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');
     } finally {
@@ -53,7 +57,7 @@ const Auth = () => {
     try {
       await signUp(signupData.email, signupData.password, signupData.fullName);
       toast.success(t('auth.toast.account_created'));
-      navigate('/');
+      navigate(redirectUrl);
     } catch (error: any) {
       toast.error(error.message || 'Failed to create account');
     } finally {

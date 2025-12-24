@@ -1,17 +1,25 @@
 import { useState } from 'react';
-import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, FileText, Languages, Users, Handshake, CreditCard, Menu, LogOut } from 'lucide-react';
-import SettingsDropdown from '@/components/SettingsDropdown';
+import { LayoutDashboard, FileText, Languages, Users, Handshake, CreditCard, Menu, LogOut, Sun, Moon, Monitor, Check, Home, User, Wallet } from 'lucide-react';
 import AdminNotificationBell from '@/components/admin/AdminNotificationBell';
 import AdminBreadcrumb from '@/components/admin/AdminBreadcrumb';
 import { Sheet, SheetContent, SheetTrigger, SheetFooter } from '@/components/ui/sheet';
+import { useTheme } from '@/components/ThemeProvider';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
 
 const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const { currentLanguage, languages, setLanguage, t } = useLanguage();
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
 
   if (loading) {
     return (
@@ -34,13 +42,36 @@ const AdminLayout = () => {
     { to: '/admin/partners', icon: Handshake, label: 'Partners' },
   ];
 
+  const themeOptions: { value: "light" | "dark" | "system"; label: string; icon: typeof Sun }[] = [
+    { value: "light", label: "Light", icon: Sun },
+    { value: "dark", label: "Dark", icon: Moon },
+    { value: "system", label: "System", icon: Monitor },
+  ];
+
+  const currentLang = languages.find(l => l.code === currentLanguage);
+
+  const handleViewSite = () => {
+    setMobileMenuOpen(false);
+    navigate("/");
+  };
+
+  const handleProfileClick = () => {
+    setMobileMenuOpen(false);
+    navigate("/profile");
+  };
+
+  const handleInvestmentsClick = () => {
+    setMobileMenuOpen(false);
+    navigate("/dashboard");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Admin Header */}
       <header className="border-b bg-card sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            {/* Menu Toggle */}
+            {/* Unified Menu Toggle */}
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -57,7 +88,9 @@ const AdminLayout = () => {
                     MoneyX Admin
                   </Link>
                 </div>
-                <nav className="flex flex-col p-2 flex-1">
+                
+                {/* Navigation Links */}
+                <nav className="flex flex-col p-2 flex-1 overflow-auto">
                   {navItems.map((item) => (
                     <Link 
                       key={item.to} 
@@ -73,7 +106,83 @@ const AdminLayout = () => {
                       </Button>
                     </Link>
                   ))}
+
+                  {/* Separator */}
+                  <div className="my-3 border-t border-border" />
+
+                  {/* Theme Settings */}
+                  <Collapsible open={themeOpen} onOpenChange={setThemeOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between">
+                        <span className="flex items-center">
+                          <Sun className="h-4 w-4 mr-3" />
+                          Theme
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${themeOpen ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-4">
+                      {themeOptions.map((option) => (
+                        <Button
+                          key={option.value}
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => setTheme(option.value)}
+                        >
+                          <option.icon className="h-4 w-4 mr-3" />
+                          {option.label}
+                          {theme === option.value && <Check className="h-4 w-4 ml-auto" />}
+                        </Button>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Language Settings */}
+                  <Collapsible open={languageOpen} onOpenChange={setLanguageOpen}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full justify-between">
+                        <span className="flex items-center">
+                          <span className="mr-3 text-sm">🌐</span>
+                          Language
+                          <span className="ml-2 text-xs text-muted-foreground">({currentLang?.native_name})</span>
+                        </span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${languageOpen ? 'rotate-180' : ''}`} />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-4">
+                      {languages.map((lang) => (
+                        <Button
+                          key={lang.code}
+                          variant="ghost"
+                          className="w-full justify-start"
+                          onClick={() => setLanguage(lang.code)}
+                        >
+                          {lang.native_name}
+                          <span className="ml-2 text-xs text-muted-foreground">({lang.name})</span>
+                          {currentLanguage === lang.code && <Check className="h-4 w-4 ml-auto" />}
+                        </Button>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+
+                  {/* Separator */}
+                  <div className="my-3 border-t border-border" />
+
+                  {/* Quick Links */}
+                  <Button variant="ghost" className="w-full justify-start" onClick={handleViewSite}>
+                    <Home className="h-4 w-4 mr-3" />
+                    View Site
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" onClick={handleProfileClick}>
+                    <User className="h-4 w-4 mr-3" />
+                    My Profile
+                  </Button>
+                  <Button variant="ghost" className="w-full justify-start" onClick={handleInvestmentsClick}>
+                    <Wallet className="h-4 w-4 mr-3" />
+                    My Investments
+                  </Button>
                 </nav>
+
                 <SheetFooter className="p-4 border-t mt-auto">
                   <Button
                     variant="outline"
@@ -96,7 +205,6 @@ const AdminLayout = () => {
           </div>
           <div className="flex items-center gap-2">
             <AdminNotificationBell />
-            <SettingsDropdown showViewSite={true} />
           </div>
         </div>
       </header>

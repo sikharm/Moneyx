@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, ExternalLink, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -22,6 +22,8 @@ interface Partner {
   twitter_url: string | null;
   linkedin_url: string | null;
   instagram_url: string | null;
+  youtube_url: string | null;
+  tiktok_url: string | null;
   email: string | null;
   phone: string | null;
   address: string | null;
@@ -40,6 +42,8 @@ const emptyPartner: Omit<Partner, 'id'> = {
   twitter_url: '',
   linkedin_url: '',
   instagram_url: '',
+  youtube_url: '',
+  tiktok_url: '',
   email: '',
   phone: '',
   address: '',
@@ -54,6 +58,10 @@ const AdminPartners = () => {
   const [formData, setFormData] = useState<Omit<Partner, 'id'>>(emptyPartner);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchPartners = async () => {
     const { data, error } = await supabase
@@ -71,6 +79,42 @@ const AdminPartners = () => {
     fetchPartners();
   }, []);
 
+  const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setLogoFile(file);
+      setLogoPreview(URL.createObjectURL(file));
+    }
+  };
+
+  const removeLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    setFormData({ ...formData, logo_url: '' });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const uploadLogo = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('partner-logos')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('partner-logos')
+      .getPublicUrl(fileName);
+
+    return publicUrl;
+  };
+
   const handleSave = async () => {
     if (!formData.name.trim()) {
       toast.error("Partner name is required");
@@ -80,24 +124,38 @@ const AdminPartners = () => {
     setSaving(true);
 
     try {
+      let logoUrl = formData.logo_url;
+
+      // Upload new logo if selected
+      if (logoFile) {
+        setUploadingLogo(true);
+        logoUrl = await uploadLogo(logoFile);
+        setUploadingLogo(false);
+      }
+
+      const partnerData = {
+        name: formData.name,
+        logo_url: logoUrl || null,
+        website_url: formData.website_url || null,
+        description: formData.description || null,
+        map_embed_url: formData.map_embed_url || null,
+        trustpilot_url: formData.trustpilot_url || null,
+        facebook_url: formData.facebook_url || null,
+        twitter_url: formData.twitter_url || null,
+        linkedin_url: formData.linkedin_url || null,
+        instagram_url: formData.instagram_url || null,
+        youtube_url: formData.youtube_url || null,
+        tiktok_url: formData.tiktok_url || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        is_active: formData.is_active,
+      };
+
       if (editingPartner) {
         const { error } = await supabase
           .from("partners")
-          .update({
-            ...formData,
-            logo_url: formData.logo_url || null,
-            website_url: formData.website_url || null,
-            description: formData.description || null,
-            map_embed_url: formData.map_embed_url || null,
-            trustpilot_url: formData.trustpilot_url || null,
-            facebook_url: formData.facebook_url || null,
-            twitter_url: formData.twitter_url || null,
-            linkedin_url: formData.linkedin_url || null,
-            instagram_url: formData.instagram_url || null,
-            email: formData.email || null,
-            phone: formData.phone || null,
-            address: formData.address || null,
-          })
+          .update(partnerData)
           .eq("id", editingPartner.id);
 
         if (error) throw error;
@@ -106,19 +164,7 @@ const AdminPartners = () => {
         const { error } = await supabase
           .from("partners")
           .insert({
-            ...formData,
-            logo_url: formData.logo_url || null,
-            website_url: formData.website_url || null,
-            description: formData.description || null,
-            map_embed_url: formData.map_embed_url || null,
-            trustpilot_url: formData.trustpilot_url || null,
-            facebook_url: formData.facebook_url || null,
-            twitter_url: formData.twitter_url || null,
-            linkedin_url: formData.linkedin_url || null,
-            instagram_url: formData.instagram_url || null,
-            email: formData.email || null,
-            phone: formData.phone || null,
-            address: formData.address || null,
+            ...partnerData,
             display_order: partners.length,
           });
 
@@ -129,11 +175,14 @@ const AdminPartners = () => {
       setIsDialogOpen(false);
       setEditingPartner(null);
       setFormData(emptyPartner);
+      setLogoFile(null);
+      setLogoPreview(null);
       fetchPartners();
     } catch (error: any) {
       toast.error(error.message || "Failed to save partner");
     } finally {
       setSaving(false);
+      setUploadingLogo(false);
     }
   };
 
@@ -176,18 +225,24 @@ const AdminPartners = () => {
       twitter_url: partner.twitter_url || '',
       linkedin_url: partner.linkedin_url || '',
       instagram_url: partner.instagram_url || '',
+      youtube_url: partner.youtube_url || '',
+      tiktok_url: partner.tiktok_url || '',
       email: partner.email || '',
       phone: partner.phone || '',
       address: partner.address || '',
       display_order: partner.display_order,
       is_active: partner.is_active,
     });
+    setLogoPreview(partner.logo_url || null);
+    setLogoFile(null);
     setIsDialogOpen(true);
   };
 
   const openNewDialog = () => {
     setEditingPartner(null);
     setFormData(emptyPartner);
+    setLogoFile(null);
+    setLogoPreview(null);
     setIsDialogOpen(true);
   };
 
@@ -285,13 +340,42 @@ const AdminPartners = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="logo_url">Logo URL</Label>
-                <Input
-                  id="logo_url"
-                  value={formData.logo_url || ''}
-                  onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-                  placeholder="https://..."
+                <Label>Logo</Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoSelect}
+                  className="hidden"
                 />
+                {logoPreview ? (
+                  <div className="relative w-24 h-24">
+                    <img
+                      src={logoPreview}
+                      alt="Logo preview"
+                      className="w-full h-full object-contain rounded-lg border bg-background"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6"
+                      onClick={removeLogo}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Upload Logo
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -367,6 +451,24 @@ const AdminPartners = () => {
                   placeholder="https://instagram.com/..."
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="youtube_url">YouTube</Label>
+                <Input
+                  id="youtube_url"
+                  value={formData.youtube_url || ''}
+                  onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value })}
+                  placeholder="https://youtube.com/..."
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tiktok_url">TikTok</Label>
+                <Input
+                  id="tiktok_url"
+                  value={formData.tiktok_url || ''}
+                  onChange={(e) => setFormData({ ...formData, tiktok_url: e.target.value })}
+                  placeholder="https://tiktok.com/..."
+                />
+              </div>
             </div>
 
             {/* Contact Info */}
@@ -428,8 +530,8 @@ const AdminPartners = () => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Saving...' : editingPartner ? 'Update Partner' : 'Create Partner'}
+            <Button onClick={handleSave} disabled={saving || uploadingLogo}>
+              {uploadingLogo ? 'Uploading...' : saving ? 'Saving...' : editingPartner ? 'Update Partner' : 'Create Partner'}
             </Button>
           </DialogFooter>
         </DialogContent>

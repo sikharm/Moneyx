@@ -268,10 +268,12 @@ export type Database = {
           map_embed_url: string | null
           name: string
           phone: string | null
+          tiktok_url: string | null
           trustpilot_url: string | null
           twitter_url: string | null
           updated_at: string | null
           website_url: string | null
+          youtube_url: string | null
         }
         Insert: {
           address?: string | null
@@ -288,10 +290,12 @@ export type Database = {
           map_embed_url?: string | null
           name: string
           phone?: string | null
+          tiktok_url?: string | null
           trustpilot_url?: string | null
           twitter_url?: string | null
           updated_at?: string | null
           website_url?: string | null
+          youtube_url?: string | null
         }
         Update: {
           address?: string | null
@@ -308,10 +312,12 @@ export type Database = {
           map_embed_url?: string | null
           name?: string
           phone?: string | null
+          tiktok_url?: string | null
           trustpilot_url?: string | null
           twitter_url?: string | null
           updated_at?: string | null
           website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }

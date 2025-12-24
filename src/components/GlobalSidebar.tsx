@@ -45,7 +45,7 @@ const GlobalSidebar = () => {
 
       {/* Expanded Panel */}
       {activePanel && (
-        <aside className="fixed right-12 top-1/2 -translate-y-1/2 z-40 hidden lg:block w-80 max-h-[70vh] bg-card border border-border rounded-l-xl shadow-xl overflow-hidden animate-slide-in-right">
+        <aside className="fixed right-12 top-1/2 -translate-y-1/2 z-40 hidden lg:block w-80 max-h-[80vh] bg-card border border-border rounded-l-xl shadow-xl overflow-hidden animate-slide-in-right">
           <button
             onClick={() => setActivePanel(null)}
             className="absolute top-2 right-2 z-10 p-1.5 rounded-full bg-muted/80 hover:bg-muted transition-colors"
@@ -83,8 +83,8 @@ const GlobalSidebar = () => {
                   <EditableText tKey="home.updates.title" fallback="Latest Updates" />
                 </span>
               </div>
-              <div className="h-[320px] overflow-hidden">
-                <FacebookWidget showCard={false} />
+              <div className="h-[400px] overflow-auto">
+                <FacebookWidget showCard={false} height="380" />
               </div>
               <div className="px-4 py-2 bg-muted/20 border-t border-border/50">
                 <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-[#1877F2] gap-1 p-0" asChild>
@@ -158,8 +158,8 @@ const GlobalSidebar = () => {
                     <EditableText tKey="home.updates.title" fallback="Latest Updates" />
                   </span>
                 </div>
-                <div className="h-[280px] overflow-hidden">
-                  <FacebookWidget showCard={false} />
+                <div className="h-[350px] overflow-auto">
+                  <FacebookWidget showCard={false} height="320" />
                 </div>
               </div>
             )}

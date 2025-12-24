@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2 } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
 import { License } from "@/components/admin/LicenseTable";
 import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicenseDialog";
 import { CustomerLicenseCard } from "@/components/admin/CustomerLicenseCard";
+import { GoogleSheetsSettingsDialog } from "@/components/admin/GoogleSheetsSettingsDialog";
 
 interface DashboardStats {
   total: number;
@@ -200,6 +201,13 @@ export default function Subscriptions() {
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
+          <GoogleSheetsSettingsDialog
+            trigger={
+              <Button variant="outline" size="icon" title="Google Sheets Settings">
+                <Settings className="h-4 w-4" />
+              </Button>
+            }
+          />
           <Button variant="outline" onClick={handleSyncToSheets} disabled={syncing}>
             <FileSpreadsheet className={`h-4 w-4 mr-2 ${syncing ? 'animate-pulse' : ''}`} />
             {syncing ? "Syncing..." : "Sync to Sheets"}

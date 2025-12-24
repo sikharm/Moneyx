@@ -27,6 +27,20 @@ interface Partner {
   display_order: number;
 }
 
+// Helper to extract embed URL from iframe HTML or use plain URL
+const getEmbedUrl = (input: string | null): string | null => {
+  if (!input) return null;
+  
+  // If it's already a plain embed URL, use it
+  if (input.startsWith('https://www.google.com/maps/embed')) return input;
+  
+  // If it's an iframe, extract the src attribute
+  const iframeSrcMatch = input.match(/src="([^"]+)"/);
+  if (iframeSrcMatch) return iframeSrcMatch[1];
+  
+  return input;
+};
+
 const Partners = () => {
   const { t } = useLanguage();
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -197,10 +211,10 @@ const Partners = () => {
                     </div>
 
                     {/* Map Embed */}
-                    {partner.map_embed_url && (
+                    {partner.map_embed_url && getEmbedUrl(partner.map_embed_url) && (
                       <div className="pt-4">
                         <iframe
-                          src={partner.map_embed_url}
+                          src={getEmbedUrl(partner.map_embed_url)!}
                           width="100%"
                           height="200"
                           style={{ border: 0, borderRadius: '0.5rem' }}

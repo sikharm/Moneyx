@@ -255,31 +255,37 @@ export type Database = {
       license_subscriptions: {
         Row: {
           account_id: string
+          account_size: number | null
           broker: string | null
           created_at: string | null
           expire_date: string | null
           id: string
           license_type: string
+          trading_system: string | null
           updated_at: string | null
           user_name: string | null
         }
         Insert: {
           account_id: string
+          account_size?: number | null
           broker?: string | null
           created_at?: string | null
           expire_date?: string | null
           id?: string
           license_type?: string
+          trading_system?: string | null
           updated_at?: string | null
           user_name?: string | null
         }
         Update: {
           account_id?: string
+          account_size?: number | null
           broker?: string | null
           created_at?: string | null
           expire_date?: string | null
           id?: string
           license_type?: string
+          trading_system?: string | null
           updated_at?: string | null
           user_name?: string | null
         }

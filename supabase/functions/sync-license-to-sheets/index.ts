@@ -69,18 +69,20 @@ serve(async (req) => {
     // Prepare data for Google Sheets
     // Header row + data rows
     const values = [
-      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'User name'],
+      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'Username', 'TradingSystem', 'AccountSize'],
       ...(licenses || []).map(license => [
         license.account_id || '',
         license.license_type || '',
         license.expire_date || '',
         license.broker || '',
-        license.user_name || ''
+        license.user_name || '',
+        license.trading_system || '',
+        license.account_size?.toString() || '0'
       ])
     ];
 
     // Clear existing data and write new data
-    const range = 'Sheet1!A:E';
+    const range = 'Sheet1!A:G';
     
     // Clear the sheet first
     await fetch(

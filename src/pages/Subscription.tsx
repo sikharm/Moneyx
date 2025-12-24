@@ -1,9 +1,9 @@
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, Zap, Clock, Crown, Infinity, Sparkles, Star, Shield, TrendingUp, Settings2, Bot, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import EditableText from '@/components/EditableText';
 
 const products = [
   {
@@ -11,8 +11,10 @@ const products = [
     name: 'MoneyX M1',
     riskLevel: 'low',
     riskDescKey: 'subscription.product.m1.risk_desc',
+    riskDescFallback: 'Low drawdown, steady returns',
     system: 'hybrid',
     suitableKey: 'subscription.product.m1.suitable',
+    suitableFallback: 'Conservative traders seeking stable growth',
     icon: Settings2,
     gradient: 'from-blue-500/20 to-cyan-500/10',
     iconGradient: 'from-blue-400 to-cyan-500',
@@ -22,8 +24,10 @@ const products = [
     name: 'MoneyX M2 (MaxProfit)',
     riskLevel: 'medium',
     riskDescKey: 'subscription.product.m2.risk_desc',
+    riskDescFallback: 'Higher returns with moderate risk',
     system: 'hybrid',
     suitableKey: 'subscription.product.m2.suitable',
+    suitableFallback: 'Traders seeking higher returns with active management',
     icon: TrendingUp,
     gradient: 'from-amber-500/20 to-orange-500/10',
     iconGradient: 'from-amber-400 to-orange-500',
@@ -33,8 +37,10 @@ const products = [
     name: 'MoneyX C-M3 (Correlation)',
     riskLevel: 'low',
     riskDescKey: 'subscription.product.cm3.risk_desc',
+    riskDescFallback: 'Multi-pair correlation strategy',
     system: 'auto',
     suitableKey: 'subscription.product.cm3.suitable',
+    suitableFallback: 'Set-and-forget traders who prefer automation',
     icon: Shield,
     gradient: 'from-emerald-500/20 to-green-500/10',
     iconGradient: 'from-emerald-400 to-green-500',
@@ -44,8 +50,10 @@ const products = [
     name: 'MoneyX N-M4 (Non-stop)',
     riskLevel: 'medium',
     riskDescKey: 'subscription.product.nm4.risk_desc',
+    riskDescFallback: 'Continuous trading with active positions',
     system: 'auto',
     suitableKey: 'subscription.product.nm4.suitable',
+    suitableFallback: 'Active traders comfortable with higher exposure',
     icon: Zap,
     gradient: 'from-purple-500/20 to-pink-500/10',
     iconGradient: 'from-purple-400 to-pink-500',
@@ -55,8 +63,10 @@ const products = [
     name: 'MoneyX G1',
     riskLevel: 'low',
     riskDescKey: 'subscription.product.g1.risk_desc',
+    riskDescFallback: 'Gold-focused trading system',
     system: 'auto',
     suitableKey: 'subscription.product.g1.suitable',
+    suitableFallback: 'Traders interested in gold/XAUUSD markets',
     icon: Bot,
     gradient: 'from-slate-500/20 to-gray-500/10',
     iconGradient: 'from-slate-400 to-gray-500',
@@ -111,16 +121,7 @@ const plans = [
   },
 ];
 
-const features = [
-  'subscription.feature.auto_mode',
-  'subscription.feature.hybrid_mode',
-  'subscription.feature.updates',
-  'subscription.feature.support',
-];
-
 const Subscription = () => {
-  const { t } = useLanguage();
-
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('th-TH').format(price);
   };
@@ -169,15 +170,15 @@ const Subscription = () => {
         <div className="text-center mb-16 animate-fade-in">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <Sparkles className="w-4 h-4" />
-            {t('subscription.title')}
+            <EditableText tKey="subscription.title" fallback="Subscription Plans" />
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             <span className="bg-gradient-hero bg-clip-text text-transparent">
-              {t('subscription.title')}
+              <EditableText tKey="subscription.title" fallback="Subscription Plans" />
             </span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {t('subscription.subtitle')}
+            <EditableText tKey="subscription.subtitle" fallback="Choose the plan that fits your trading needs" />
           </p>
         </div>
 
@@ -185,7 +186,7 @@ const Subscription = () => {
         <div className="mb-20">
           <h2 className="text-2xl md:text-3xl font-bold text-center mb-10">
             <span className="bg-gradient-success bg-clip-text text-transparent">
-              {t('subscription.choose_product') || 'Choose Your Trading System'}
+              <EditableText tKey="subscription.choose_product" fallback="Choose Your Trading System" />
             </span>
           </h2>
           
@@ -212,9 +213,13 @@ const Subscription = () => {
                       {/* Badges */}
                       <div className="flex flex-col gap-2 items-end">
                         <Badge variant="outline" className={`text-xs font-medium ${getRiskBadgeStyles(product.riskLevel)}`}>
-                          {product.riskLevel === 'low' ? (t('subscription.risk.low') || 'Low Risk') : 
-                           product.riskLevel === 'medium' ? (t('subscription.risk.medium') || 'Medium Risk') : 
-                           (t('subscription.risk.high') || 'High Risk')}
+                          {product.riskLevel === 'low' ? (
+                            <EditableText tKey="subscription.risk.low" fallback="Low Risk" />
+                          ) : product.riskLevel === 'medium' ? (
+                            <EditableText tKey="subscription.risk.medium" fallback="Medium Risk" />
+                          ) : (
+                            <EditableText tKey="subscription.risk.high" fallback="High Risk" />
+                          )}
                         </Badge>
                         <Badge variant="outline" className={`text-xs font-medium ${getSystemBadgeStyles(product.system)}`}>
                           {product.system === 'hybrid' ? 'Hybrid' : 'Auto'}
@@ -231,16 +236,18 @@ const Subscription = () => {
                     {/* Risk Description */}
                     <div className="flex items-start gap-2 text-sm">
                       <AlertTriangle className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                      <span className="text-muted-foreground">{t(product.riskDescKey)}</span>
+                      <span className="text-muted-foreground">
+                        <EditableText tKey={product.riskDescKey} fallback={product.riskDescFallback} />
+                      </span>
                     </div>
                     
                     {/* Suitable For */}
                     <div className="p-3 rounded-lg bg-muted/50 border border-border/50">
                       <p className="text-xs text-muted-foreground uppercase font-medium mb-1">
-                        {t('subscription.suitable_for')}
+                        <EditableText tKey="subscription.suitable_for" fallback="Suitable For" />
                       </p>
                       <p className="text-sm text-foreground">
-                        {t(product.suitableKey)}
+                        <EditableText tKey={product.suitableKey} fallback={product.suitableFallback} />
                       </p>
                     </div>
                   </CardContent>
@@ -254,7 +261,7 @@ const Subscription = () => {
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-bold">
             <span className="bg-gradient-hero bg-clip-text text-transparent">
-              {t('subscription.pricing_title') || 'Subscription Plans'}
+              <EditableText tKey="subscription.pricing_title" fallback="Subscription Plans" />
             </span>
           </h2>
         </div>
@@ -289,7 +296,7 @@ const Subscription = () => {
                   <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10">
                     <div className="bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground text-xs font-bold px-3 py-1 rounded-full shadow-lg shadow-primary/30 flex items-center gap-1">
                       <Star className="w-3 h-3 fill-current" />
-                      {t('subscription.popular')}
+                      <EditableText tKey="subscription.popular" fallback="Most Popular" />
                     </div>
                   </div>
                 )}
@@ -309,7 +316,13 @@ const Subscription = () => {
                     <Icon className="w-7 h-7 text-white" />
                   </div>
                   <CardTitle className="text-xl font-bold">
-                    {t(`subscription.plan.${plan.key}`)}
+                    <EditableText 
+                      tKey={`subscription.plan.${plan.key}`} 
+                      fallback={plan.key === '1month' ? '1 Month' : 
+                               plan.key === '3months' ? '3 Months' :
+                               plan.key === '6months' ? '6 Months' :
+                               plan.key === '12months' ? '12 Months' : 'Lifetime'} 
+                    />
                   </CardTitle>
                 </CardHeader>
                 
@@ -324,12 +337,12 @@ const Subscription = () => {
                     </div>
                     {monthlyPrice && (
                       <p className="text-sm text-muted-foreground mt-2">
-                        ≈ ฿{formatPrice(monthlyPrice)}/{t('subscription.per_month')}
+                        ≈ ฿{formatPrice(monthlyPrice)}/<EditableText tKey="subscription.per_month" fallback="month" />
                       </p>
                     )}
                     {plan.key === 'lifetime' && (
                       <p className="text-xs text-primary font-medium mt-2">
-                        One-time payment
+                        <EditableText tKey="subscription.one_time" fallback="One-time payment" />
                       </p>
                     )}
                   </div>
@@ -339,20 +352,38 @@ const Subscription = () => {
                   
                   {/* Features */}
                   <ul className="space-y-3 text-sm text-left mb-6">
-                    {features.map((feature, i) => (
-                      <li 
-                        key={feature} 
-                        className="flex items-center gap-3 group/item"
-                        style={{ animationDelay: `${(index * 100) + (i * 50)}ms` }}
-                      >
-                        <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
-                          <Check className="w-3 h-3 text-white" />
-                        </div>
-                        <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
-                          {t(feature)}
-                        </span>
-                      </li>
-                    ))}
+                    <li className="flex items-center gap-3 group/item">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                        <EditableText tKey="subscription.feature.auto_mode" fallback="Auto Mode Access" />
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3 group/item">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                        <EditableText tKey="subscription.feature.hybrid_mode" fallback="Hybrid Mode Access" />
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3 group/item">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                        <EditableText tKey="subscription.feature.updates" fallback="Free Updates" />
+                      </span>
+                    </li>
+                    <li className="flex items-center gap-3 group/item">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center bg-gradient-to-br ${plan.iconGradient} shadow-sm`}>
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                      <span className="text-muted-foreground group-hover/item:text-foreground transition-colors">
+                        <EditableText tKey="subscription.feature.support" fallback="24/7 Support" />
+                      </span>
+                    </li>
                   </ul>
                   
                   {/* CTA Button */}
@@ -366,7 +397,7 @@ const Subscription = () => {
                     asChild
                   >
                     <Link to="/contact">
-                      {t('subscription.contact_us')}
+                      <EditableText tKey="subscription.contact_us" fallback="Contact Us" />
                     </Link>
                   </Button>
                 </CardContent>
@@ -379,11 +410,11 @@ const Subscription = () => {
         <div className="text-center animate-fade-in">
           <div className="inline-flex flex-col items-center gap-4 p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50">
             <p className="text-muted-foreground">
-              {t('subscription.note')}
+              <EditableText tKey="subscription.note" fallback="All prices are in Thai Baht (THB). Contact us for payment options." />
             </p>
             <Button variant="link" asChild className="text-primary font-semibold hover:text-primary/80">
               <Link to="/contact" className="flex items-center gap-2">
-                {t('subscription.questions')}
+                <EditableText tKey="subscription.questions" fallback="Have questions? Contact us" />
                 <Sparkles className="w-4 h-4" />
               </Link>
             </Button>

@@ -92,6 +92,7 @@ const App = () => (
                       <Route path="translations" element={<Translations />} />
                       <Route path="user-investments" element={<UserInvestments />} />
                       <Route path="partners" element={<AdminPartners />} />
+                      <Route path="subscriptions" element={<Subscriptions />} />
                     </Route>
 
                     {/* Trade Tracker Routes */}

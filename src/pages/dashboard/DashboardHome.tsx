@@ -205,6 +205,12 @@ const DashboardHome = () => {
             </Card>
           </div>
 
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="md:col-span-2">
+              <SubscriptionStatusCard />
+            </div>
+          </div>
+
           {summary.total_accounts === 0 ? (
             <Card className="border-dashed">
               <CardContent className="flex flex-col items-center justify-center py-10">

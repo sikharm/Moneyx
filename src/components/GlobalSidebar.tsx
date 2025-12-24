@@ -1,6 +1,7 @@
-import { Calendar, Facebook, ArrowRight, ChevronRight, X } from "lucide-react";
+import { Calendar, Facebook, ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import EconomicCalendarWidget from "./EconomicCalendarWidget";
 import FacebookWidget from "./FacebookWidget";
@@ -8,6 +9,14 @@ import EditableText from "./EditableText";
 
 const GlobalSidebar = () => {
   const [activePanel, setActivePanel] = useState<'calendar' | 'facebook' | null>(null);
+  const location = useLocation();
+
+  // Hide on admin and dashboard pages
+  const isAdminOrDashboard = location.pathname.startsWith('/admin') || location.pathname.startsWith('/dashboard');
+  
+  if (isAdminOrDashboard) {
+    return null;
+  }
 
   const togglePanel = (panel: 'calendar' | 'facebook') => {
     setActivePanel(activePanel === panel ? null : panel);

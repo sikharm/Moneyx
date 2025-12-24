@@ -1,324 +1,255 @@
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Users, 
-  AlertTriangle, 
-  XCircle, 
-  Plus, 
-  Search,
-  Download,
-  Calendar,
-  RefreshCw
-} from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { format, differenceInDays } from 'date-fns';
-import SubscriptionTable from '@/components/admin/SubscriptionTable';
-import AddSubscriptionDialog from '@/components/admin/AddSubscriptionDialog';
-import EditableText from '@/components/EditableText';
-
-interface SubscriptionWithUser {
-  id: string;
-  user_id: string;
-  product_key: string;
-  plan_duration: string;
-  start_date: string;
-  end_date: string;
-  status: string;
-  amount_paid: number;
-  notes: string | null;
-  created_at: string;
-  user_email?: string;
-  user_name?: string;
-}
+import { useState, useEffect } from "react";
+import { differenceInDays, parseISO } from "date-fns";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { LicenseTable, License } from "@/components/admin/LicenseTable";
+import { AddLicenseDialog } from "@/components/admin/AddLicenseDialog";
 
 interface DashboardStats {
-  total_active: number;
-  expiring_soon: number;
-  expired: number;
-  new_this_month: number;
+  total: number;
+  fullLicenses: number;
+  demoLicenses: number;
+  expiringSoon: number;
 }
 
-const Subscriptions = () => {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionWithUser[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    total_active: 0,
-    expiring_soon: 0,
-    expired: 0,
-    new_this_month: 0,
-  });
+export default function Subscriptions() {
+  const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [productFilter, setProductFilter] = useState<string>('all');
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithUser | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [stats, setStats] = useState<DashboardStats>({
+    total: 0,
+    fullLicenses: 0,
+    demoLicenses: 0,
+    expiringSoon: 0,
+  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [licenseTypeFilter, setLicenseTypeFilter] = useState<string>("all");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingLicense, setEditingLicense] = useState<License | null>(null);
 
   useEffect(() => {
-    loadSubscriptions();
+    loadLicenses();
   }, []);
 
-  const loadSubscriptions = async () => {
+  const loadLicenses = async () => {
     try {
       setLoading(true);
-      
-      const { data: subs, error: subsError } = await supabase
-        .from('user_subscriptions')
+      const { data, error } = await supabase
+        .from('license_subscriptions')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (subsError) throw subsError;
+      if (error) throw error;
 
-      if (!subs || subs.length === 0) {
-        setSubscriptions([]);
-        setLoading(false);
-        return;
-      }
+      const licensesData = data || [];
+      setLicenses(licensesData);
 
-      const userIds = [...new Set(subs.map(s => s.user_id))];
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, email, full_name')
-        .in('id', userIds);
-
-      if (profilesError) throw profilesError;
-
-      const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-
-      const subsWithUsers: SubscriptionWithUser[] = subs.map(s => ({
-        ...s,
-        user_email: profileMap.get(s.user_id)?.email || 'Unknown',
-        user_name: profileMap.get(s.user_id)?.full_name || 'Unknown',
-      }));
-
-      setSubscriptions(subsWithUsers);
-
+      // Calculate stats
       const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      
-      const active = subsWithUsers.filter(s => s.status === 'active').length;
-      const expiring = subsWithUsers.filter(s => s.status === 'expiring_soon').length;
-      const expired = subsWithUsers.filter(s => s.status === 'expired').length;
-      const newThisMonth = subsWithUsers.filter(s => 
-        new Date(s.created_at) >= startOfMonth
-      ).length;
+      const expiringSoon = licensesData.filter(l => {
+        if (!l.expire_date) return false;
+        const daysLeft = differenceInDays(parseISO(l.expire_date), now);
+        return daysLeft >= 0 && daysLeft <= 7;
+      }).length;
 
       setStats({
-        total_active: active,
-        expiring_soon: expiring,
-        expired: expired,
-        new_this_month: newThisMonth,
+        total: licensesData.length,
+        fullLicenses: licensesData.filter(l => l.license_type === 'full').length,
+        demoLicenses: licensesData.filter(l => l.license_type === 'demo').length,
+        expiringSoon,
       });
-    } catch (error) {
-      console.error('Error loading subscriptions:', error);
-      toast.error('Failed to load subscriptions');
+    } catch (error: any) {
+      toast.error("Failed to load licenses: " + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExportCSV = () => {
-    const headers = ['User', 'Email', 'Product', 'Start Date', 'End Date', 'Days Left', 'Status', 'Amount Paid', 'Notes'];
-    const rows = filteredSubscriptions.map(s => {
-      const daysLeft = differenceInDays(new Date(s.end_date), new Date());
-      return [
-        s.user_name,
-        s.user_email,
-        s.product_key,
-        s.start_date,
-        s.end_date,
-        daysLeft.toString(),
-        s.status,
-        s.amount_paid?.toString() || '0',
-        s.notes || '',
-      ];
-    });
-
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `subscriptions-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Exported to CSV');
+  const handleSyncToSheets = async () => {
+    setSyncing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-license-to-sheets');
+      
+      if (error) throw error;
+      
+      if (data?.success) {
+        toast.success(data.message || "Successfully synced to Google Sheets");
+      } else {
+        throw new Error(data?.error || "Sync failed");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to sync to Google Sheets");
+    } finally {
+      setSyncing(false);
+    }
   };
 
-  const filteredSubscriptions = subscriptions.filter(s => {
-    const matchesSearch = 
-      s.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.user_email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || s.status === statusFilter;
-    const matchesProduct = productFilter === 'all' || s.product_key === productFilter;
-    return matchesSearch && matchesStatus && matchesProduct;
-  });
+  const handleExportCSV = () => {
+    const csvContent = [
+      ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName'].join(','),
+      ...filteredLicenses.map(l => [
+        l.account_id,
+        l.license_type,
+        l.expire_date || '',
+        l.broker || '',
+        l.user_name || ''
+      ].join(','))
+    ].join('\n');
 
-  const products = ['m1', 'm2', 'cm3', 'nm4', 'g1'];
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `licenses_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success("CSV exported successfully");
+  };
+
+  const handleEdit = (license: License) => {
+    setEditingLicense(license);
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+      setEditingLicense(null);
+    }
+  };
+
+  const filteredLicenses = licenses.filter(license => {
+    const matchesSearch = 
+      license.account_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (license.broker?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (license.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    
+    const matchesType = licenseTypeFilter === "all" || license.license_type === licenseTypeFilter;
+
+    return matchesSearch && matchesType;
+  });
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">
-            <EditableText tKey="admin.subscriptions.title" fallback="Subscription Management" />
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+            <Key className="h-8 w-8" />
+            License Management
           </h1>
           <p className="text-muted-foreground">
-            <EditableText tKey="admin.subscriptions.subtitle" fallback="Track and manage user subscriptions" />
+            Manage EA licenses and sync to Google Sheets
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={loadSubscriptions}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            <EditableText tKey="admin.subscriptions.refresh" fallback="Refresh" />
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={loadLicenses} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
           </Button>
-          <Button variant="outline" onClick={handleExportCSV}>
+          <Button variant="outline" onClick={handleExportCSV} disabled={licenses.length === 0}>
             <Download className="h-4 w-4 mr-2" />
-            <EditableText tKey="admin.subscriptions.export_csv" fallback="Export CSV" />
+            Export CSV
           </Button>
-          <Button className="bg-gradient-hero" onClick={() => setShowAddDialog(true)}>
+          <Button variant="outline" onClick={handleSyncToSheets} disabled={syncing}>
+            <FileSpreadsheet className={`h-4 w-4 mr-2 ${syncing ? 'animate-pulse' : ''}`} />
+            {syncing ? "Syncing..." : "Sync to Sheets"}
+          </Button>
+          <Button onClick={() => setDialogOpen(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            <EditableText tKey="admin.subscriptions.add" fallback="Add Subscription" />
+            Add License
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              <EditableText tKey="admin.subscriptions.stats.active" fallback="Active Subscriptions" />
-            </CardTitle>
-            <Users className="h-4 w-4 text-green-500" />
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Licenses</CardTitle>
+            <Key className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-500">{stats.total_active}</div>
-            <p className="text-xs text-muted-foreground">
-              <EditableText tKey="admin.subscriptions.stats.active_desc" fallback="Currently active" />
-            </p>
+            <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              <EditableText tKey="admin.subscriptions.stats.expiring" fallback="Expiring Soon" />
-            </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Full Licenses</CardTitle>
+            <div className="h-3 w-3 rounded-full bg-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-500">{stats.expiring_soon}</div>
-            <p className="text-xs text-muted-foreground">
-              <EditableText tKey="admin.subscriptions.stats.expiring_desc" fallback="Within 7 days" />
-            </p>
+            <div className="text-2xl font-bold text-green-400">{stats.fullLicenses}</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              <EditableText tKey="admin.subscriptions.stats.expired" fallback="Expired" />
-            </CardTitle>
-            <XCircle className="h-4 w-4 text-red-500" />
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Demo Licenses</CardTitle>
+            <div className="h-3 w-3 rounded-full bg-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-500">{stats.expired}</div>
-            <p className="text-xs text-muted-foreground">
-              <EditableText tKey="admin.subscriptions.stats.expired_desc" fallback="Need renewal" />
-            </p>
+            <div className="text-2xl font-bold text-blue-400">{stats.demoLicenses}</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              <EditableText tKey="admin.subscriptions.stats.new_month" fallback="New This Month" />
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-blue-500" />
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Expiring Soon</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-500">{stats.new_this_month}</div>
-            <p className="text-xs text-muted-foreground">
-              <EditableText tKey="admin.subscriptions.stats.new_month_desc" fallback="New subscriptions" />
-            </p>
+            <div className="text-2xl font-bold text-yellow-400">{stats.expiringSoon}</div>
+            <p className="text-xs text-muted-foreground">Within 7 days</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">
-            <EditableText tKey="admin.subscriptions.filters" fallback="Filters" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[200px]">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name or email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="expiring_soon">Expiring Soon</SelectItem>
-                <SelectItem value="expired">Expired</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={productFilter} onValueChange={setProductFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by product" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Products</SelectItem>
-                {products.map(p => (
-                  <SelectItem key={p} value={p}>{p.toUpperCase()}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col gap-4 md:flex-row">
+        <Input
+          placeholder="Search by Account ID, Broker, or User..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="md:max-w-sm"
+        />
+        <Select value={licenseTypeFilter} onValueChange={setLicenseTypeFilter}>
+          <SelectTrigger className="md:w-[180px]">
+            <SelectValue placeholder="License Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="full">Full</SelectItem>
+            <SelectItem value="demo">Demo</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      {/* Subscriptions Table */}
-      <SubscriptionTable 
-        subscriptions={filteredSubscriptions}
+      {/* License Table */}
+      <LicenseTable
+        licenses={filteredLicenses}
         loading={loading}
-        onEdit={(sub) => {
-          setEditingSubscription(sub);
-          setShowAddDialog(true);
-        }}
-        onRefresh={loadSubscriptions}
+        onEdit={handleEdit}
+        onRefresh={loadLicenses}
       />
 
       {/* Add/Edit Dialog */}
-      <AddSubscriptionDialog
-        open={showAddDialog}
-        onOpenChange={(open) => {
-          setShowAddDialog(open);
-          if (!open) setEditingSubscription(null);
-        }}
-        subscription={editingSubscription}
-        onSuccess={loadSubscriptions}
+      <AddLicenseDialog
+        open={dialogOpen}
+        onOpenChange={handleDialogClose}
+        license={editingLicense}
+        onSuccess={loadLicenses}
       />
     </div>
   );
-};
-
-export default Subscriptions;
+}

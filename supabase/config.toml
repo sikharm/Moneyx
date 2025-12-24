@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.check-expiring-subscriptions]
 verify_jwt = false
 
+[functions.sync-license-to-sheets]
+verify_jwt = true
+
 # MT5/Investment functions disabled until further notice
 # [functions.connect-mt5-account]
 # verify_jwt = true

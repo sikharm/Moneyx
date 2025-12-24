@@ -24,6 +24,7 @@ interface InlineEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   translationKey: string;
+  defaultValue?: string;
   onSave: () => void;
 }
 

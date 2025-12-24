@@ -24,6 +24,7 @@ import { Edit, Trash2, Ban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format, differenceInDays } from 'date-fns';
+import EditableText from '@/components/EditableText';
 
 interface SubscriptionWithUser {
   id: string;
@@ -135,7 +136,9 @@ const SubscriptionTable = ({ subscriptions, loading, onEdit, onRefresh }: Subscr
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Subscriptions</CardTitle>
+          <CardTitle>
+            <EditableText tKey="admin.subscriptions.table.title" fallback="Subscriptions" />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center py-10">
@@ -150,11 +153,13 @@ const SubscriptionTable = ({ subscriptions, loading, onEdit, onRefresh }: Subscr
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Subscriptions</CardTitle>
+          <CardTitle>
+            <EditableText tKey="admin.subscriptions.table.title" fallback="Subscriptions" />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-10 text-muted-foreground">
-            No subscriptions found
+            <EditableText tKey="admin.subscriptions.table.no_data" fallback="No subscriptions found" />
           </div>
         </CardContent>
       </Card>
@@ -165,22 +170,42 @@ const SubscriptionTable = ({ subscriptions, loading, onEdit, onRefresh }: Subscr
     <>
       <Card>
         <CardHeader>
-          <CardTitle>Subscriptions ({subscriptions.length})</CardTitle>
+          <CardTitle>
+            <EditableText tKey="admin.subscriptions.table.title" fallback="Subscriptions" /> ({subscriptions.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Start Date</TableHead>
-                  <TableHead>End Date</TableHead>
-                  <TableHead>Days Left</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.user" fallback="User" />
+                  </TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.email" fallback="Email" />
+                  </TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.product" fallback="Product" />
+                  </TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.start_date" fallback="Start Date" />
+                  </TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.end_date" fallback="End Date" />
+                  </TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.days_left" fallback="Days Left" />
+                  </TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.status" fallback="Status" />
+                  </TableHead>
+                  <TableHead>
+                    <EditableText tKey="admin.subscriptions.table.amount" fallback="Amount" />
+                  </TableHead>
+                  <TableHead className="text-right">
+                    <EditableText tKey="admin.subscriptions.table.actions" fallback="Actions" />
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -235,15 +260,19 @@ const SubscriptionTable = ({ subscriptions, loading, onEdit, onRefresh }: Subscr
       <AlertDialog open={!!cancelId} onOpenChange={() => setCancelId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Cancel Subscription?</AlertDialogTitle>
+            <AlertDialogTitle>
+              <EditableText tKey="admin.subscriptions.dialog.cancel_title" fallback="Cancel Subscription?" />
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will mark the subscription as cancelled. The user will no longer have access.
+              <EditableText tKey="admin.subscriptions.dialog.cancel_desc" fallback="This will mark the subscription as cancelled. The user will no longer have access." />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Keep Active</AlertDialogCancel>
+            <AlertDialogCancel>
+              <EditableText tKey="admin.subscriptions.dialog.keep_active" fallback="Keep Active" />
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleCancel} className="bg-amber-500 hover:bg-amber-600">
-              Cancel Subscription
+              <EditableText tKey="admin.subscriptions.dialog.cancel_confirm" fallback="Cancel Subscription" />
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -253,15 +282,19 @@ const SubscriptionTable = ({ subscriptions, loading, onEdit, onRefresh }: Subscr
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Subscription?</AlertDialogTitle>
+            <AlertDialogTitle>
+              <EditableText tKey="admin.subscriptions.dialog.delete_title" fallback="Delete Subscription?" />
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The subscription record will be permanently deleted.
+              <EditableText tKey="admin.subscriptions.dialog.delete_desc" fallback="This action cannot be undone. The subscription record will be permanently deleted." />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>
+              <EditableText tKey="common.cancel" fallback="Cancel" />
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
-              Delete
+              <EditableText tKey="common.delete" fallback="Delete" />
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

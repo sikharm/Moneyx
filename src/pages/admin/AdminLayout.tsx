@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LayoutDashboard, FileText, Languages, Users, Handshake, CreditCard, Menu, X } from 'lucide-react';
 import SettingsDropdown from '@/components/SettingsDropdown';
 import AdminNotificationBell from '@/components/admin/AdminNotificationBell';
+import AdminBreadcrumb from '@/components/admin/AdminBreadcrumb';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 const AdminLayout = () => {
@@ -103,6 +104,7 @@ const AdminLayout = () => {
 
       {/* Admin Content */}
       <main className="container mx-auto px-4 py-8">
+        <AdminBreadcrumb />
         <Outlet />
       </main>
     </div>

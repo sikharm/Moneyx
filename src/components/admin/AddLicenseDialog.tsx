@@ -152,7 +152,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{license ? "Edit License" : "Add License"}</DialogTitle>
           <DialogDescription>

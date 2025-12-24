@@ -31,6 +31,7 @@ export interface License {
   account_id: string;
   license_type: string;
   expire_date: string | null;
+  vps_expire_date: string | null;
   broker: string | null;
   user_name: string | null;
   trading_system: string | null;
@@ -137,7 +138,8 @@ export function LicenseTable({ licenses, loading, onEdit, onRefresh }: LicenseTa
                 <TableHead className="text-muted-foreground">License Type</TableHead>
                 <TableHead className="text-muted-foreground">Trading System</TableHead>
                 <TableHead className="text-muted-foreground">Account Size</TableHead>
-                <TableHead className="text-muted-foreground">Expire Date</TableHead>
+                <TableHead className="text-muted-foreground">License Expire</TableHead>
+                <TableHead className="text-muted-foreground">VPS Expire</TableHead>
                 <TableHead className="text-muted-foreground">Status</TableHead>
                 <TableHead className="text-muted-foreground">Broker</TableHead>
                 <TableHead className="text-muted-foreground text-right">Actions</TableHead>
@@ -153,6 +155,12 @@ export function LicenseTable({ licenses, loading, onEdit, onRefresh }: LicenseTa
                   <TableCell>
                     {license.expire_date 
                       ? format(parseISO(license.expire_date), "MMM dd, yyyy")
+                      : <span className="text-muted-foreground">-</span>
+                    }
+                  </TableCell>
+                  <TableCell>
+                    {license.vps_expire_date 
+                      ? format(parseISO(license.vps_expire_date), "MMM dd, yyyy")
                       : <span className="text-muted-foreground">-</span>
                     }
                   </TableCell>

@@ -291,6 +291,7 @@ export type Database = {
           trading_system: string | null
           updated_at: string | null
           user_name: string | null
+          vps_expire_date: string | null
         }
         Insert: {
           account_id: string
@@ -303,6 +304,7 @@ export type Database = {
           trading_system?: string | null
           updated_at?: string | null
           user_name?: string | null
+          vps_expire_date?: string | null
         }
         Update: {
           account_id?: string
@@ -315,6 +317,7 @@ export type Database = {
           trading_system?: string | null
           updated_at?: string | null
           user_name?: string | null
+          vps_expire_date?: string | null
         }
         Relationships: []
       }

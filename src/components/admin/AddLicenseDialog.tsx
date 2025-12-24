@@ -49,6 +49,7 @@ interface FormData {
   account_id: string;
   license_type: string;
   expire_date: Date | undefined;
+  vps_expire_date: Date | undefined;
   broker: string;
   user_name: string;
   trading_system: string;
@@ -61,6 +62,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
     account_id: "",
     license_type: "full",
     expire_date: undefined,
+    vps_expire_date: undefined,
     broker: "",
     user_name: "",
     trading_system: "",
@@ -73,6 +75,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         account_id: license.account_id,
         license_type: license.license_type,
         expire_date: license.expire_date ? new Date(license.expire_date) : undefined,
+        vps_expire_date: license.vps_expire_date ? new Date(license.vps_expire_date) : undefined,
         broker: license.broker || "",
         user_name: license.user_name || "",
         trading_system: license.trading_system || "",
@@ -83,6 +86,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         account_id: "",
         license_type: "full",
         expire_date: undefined,
+        vps_expire_date: undefined,
         broker: "",
         user_name: "",
         trading_system: "",
@@ -106,6 +110,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         account_id: formData.account_id.trim(),
         license_type: formData.license_type,
         expire_date: formData.expire_date ? format(formData.expire_date, "yyyy-MM-dd") : null,
+        vps_expire_date: formData.vps_expire_date ? format(formData.vps_expire_date, "yyyy-MM-dd") : null,
         broker: formData.broker.trim() || null,
         user_name: formData.user_name.trim() || null,
         trading_system: formData.trading_system || null,
@@ -226,6 +231,50 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
               )}
             </div>
             <p className="text-xs text-muted-foreground">Leave empty for no expiration</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label>VPS Expire Date (Optional)</Label>
+            <div className="flex gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "flex-1 justify-start text-left font-normal",
+                      !formData.vps_expire_date && "text-muted-foreground"
+                    )}
+                    disabled={loading}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formData.vps_expire_date ? format(formData.vps_expire_date, "PPP") : "No VPS expire date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.vps_expire_date}
+                    onSelect={(date) => setFormData({ ...formData, vps_expire_date: date })}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              {formData.vps_expire_date && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setFormData({ ...formData, vps_expire_date: undefined })}
+                  disabled={loading}
+                  className="shrink-0"
+                >
+                  <span className="sr-only">Clear date</span>
+                  ×
+                </Button>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground">Leave empty for no VPS expiration</p>
           </div>
 
           <div className="space-y-2">

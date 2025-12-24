@@ -80,20 +80,6 @@ const AdminLayout = () => {
             <Link to="/admin" className="text-xl font-bold bg-gradient-hero bg-clip-text text-transparent">
               MoneyX Admin
             </Link>
-            <nav className="hidden md:flex gap-2">
-              {navItems.map((item) => (
-                <Link key={item.to} to={item.to}>
-                  <Button
-                    variant={location.pathname === item.to ? 'default' : 'ghost'}
-                    size="sm"
-                    className={location.pathname === item.to ? 'bg-gradient-hero' : ''}
-                  >
-                    <item.icon className="h-4 w-4 mr-2" />
-                    {item.label}
-                  </Button>
-                </Link>
-              ))}
-            </nav>
           </div>
           <div className="flex items-center gap-2">
             <AdminNotificationBell />

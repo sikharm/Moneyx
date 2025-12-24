@@ -252,6 +252,39 @@ export type Database = {
         }
         Relationships: []
       }
+      license_subscriptions: {
+        Row: {
+          account_id: string
+          broker: string | null
+          created_at: string | null
+          expire_date: string | null
+          id: string
+          license_type: string
+          updated_at: string | null
+          user_name: string | null
+        }
+        Insert: {
+          account_id: string
+          broker?: string | null
+          created_at?: string | null
+          expire_date?: string | null
+          id?: string
+          license_type?: string
+          updated_at?: string | null
+          user_name?: string | null
+        }
+        Update: {
+          account_id?: string
+          broker?: string | null
+          created_at?: string | null
+          expire_date?: string | null
+          id?: string
+          license_type?: string
+          updated_at?: string | null
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       partners: {
         Row: {
           address: string | null

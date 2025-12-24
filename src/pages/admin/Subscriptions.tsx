@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
@@ -19,6 +18,7 @@ import { toast } from 'sonner';
 import { format, differenceInDays } from 'date-fns';
 import SubscriptionTable from '@/components/admin/SubscriptionTable';
 import AddSubscriptionDialog from '@/components/admin/AddSubscriptionDialog';
+import EditableText from '@/components/EditableText';
 
 interface SubscriptionWithUser {
   id: string;
@@ -65,7 +65,6 @@ const Subscriptions = () => {
     try {
       setLoading(true);
       
-      // Fetch subscriptions
       const { data: subs, error: subsError } = await supabase
         .from('user_subscriptions')
         .select('*')
@@ -79,7 +78,6 @@ const Subscriptions = () => {
         return;
       }
 
-      // Fetch user profiles for each subscription
       const userIds = [...new Set(subs.map(s => s.user_id))];
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
@@ -90,7 +88,6 @@ const Subscriptions = () => {
 
       const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
-      // Merge data
       const subsWithUsers: SubscriptionWithUser[] = subs.map(s => ({
         ...s,
         user_email: profileMap.get(s.user_id)?.email || 'Unknown',
@@ -99,7 +96,6 @@ const Subscriptions = () => {
 
       setSubscriptions(subsWithUsers);
 
-      // Calculate stats
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       
@@ -167,21 +163,25 @@ const Subscriptions = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Subscription Management</h1>
-          <p className="text-muted-foreground">Track and manage user subscriptions</p>
+          <h1 className="text-3xl font-bold">
+            <EditableText tKey="admin.subscriptions.title" fallback="Subscription Management" />
+          </h1>
+          <p className="text-muted-foreground">
+            <EditableText tKey="admin.subscriptions.subtitle" fallback="Track and manage user subscriptions" />
+          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={loadSubscriptions}>
             <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
+            <EditableText tKey="admin.subscriptions.refresh" fallback="Refresh" />
           </Button>
           <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
-            Export CSV
+            <EditableText tKey="admin.subscriptions.export_csv" fallback="Export CSV" />
           </Button>
           <Button className="bg-gradient-hero" onClick={() => setShowAddDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Subscription
+            <EditableText tKey="admin.subscriptions.add" fallback="Add Subscription" />
           </Button>
         </div>
       </div>
@@ -190,45 +190,61 @@ const Subscriptions = () => {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Subscriptions</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <EditableText tKey="admin.subscriptions.stats.active" fallback="Active Subscriptions" />
+            </CardTitle>
             <Users className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-500">{stats.total_active}</div>
-            <p className="text-xs text-muted-foreground">Currently active</p>
+            <p className="text-xs text-muted-foreground">
+              <EditableText tKey="admin.subscriptions.stats.active_desc" fallback="Currently active" />
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <EditableText tKey="admin.subscriptions.stats.expiring" fallback="Expiring Soon" />
+            </CardTitle>
             <AlertTriangle className="h-4 w-4 text-amber-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-500">{stats.expiring_soon}</div>
-            <p className="text-xs text-muted-foreground">Within 7 days</p>
+            <p className="text-xs text-muted-foreground">
+              <EditableText tKey="admin.subscriptions.stats.expiring_desc" fallback="Within 7 days" />
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Expired</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <EditableText tKey="admin.subscriptions.stats.expired" fallback="Expired" />
+            </CardTitle>
             <XCircle className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-500">{stats.expired}</div>
-            <p className="text-xs text-muted-foreground">Need renewal</p>
+            <p className="text-xs text-muted-foreground">
+              <EditableText tKey="admin.subscriptions.stats.expired_desc" fallback="Need renewal" />
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New This Month</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              <EditableText tKey="admin.subscriptions.stats.new_month" fallback="New This Month" />
+            </CardTitle>
             <Calendar className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-500">{stats.new_this_month}</div>
-            <p className="text-xs text-muted-foreground">New subscriptions</p>
+            <p className="text-xs text-muted-foreground">
+              <EditableText tKey="admin.subscriptions.stats.new_month_desc" fallback="New subscriptions" />
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -236,7 +252,9 @@ const Subscriptions = () => {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Filters</CardTitle>
+          <CardTitle className="text-lg">
+            <EditableText tKey="admin.subscriptions.filters" fallback="Filters" />
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4">

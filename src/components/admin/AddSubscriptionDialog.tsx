@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { addMonths, format } from 'date-fns';
+import EditableText from '@/components/EditableText';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface SubscriptionWithUser {
   id: string;
@@ -38,6 +40,7 @@ interface AddSubscriptionDialogProps {
 }
 
 const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: AddSubscriptionDialogProps) => {
+  const { t } = useLanguage();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -139,7 +142,7 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
     e.preventDefault();
     
     if (!formData.user_id || !formData.product_key) {
-      toast.error('Please fill in all required fields');
+      toast.error(t('admin.subscriptions.form.error_required'));
       return;
     }
 
@@ -158,16 +161,14 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
       };
 
       if (subscription) {
-        // Update existing
         const { error } = await supabase
           .from('user_subscriptions')
           .update(payload)
           .eq('id', subscription.id);
 
         if (error) throw error;
-        toast.success('Subscription updated');
+        toast.success(t('admin.subscriptions.form.updated'));
       } else {
-        // Check if user already has a subscription
         const { data: existing } = await supabase
           .from('user_subscriptions')
           .select('id')
@@ -175,19 +176,17 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
           .maybeSingle();
 
         if (existing) {
-          toast.error('This user already has a subscription. Edit their existing subscription instead.');
+          toast.error(t('admin.subscriptions.form.error_exists'));
           setLoading(false);
           return;
         }
 
-        // Create new
         const { error } = await supabase
           .from('user_subscriptions')
           .insert(payload);
 
         if (error) throw error;
 
-        // Create admin notification
         const user = users.find(u => u.id === formData.user_id);
         await supabase.from('admin_notifications').insert({
           title: 'New Subscription',
@@ -195,7 +194,7 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
           type: 'new_subscription',
         });
 
-        toast.success('Subscription created');
+        toast.success(t('admin.subscriptions.form.created'));
       }
 
       onSuccess();
@@ -220,15 +219,27 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{subscription ? 'Edit Subscription' : 'Add Subscription'}</DialogTitle>
+          <DialogTitle>
+            {subscription ? (
+              <EditableText tKey="admin.subscriptions.form.edit_title" fallback="Edit Subscription" />
+            ) : (
+              <EditableText tKey="admin.subscriptions.form.add_title" fallback="Add Subscription" />
+            )}
+          </DialogTitle>
           <DialogDescription>
-            {subscription ? 'Update subscription details' : 'Create a new subscription for a user'}
+            {subscription ? (
+              <EditableText tKey="admin.subscriptions.form.edit_desc" fallback="Update subscription details" />
+            ) : (
+              <EditableText tKey="admin.subscriptions.form.add_desc" fallback="Create a new subscription for a user" />
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="user">User *</Label>
+            <Label htmlFor="user">
+              <EditableText tKey="admin.subscriptions.form.user" fallback="User" /> *
+            </Label>
             <Select 
               value={formData.user_id} 
               onValueChange={(v) => setFormData(prev => ({ ...prev, user_id: v }))}
@@ -248,7 +259,9 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="product">Product *</Label>
+            <Label htmlFor="product">
+              <EditableText tKey="admin.subscriptions.form.product" fallback="Product" /> *
+            </Label>
             <Select 
               value={formData.product_key} 
               onValueChange={(v) => setFormData(prev => ({ ...prev, product_key: v }))}
@@ -266,7 +279,9 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="plan_duration">Plan Duration</Label>
+              <Label htmlFor="plan_duration">
+                <EditableText tKey="admin.subscriptions.form.duration" fallback="Plan Duration" />
+              </Label>
               <Select 
                 value={formData.plan_duration} 
                 onValueChange={handlePlanDurationChange}
@@ -284,7 +299,9 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">
+                <EditableText tKey="admin.subscriptions.form.status" fallback="Status" />
+              </Label>
               <Select 
                 value={formData.status} 
                 onValueChange={(v) => setFormData(prev => ({ ...prev, status: v }))}
@@ -304,7 +321,9 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start_date">Start Date</Label>
+              <Label htmlFor="start_date">
+                <EditableText tKey="admin.subscriptions.form.start_date" fallback="Start Date" />
+              </Label>
               <Input
                 type="date"
                 value={formData.start_date}
@@ -312,7 +331,9 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="end_date">End Date</Label>
+              <Label htmlFor="end_date">
+                <EditableText tKey="admin.subscriptions.form.end_date" fallback="End Date" />
+              </Label>
               <Input
                 type="date"
                 value={formData.end_date}
@@ -322,7 +343,9 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount_paid">Amount Paid ($)</Label>
+            <Label htmlFor="amount_paid">
+              <EditableText tKey="admin.subscriptions.form.amount" fallback="Amount Paid ($)" />
+            </Label>
             <Input
               type="number"
               step="0.01"
@@ -333,7 +356,9 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">
+              <EditableText tKey="admin.subscriptions.form.notes" fallback="Notes" />
+            </Label>
             <Textarea
               placeholder="Optional notes about this subscription..."
               value={formData.notes}
@@ -343,10 +368,16 @@ const AddSubscriptionDialog = ({ open, onOpenChange, subscription, onSuccess }: 
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              <EditableText tKey="common.cancel" fallback="Cancel" />
             </Button>
             <Button type="submit" disabled={loading} className="bg-gradient-hero">
-              {loading ? 'Saving...' : subscription ? 'Update' : 'Create'}
+              {loading ? (
+                <EditableText tKey="common.saving" fallback="Saving..." />
+              ) : subscription ? (
+                <EditableText tKey="common.update" fallback="Update" />
+              ) : (
+                <EditableText tKey="common.create" fallback="Create" />
+              )}
             </Button>
           </div>
         </form>

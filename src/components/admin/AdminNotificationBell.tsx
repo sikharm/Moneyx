@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, AlertTriangle, XCircle, CheckCircle, Check } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
+import EditableText from '@/components/EditableText';
 
 interface AdminNotification {
   id: string;
@@ -30,7 +31,6 @@ const AdminNotificationBell = () => {
   useEffect(() => {
     loadNotifications();
     
-    // Subscribe to realtime updates
     const channel = supabase
       .channel('admin-notifications')
       .on(
@@ -133,18 +133,20 @@ const AdminNotificationBell = () => {
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between p-3 border-b">
-          <h4 className="font-semibold">Notifications</h4>
+          <h4 className="font-semibold">
+            <EditableText tKey="admin.notifications.title" fallback="Notifications" />
+          </h4>
           {unreadCount > 0 && (
             <Button variant="ghost" size="sm" onClick={markAllAsRead}>
               <Check className="h-4 w-4 mr-1" />
-              Mark all read
+              <EditableText tKey="admin.notifications.mark_all_read" fallback="Mark all read" />
             </Button>
           )}
         </div>
         <ScrollArea className="h-[300px]">
           {notifications.length === 0 ? (
             <div className="p-4 text-center text-muted-foreground">
-              No notifications yet
+              <EditableText tKey="admin.notifications.empty" fallback="No notifications yet" />
             </div>
           ) : (
             <div className="divide-y">
@@ -190,7 +192,7 @@ const AdminNotificationBell = () => {
         <div className="p-2 border-t">
           <Link to="/admin/subscriptions" onClick={() => setOpen(false)}>
             <Button variant="ghost" size="sm" className="w-full">
-              View All Subscriptions
+              <EditableText tKey="admin.notifications.view_all" fallback="View All Subscriptions" />
             </Button>
           </Link>
         </div>

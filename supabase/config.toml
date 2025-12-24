@@ -6,6 +6,12 @@ verify_jwt = true
 [functions.get-expected-translations]
 verify_jwt = true
 
+[functions.auto-register-translation]
+verify_jwt = false
+
+[functions.check-expiring-subscriptions]
+verify_jwt = false
+
 # MT5/Investment functions disabled until further notice
 # [functions.connect-mt5-account]
 # verify_jwt = true

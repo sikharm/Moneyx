@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LayoutDashboard, FileText, Languages, Users, Handshake, CreditCard, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Languages, Users, Handshake, CreditCard, Menu, LogOut } from 'lucide-react';
 import SettingsDropdown from '@/components/SettingsDropdown';
 import AdminNotificationBell from '@/components/admin/AdminNotificationBell';
 import AdminBreadcrumb from '@/components/admin/AdminBreadcrumb';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetFooter } from '@/components/ui/sheet';
 
 const AdminLayout = () => {
   const { user, isAdmin, loading, signOut } = useAuth();
@@ -47,7 +47,7 @@ const AdminLayout = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-72 p-0">
+              <SheetContent side="left" className="w-72 p-0 flex flex-col">
                 <div className="p-4 border-b">
                   <Link 
                     to="/admin" 
@@ -57,7 +57,7 @@ const AdminLayout = () => {
                     MoneyX Admin
                   </Link>
                 </div>
-                <nav className="flex flex-col p-2">
+                <nav className="flex flex-col p-2 flex-1">
                   {navItems.map((item) => (
                     <Link 
                       key={item.to} 
@@ -74,6 +74,19 @@ const AdminLayout = () => {
                     </Link>
                   ))}
                 </nav>
+                <SheetFooter className="p-4 border-t mt-auto">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      signOut();
+                    }}
+                  >
+                    <LogOut className="h-4 w-4 mr-3" />
+                    Logout
+                  </Button>
+                </SheetFooter>
               </SheetContent>
             </Sheet>
 

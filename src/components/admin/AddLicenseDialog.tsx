@@ -37,13 +37,22 @@ interface AddLicenseDialogProps {
   onSuccess: () => void;
 }
 
-export const TRADING_SYSTEMS = [
+interface TradingSystem {
+  value: string;
+  label: string;
+}
+
+// Fallback trading systems (used if database fetch fails)
+const FALLBACK_TRADING_SYSTEMS: TradingSystem[] = [
   { value: "moneyx_m1", label: "MoneyX M1" },
   { value: "moneyx_m2", label: "MoneyX M2 (MaxProfit)" },
   { value: "moneyx_c_m3", label: "MoneyX C-M3 (Correlation)" },
   { value: "moneyx_n_m4", label: "MoneyX N-M4 (Non-stop)" },
   { value: "moneyx_g1", label: "MoneyX G1" },
 ];
+
+// Export for backward compatibility
+export const TRADING_SYSTEMS = FALLBACK_TRADING_SYSTEMS;
 
 interface FormData {
   account_id: string;
@@ -59,6 +68,7 @@ interface FormData {
 
 export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: AddLicenseDialogProps) {
   const [loading, setLoading] = useState(false);
+  const [tradingSystems, setTradingSystems] = useState<TradingSystem[]>(FALLBACK_TRADING_SYSTEMS);
   const [formData, setFormData] = useState<FormData>({
     account_id: "",
     license_type: "full",
@@ -70,6 +80,28 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
     account_size: "",
     customer_id: "",
   });
+
+  // Load trading systems from database
+  useEffect(() => {
+    const loadTradingSystems = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('trading_systems')
+          .select('value, label')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+        
+        if (error) throw error;
+        if (data && data.length > 0) {
+          setTradingSystems(data);
+        }
+      } catch (error) {
+        console.error('Failed to load trading systems, using fallback:', error);
+      }
+    };
+    
+    loadTradingSystems();
+  }, [open]);
 
   useEffect(() => {
     if (license) {
@@ -328,7 +360,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
                 <SelectValue placeholder="Select trading system" />
               </SelectTrigger>
               <SelectContent>
-                {TRADING_SYSTEMS.map((system) => (
+                {tradingSystems.map((system) => (
                   <SelectItem key={system.value} value={system.value}>
                     {system.label}
                   </SelectItem>

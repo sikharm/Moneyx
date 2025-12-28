@@ -18,6 +18,7 @@ import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicense
 import { LicenseFlatList } from "@/components/admin/LicenseFlatList";
 import { GoogleSheetsSettingsDialog } from "@/components/admin/GoogleSheetsSettingsDialog";
 import { ImportLicenseDialog } from "@/components/admin/ImportLicenseDialog";
+import { ManageTradingSystemsDialog } from "@/components/admin/ManageTradingSystemsDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,10 +57,29 @@ export default function Subscriptions() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [tradingSystems, setTradingSystems] = useState(TRADING_SYSTEMS);
 
   useEffect(() => {
     loadLicenses();
+    loadTradingSystems();
   }, []);
+
+  const loadTradingSystems = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('trading_systems')
+        .select('value, label')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setTradingSystems(data);
+      }
+    } catch (error) {
+      console.error('Failed to load trading systems:', error);
+    }
+  };
 
   const loadLicenses = async () => {
     try {
@@ -260,6 +280,7 @@ export default function Subscriptions() {
               </Button>
             }
           />
+          <ManageTradingSystemsDialog onSystemsUpdated={loadTradingSystems} />
           <Button variant="outline" onClick={handleSyncToSheets} disabled={syncing}>
             <FileSpreadsheet className={`h-4 w-4 mr-2 ${syncing ? 'animate-pulse' : ''}`} />
             {syncing ? "Syncing..." : "Sync to Sheets"}
@@ -371,7 +392,7 @@ export default function Subscriptions() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Systems</SelectItem>
-            {TRADING_SYSTEMS.map((system) => (
+            {tradingSystems.map((system) => (
               <SelectItem key={system.value} value={system.value}>
                 {system.label}
               </SelectItem>

@@ -52,6 +52,7 @@ export default function Subscriptions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [licenseTypeFilter, setLicenseTypeFilter] = useState<string>("all");
   const [tradingSystemFilter, setTradingSystemFilter] = useState<string>("all");
+  const [customerIdFilter, setCustomerIdFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -201,9 +202,16 @@ export default function Subscriptions() {
     
     const matchesType = licenseTypeFilter === "all" || license.license_type === licenseTypeFilter;
     const matchesTradingSystem = tradingSystemFilter === "all" || license.trading_system === tradingSystemFilter;
+    const matchesCustomerId = customerIdFilter === "all" || String(license.customer_id || 0) === customerIdFilter;
 
-    return matchesSearch && matchesType && matchesTradingSystem;
+    return matchesSearch && matchesType && matchesTradingSystem && matchesCustomerId;
   });
+
+  // Get unique customer IDs for filter dropdown
+  const uniqueCustomerIds = useMemo(() => {
+    const ids = [...new Set(licenses.map(l => l.customer_id || 0))].sort((a, b) => a - b);
+    return ids;
+  }, [licenses]);
 
   // Sort licenses by customer_id ASC to group accounts by customer
   const sortedLicenses = useMemo(() => {
@@ -366,6 +374,19 @@ export default function Subscriptions() {
             {TRADING_SYSTEMS.map((system) => (
               <SelectItem key={system.value} value={system.value}>
                 {system.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={customerIdFilter} onValueChange={setCustomerIdFilter}>
+          <SelectTrigger className="md:w-[180px]">
+            <SelectValue placeholder="Customer ID" />
+          </SelectTrigger>
+          <SelectContent className="bg-popover">
+            <SelectItem value="all">All Customers</SelectItem>
+            {uniqueCustomerIds.map((id) => (
+              <SelectItem key={id} value={String(id)}>
+                Customer {id}
               </SelectItem>
             ))}
           </SelectContent>

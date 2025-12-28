@@ -37,6 +37,10 @@ interface ParsedRow {
   expire_date: string | null;
   broker: string | null;
   user_name: string | null;
+  trading_system: string | null;
+  account_size: number | null;
+  vps_expire_date: string | null;
+  customer_id: number | null;
   isValid: boolean;
   isDuplicate?: boolean;
 }
@@ -132,6 +136,10 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
         const expireDate = parseDateDDMMYYYY(row[2]);
         const broker = row[3] ? String(row[3]).trim() : null;
         const userName = row[4] ? String(row[4]).trim() : null;
+        const tradingSystem = row[5] ? String(row[5]).trim().toLowerCase().replace(/\s+/g, '_') : null;
+        const accountSize = row[6] ? parseFloat(String(row[6]).replace(/,/g, '')) : null;
+        const vpsExpireDate = parseDateDDMMYYYY(row[7]);
+        const customerId = row[8] ? parseInt(String(row[8]).trim(), 10) : null;
 
         return {
           account_id: accountId,
@@ -139,6 +147,10 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
           expire_date: expireDate,
           broker,
           user_name: userName,
+          trading_system: tradingSystem,
+          account_size: accountSize,
+          vps_expire_date: vpsExpireDate,
+          customer_id: isNaN(customerId as number) ? null : customerId,
           isValid: !!accountId,
           isDuplicate: existingAccountIds.has(accountId),
         };
@@ -189,6 +201,10 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
                 expire_date: row.expire_date,
                 broker: row.broker,
                 user_name: row.user_name,
+                trading_system: row.trading_system,
+                account_size: row.account_size || 0,
+                vps_expire_date: row.vps_expire_date,
+                customer_id: row.customer_id || 0,
                 updated_at: new Date().toISOString(),
               })
               .eq("account_id", row.account_id);
@@ -200,13 +216,17 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
             }
           }
         } else {
-          // Insert new with explicit created_at to preserve file order
+          // Insert new with all fields including customer_id
           const { error } = await supabase.from("license_subscriptions").insert({
             account_id: row.account_id,
             license_type: row.license_type,
             expire_date: row.expire_date,
             broker: row.broker,
             user_name: row.user_name,
+            trading_system: row.trading_system,
+            account_size: row.account_size || 0,
+            vps_expire_date: row.vps_expire_date,
+            customer_id: row.customer_id || 0,
             created_at: createdAt.toISOString(),
           });
 
@@ -249,7 +269,7 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
             Import Licenses
           </DialogTitle>
           <DialogDescription>
-            Import licenses from CSV or Excel file. Expected columns: AccountID, LicenseType, ExpireDate, Broker, User name
+            Import licenses from CSV or Excel file. Columns: AccountID, LicenseType, ExpireDate, Broker, UserName, TradingSystem, AccountSize, VPSExpireDate, CustomerID
           </DialogDescription>
         </DialogHeader>
 
@@ -319,6 +339,7 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-10">Status</TableHead>
+                      <TableHead>Customer ID</TableHead>
                       <TableHead>Account ID</TableHead>
                       <TableHead>Type</TableHead>
                       <TableHead>Expire Date</TableHead>
@@ -338,6 +359,7 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
                             <CheckCircle2 className="h-4 w-4 text-green-500" />
                           )}
                         </TableCell>
+                        <TableCell className="font-mono text-sm">{row.customer_id ?? "-"}</TableCell>
                         <TableCell className="font-mono text-sm">{row.account_id || "-"}</TableCell>
                         <TableCell>
                           <Badge variant={row.license_type === "full" ? "default" : "secondary"}>

@@ -102,7 +102,7 @@ export function LicenseFlatList({ licenses, onEdit, onRefresh }: LicenseFlatList
             <Table>
               <TableHeader>
                 <TableRow className="border-border/50 hover:bg-transparent">
-                  <TableHead className="text-muted-foreground w-12">#</TableHead>
+                  <TableHead className="text-muted-foreground w-16">Customer ID</TableHead>
                   <TableHead className="text-muted-foreground">Account ID</TableHead>
                   <TableHead className="text-muted-foreground">User Name</TableHead>
                   <TableHead className="text-muted-foreground">License Type</TableHead>
@@ -115,9 +115,9 @@ export function LicenseFlatList({ licenses, onEdit, onRefresh }: LicenseFlatList
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {licenses.map((license, index) => (
+                {licenses.map((license) => (
                   <TableRow key={license.id} className="border-border/50">
-                    <TableCell className="text-muted-foreground font-mono text-sm">{index + 1}</TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-sm">{license.customer_id || 0}</TableCell>
                     <TableCell className="font-mono font-medium">{license.account_id}</TableCell>
                     <TableCell>{license.user_name || <span className="text-muted-foreground">-</span>}</TableCell>
                     <TableCell>{getLicenseTypeBadge(license.license_type)}</TableCell>

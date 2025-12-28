@@ -54,6 +54,7 @@ interface FormData {
   user_name: string;
   trading_system: string;
   account_size: string;
+  customer_id: string;
 }
 
 export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: AddLicenseDialogProps) {
@@ -67,6 +68,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
     user_name: "",
     trading_system: "",
     account_size: "",
+    customer_id: "",
   });
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         user_name: license.user_name || "",
         trading_system: license.trading_system || "",
         account_size: license.account_size?.toString() || "",
+        customer_id: license.customer_id?.toString() || "",
       });
     } else {
       setFormData({
@@ -91,6 +94,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         user_name: "",
         trading_system: "",
         account_size: "",
+        customer_id: "",
       });
     }
   }, [license, open]);
@@ -115,6 +119,7 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         user_name: formData.user_name.trim() || null,
         trading_system: formData.trading_system || null,
         account_size: formData.account_size ? parseFloat(formData.account_size) : 0,
+        customer_id: formData.customer_id ? parseInt(formData.customer_id, 10) : 0,
       };
 
       if (license) {
@@ -161,6 +166,19 @@ export function AddLicenseDialog({ open, onOpenChange, license, onSuccess }: Add
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="customer_id">Customer ID</Label>
+            <Input
+              id="customer_id"
+              type="number"
+              value={formData.customer_id}
+              onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
+              placeholder="e.g., 1"
+              disabled={loading}
+            />
+            <p className="text-xs text-muted-foreground">Used to group accounts belonging to the same customer</p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="account_id">Account ID *</Label>
             <Input

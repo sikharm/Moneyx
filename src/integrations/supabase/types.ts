@@ -285,6 +285,7 @@ export type Database = {
           account_size: number | null
           broker: string | null
           created_at: string | null
+          customer_id: number | null
           expire_date: string | null
           id: string
           license_type: string
@@ -298,6 +299,7 @@ export type Database = {
           account_size?: number | null
           broker?: string | null
           created_at?: string | null
+          customer_id?: number | null
           expire_date?: string | null
           id?: string
           license_type?: string
@@ -311,6 +313,7 @@ export type Database = {
           account_size?: number | null
           broker?: string | null
           created_at?: string | null
+          customer_id?: number | null
           expire_date?: string | null
           id?: string
           license_type?: string

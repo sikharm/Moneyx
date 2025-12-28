@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import { License } from "@/components/admin/LicenseTable";
 import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicenseDialog";
 import { CustomerLicenseCard } from "@/components/admin/CustomerLicenseCard";
 import { GoogleSheetsSettingsDialog } from "@/components/admin/GoogleSheetsSettingsDialog";
+import { ImportLicenseDialog } from "@/components/admin/ImportLicenseDialog";
 
 interface DashboardStats {
   total: number;
@@ -224,6 +225,15 @@ export default function Subscriptions() {
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
+          <ImportLicenseDialog
+            trigger={
+              <Button variant="outline">
+                <Upload className="h-4 w-4 mr-2" />
+                Import
+              </Button>
+            }
+            onSuccess={loadLicenses}
+          />
           <Button variant="outline" onClick={handleExportCSV} disabled={licenses.length === 0}>
             <Download className="h-4 w-4 mr-2" />
             Export CSV

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,17 @@ import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicense
 import { CustomerLicenseCard } from "@/components/admin/CustomerLicenseCard";
 import { GoogleSheetsSettingsDialog } from "@/components/admin/GoogleSheetsSettingsDialog";
 import { ImportLicenseDialog } from "@/components/admin/ImportLicenseDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface DashboardStats {
   total: number;
@@ -43,6 +54,7 @@ export default function Subscriptions() {
   const [tradingSystemFilter, setTradingSystemFilter] = useState<string>("all");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadLicenses();
@@ -166,6 +178,20 @@ export default function Subscriptions() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.from('license_subscriptions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (error) throw error;
+      toast.success("All licenses deleted successfully");
+      loadLicenses();
+    } catch (error: any) {
+      toast.error("Failed to delete licenses: " + error.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const filteredLicenses = licenses.filter(license => {
     const matchesSearch = 
       license.account_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -258,6 +284,28 @@ export default function Subscriptions() {
             <Plus className="h-4 w-4 mr-2" />
             Add License
           </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={licenses.length === 0 || deleting}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                {deleting ? "Deleting..." : "Delete All"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete All Licenses?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete all {licenses.length} licenses. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Delete All
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

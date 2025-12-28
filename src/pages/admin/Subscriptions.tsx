@@ -52,7 +52,7 @@ export default function Subscriptions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [licenseTypeFilter, setLicenseTypeFilter] = useState<string>("all");
   const [tradingSystemFilter, setTradingSystemFilter] = useState<string>("all");
-  const [customerIdFilter, setCustomerIdFilter] = useState<string>("all");
+  const [customerIdFilter, setCustomerIdFilter] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -202,7 +202,7 @@ export default function Subscriptions() {
     
     const matchesType = licenseTypeFilter === "all" || license.license_type === licenseTypeFilter;
     const matchesTradingSystem = tradingSystemFilter === "all" || license.trading_system === tradingSystemFilter;
-    const matchesCustomerId = customerIdFilter === "all" || String(license.customer_id || 0) === customerIdFilter;
+    const matchesCustomerId = !customerIdFilter || String(license.customer_id || 0) === customerIdFilter;
 
     return matchesSearch && matchesType && matchesTradingSystem && matchesCustomerId;
   });
@@ -378,19 +378,13 @@ export default function Subscriptions() {
             ))}
           </SelectContent>
         </Select>
-        <Select value={customerIdFilter} onValueChange={setCustomerIdFilter}>
-          <SelectTrigger className="md:w-[180px]">
-            <SelectValue placeholder="Customer ID" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover">
-            <SelectItem value="all">All Customers</SelectItem>
-            {uniqueCustomerIds.map((id) => (
-              <SelectItem key={id} value={String(id)}>
-                Customer {id}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Input
+          type="number"
+          placeholder="Customer ID"
+          value={customerIdFilter}
+          onChange={(e) => setCustomerIdFilter(e.target.value)}
+          className="md:w-[140px]"
+        />
       </div>
 
       {/* Licenses List */}

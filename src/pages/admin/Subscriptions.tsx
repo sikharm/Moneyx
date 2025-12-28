@@ -204,7 +204,12 @@ export default function Subscriptions() {
           expiringSoon,
         };
       })
-      .sort((a, b) => a.userName.localeCompare(b.userName));
+      .sort((a, b) => {
+        // Sort by earliest created_at in each group to preserve file import order
+        const aFirstCreatedAt = a.licenses[0]?.created_at || '';
+        const bFirstCreatedAt = b.licenses[0]?.created_at || '';
+        return bFirstCreatedAt.localeCompare(aFirstCreatedAt);
+      });
   }, [filteredLicenses]);
 
   return (

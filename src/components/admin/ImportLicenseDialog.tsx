@@ -165,15 +165,16 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
     let updated = 0;
     let errors = 0;
 
-    // Base time for calculating timestamps - first row gets latest timestamp
+    // Base time for calculating timestamps - first row gets OLDEST timestamp
+    // This preserves Excel file order when sorted by created_at ASC
     const baseTime = new Date();
 
     try {
       for (let i = 0; i < validRows.length; i++) {
         const row = validRows[i];
-        // First row (i=0) gets baseTime, subsequent rows get earlier times
-        // This preserves file order when sorted by created_at DESC
-        const createdAt = new Date(baseTime.getTime() - i * 1000);
+        // First row (i=0) gets oldest timestamp, last row gets newest
+        // When sorted ASC, first Excel row will display first
+        const createdAt = new Date(baseTime.getTime() + i * 1000);
 
         if (row.isDuplicate) {
           if (importMode === "skip") {

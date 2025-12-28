@@ -66,7 +66,7 @@ export default function Subscriptions() {
       const { data, error } = await supabase
         .from('license_subscriptions')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: true });
 
       if (error) throw error;
 
@@ -214,6 +214,16 @@ export default function Subscriptions() {
       groups.set(customerName, [...existing, license]);
     });
 
+    // Sort licenses within each group by created_at ASC (oldest first = Excel order)
+    groups.forEach((licenses, key) => {
+      licenses.sort((a, b) => {
+        const aTime = a.created_at || '';
+        const bTime = b.created_at || '';
+        return aTime.localeCompare(bTime); // ASC = oldest first
+      });
+      groups.set(key, licenses);
+    });
+
     return Array.from(groups.entries())
       .map(([userName, licenses]) => {
         const now = new Date();
@@ -231,10 +241,11 @@ export default function Subscriptions() {
         };
       })
       .sort((a, b) => {
-        // Sort by earliest created_at in each group to preserve file import order
+        // Sort groups by first license's created_at ASC (oldest first = Excel order)
+        // New manually added licenses have newest timestamps, so appear at bottom
         const aFirstCreatedAt = a.licenses[0]?.created_at || '';
         const bFirstCreatedAt = b.licenses[0]?.created_at || '';
-        return bFirstCreatedAt.localeCompare(aFirstCreatedAt);
+        return aFirstCreatedAt.localeCompare(bFirstCreatedAt); // ASC
       });
   }, [filteredLicenses]);
 

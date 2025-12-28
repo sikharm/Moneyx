@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { License } from "@/components/admin/LicenseTable";
 import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicenseDialog";
-import { CustomerLicenseCard } from "@/components/admin/CustomerLicenseCard";
+import { LicenseFlatList } from "@/components/admin/LicenseFlatList";
 import { GoogleSheetsSettingsDialog } from "@/components/admin/GoogleSheetsSettingsDialog";
 import { ImportLicenseDialog } from "@/components/admin/ImportLicenseDialog";
 import {
@@ -204,49 +204,13 @@ export default function Subscriptions() {
     return matchesSearch && matchesType && matchesTradingSystem;
   });
 
-  // Group licenses by customer name
-  const customerGroups = useMemo(() => {
-    const groups = new Map<string, License[]>();
-    
-    filteredLicenses.forEach(license => {
-      const customerName = license.user_name || "Unknown";
-      const existing = groups.get(customerName) || [];
-      groups.set(customerName, [...existing, license]);
+  // Sort licenses by created_at ASC to preserve Excel import order
+  const sortedLicenses = useMemo(() => {
+    return [...filteredLicenses].sort((a, b) => {
+      const aTime = a.created_at || '';
+      const bTime = b.created_at || '';
+      return aTime.localeCompare(bTime); // ASC = oldest first = Excel row order
     });
-
-    // Sort licenses within each group by created_at ASC (oldest first = Excel order)
-    groups.forEach((licenses, key) => {
-      licenses.sort((a, b) => {
-        const aTime = a.created_at || '';
-        const bTime = b.created_at || '';
-        return aTime.localeCompare(bTime); // ASC = oldest first
-      });
-      groups.set(key, licenses);
-    });
-
-    return Array.from(groups.entries())
-      .map(([userName, licenses]) => {
-        const now = new Date();
-        const expiringSoon = licenses.filter(l => {
-          if (!l.expire_date) return false;
-          const daysLeft = differenceInDays(parseISO(l.expire_date), now);
-          return daysLeft >= 0 && daysLeft <= 7;
-        }).length;
-
-        return {
-          userName,
-          licenses,
-          totalAccounts: licenses.length,
-          expiringSoon,
-        };
-      })
-      .sort((a, b) => {
-        // Sort groups by first license's created_at ASC (oldest first = Excel order)
-        // New manually added licenses have newest timestamps, so appear at bottom
-        const aFirstCreatedAt = a.licenses[0]?.created_at || '';
-        const bFirstCreatedAt = b.licenses[0]?.created_at || '';
-        return aFirstCreatedAt.localeCompare(bFirstCreatedAt); // ASC
-      });
   }, [filteredLicenses]);
 
   return (
@@ -407,28 +371,23 @@ export default function Subscriptions() {
         </Select>
       </div>
 
-      {/* Customer Groups */}
+      {/* Licenses List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : customerGroups.length === 0 ? (
+      ) : sortedLicenses.length === 0 ? (
         <Card className="bg-card/50 border-border/50">
           <CardContent className="py-12 text-center">
             <p className="text-muted-foreground">No licenses found. Add your first license to get started.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
-          {customerGroups.map((customer) => (
-            <CustomerLicenseCard
-              key={customer.userName}
-              customer={customer}
-              onEdit={handleEdit}
-              onRefresh={loadLicenses}
-            />
-          ))}
-        </div>
+        <LicenseFlatList
+          licenses={sortedLicenses}
+          onEdit={handleEdit}
+          onRefresh={loadLicenses}
+        />
       )}
 
       {/* Add/Edit Dialog */}

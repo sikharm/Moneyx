@@ -36,6 +36,7 @@ export interface License {
   user_name: string | null;
   trading_system: string | null;
   account_size: number | null;
+  customer_id: number | null;
   created_at: string | null;
   updated_at: string | null;
 }

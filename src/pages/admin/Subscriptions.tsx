@@ -66,7 +66,7 @@ export default function Subscriptions() {
       const { data, error } = await supabase
         .from('license_subscriptions')
         .select('*')
-        .order('created_at', { ascending: true });
+        .order('customer_id', { ascending: true });
 
       if (error) throw error;
 
@@ -81,8 +81,8 @@ export default function Subscriptions() {
         return daysLeft >= 0 && daysLeft <= 7;
       }).length;
 
-      // Count unique customers
-      const uniqueCustomers = new Set(licensesData.map(l => l.user_name || "Unknown")).size;
+      // Count unique customers by customer_id (excluding 0)
+      const uniqueCustomers = new Set(licensesData.filter(l => l.customer_id && l.customer_id > 0).map(l => l.customer_id)).size;
 
       setStats({
         total: licensesData.length,
@@ -140,9 +140,9 @@ export default function Subscriptions() {
     return size.toLocaleString('en-US');
   };
 
-  // CSV Export - Updated format v2
+  // CSV Export - Updated format v3 with CustomerID
   const handleExportCSV = () => {
-    const headers = ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName', 'TradingSystem', 'AccountSize(cents)', 'VPS ExpireDate'];
+    const headers = ['AccountID', 'LicenseType', 'ExpireDate', 'Broker', 'UserName', 'TradingSystem', 'AccountSize(cents)', 'VPS ExpireDate', 'CustomerID'];
     
     const rows = filteredLicenses.map(l => {
       const licenseType = l.license_type === 'full' ? 'Full' : 'Demo';
@@ -152,8 +152,9 @@ export default function Subscriptions() {
       const tradingSystem = formatTradingSystem(l.trading_system);
       const accountSize = formatAccountSize(l.account_size);
       const vpsExpireDate = formatDateToDDMMYYYY(l.vps_expire_date);
+      const customerId = l.customer_id || 0;
       
-      return [l.account_id, licenseType, expireDate, broker, userName, tradingSystem, accountSize, vpsExpireDate].join(',');
+      return [l.account_id, licenseType, expireDate, broker, userName, tradingSystem, accountSize, vpsExpireDate, customerId].join(',');
     });
 
     const csvContent = [headers.join(','), ...rows].join('\n');
@@ -204,12 +205,12 @@ export default function Subscriptions() {
     return matchesSearch && matchesType && matchesTradingSystem;
   });
 
-  // Sort licenses by created_at ASC to preserve Excel import order
+  // Sort licenses by customer_id ASC to group accounts by customer
   const sortedLicenses = useMemo(() => {
     return [...filteredLicenses].sort((a, b) => {
-      const aTime = a.created_at || '';
-      const bTime = b.created_at || '';
-      return aTime.localeCompare(bTime); // ASC = oldest first = Excel row order
+      const aId = a.customer_id || 0;
+      const bId = b.customer_id || 0;
+      return aId - bId; // ASC = lowest customer_id first
     });
   }, [filteredLicenses]);
 

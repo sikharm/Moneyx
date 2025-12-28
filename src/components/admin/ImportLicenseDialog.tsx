@@ -165,8 +165,16 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
     let updated = 0;
     let errors = 0;
 
+    // Base time for calculating timestamps - first row gets latest timestamp
+    const baseTime = new Date();
+
     try {
-      for (const row of validRows) {
+      for (let i = 0; i < validRows.length; i++) {
+        const row = validRows[i];
+        // First row (i=0) gets baseTime, subsequent rows get earlier times
+        // This preserves file order when sorted by created_at DESC
+        const createdAt = new Date(baseTime.getTime() - i * 1000);
+
         if (row.isDuplicate) {
           if (importMode === "skip") {
             skipped++;
@@ -191,13 +199,14 @@ export function ImportLicenseDialog({ trigger, onSuccess }: ImportLicenseDialogP
             }
           }
         } else {
-          // Insert new
+          // Insert new with explicit created_at to preserve file order
           const { error } = await supabase.from("license_subscriptions").insert({
             account_id: row.account_id,
             license_type: row.license_type,
             expire_date: row.expire_date,
             broker: row.broker,
             user_name: row.user_name,
+            created_at: createdAt.toISOString(),
           });
 
           if (error) {

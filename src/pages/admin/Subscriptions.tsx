@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2, Link as LinkIcon, X } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2, Link as LinkIcon, X, List, UsersRound } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,9 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { License } from "@/components/admin/LicenseTable";
 import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicenseDialog";
 import { LicenseFlatList } from "@/components/admin/LicenseFlatList";
+import { LicenseGroupedList } from "@/components/admin/LicenseGroupedList";
 import { GoogleSheetsSettingsDialog } from "@/components/admin/GoogleSheetsSettingsDialog";
 import { ImportLicenseDialog } from "@/components/admin/ImportLicenseDialog";
 import { ManageTradingSystemsDialog } from "@/components/admin/ManageTradingSystemsDialog";
@@ -66,6 +68,7 @@ export default function Subscriptions() {
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [tradingSystems, setTradingSystems] = useState(TRADING_SYSTEMS);
+  const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
 
   // Check if any card filter is active
   const hasActiveCardFilter = licenseTypeFilter !== 'all' || linkedStatusFilter !== 'all' || expiringFilter;
@@ -510,7 +513,7 @@ export default function Subscriptions() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-col gap-4 md:flex-row">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <Input
           placeholder="Search by Account ID, Broker, or User..."
           value={searchTerm}
@@ -557,6 +560,16 @@ export default function Subscriptions() {
           onChange={(e) => setCustomerIdFilter(e.target.value)}
           className="md:w-[140px]"
         />
+        <div className="md:ml-auto">
+          <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as "grouped" | "flat")}>
+            <ToggleGroupItem value="grouped" aria-label="Grouped view" title="Group by User">
+              <UsersRound className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="flat" aria-label="Flat view" title="Flat list">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
 
       {/* Licenses List */}
@@ -570,6 +583,12 @@ export default function Subscriptions() {
             <p className="text-muted-foreground">No licenses found. Add your first license to get started.</p>
           </CardContent>
         </Card>
+      ) : viewMode === "grouped" ? (
+        <LicenseGroupedList
+          licenses={sortedLicenses}
+          onEdit={handleEdit}
+          onRefresh={loadLicenses}
+        />
       ) : (
         <LicenseFlatList
           licenses={sortedLicenses}

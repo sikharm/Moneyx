@@ -139,8 +139,7 @@ const Dashboard = () => {
   ];
 
   const quickLinks = [
-    { title: 'Subscriptions', icon: CreditCard, path: '/admin/subscriptions', color: 'text-green-500' },
-    { title: 'Licenses', icon: Key, path: '/admin/licenses', color: 'text-blue-500' },
+    { title: 'Subscriptions & Licenses', icon: CreditCard, path: '/admin/subscriptions', color: 'text-green-500' },
     { title: 'File Management', icon: FolderOpen, path: '/admin/files', color: 'text-amber-500' },
     { title: 'Partners', icon: Handshake, path: '/admin/partners', color: 'text-pink-500' },
     { title: 'Translations', icon: Globe, path: '/admin/translations', color: 'text-cyan-500' },

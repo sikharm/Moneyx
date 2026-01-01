@@ -38,7 +38,7 @@ const AdminLayout = () => {
     { to: '/admin/files', icon: FileText, label: 'File Management' },
     { to: '/admin/translations', icon: Languages, label: 'Translations' },
     { to: '/admin/user-investments', icon: Users, label: 'User Investments' },
-    { to: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
+    { to: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions & Licenses' },
     { to: '/admin/partners', icon: Handshake, label: 'Partners' },
   ];
 

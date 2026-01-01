@@ -301,10 +301,10 @@ export default function Subscriptions() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <Key className="h-8 w-8" />
-            License Management
+            Subscriptions & License Management
           </h1>
           <p className="text-muted-foreground">
-            Manage EA licenses and sync to Google Sheets
+            Manage subscriptions, EA licenses and sync to Google Sheets
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2, Link as LinkIcon } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2, Link as LinkIcon, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -59,10 +60,20 @@ export default function Subscriptions() {
   const [tradingSystemFilter, setTradingSystemFilter] = useState<string>("all");
   const [linkedStatusFilter, setLinkedStatusFilter] = useState<string>("all");
   const [customerIdFilter, setCustomerIdFilter] = useState<string>("");
+  const [expiringFilter, setExpiringFilter] = useState<boolean>(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [tradingSystems, setTradingSystems] = useState(TRADING_SYSTEMS);
+
+  // Check if any card filter is active
+  const hasActiveCardFilter = licenseTypeFilter !== 'all' || linkedStatusFilter !== 'all' || expiringFilter;
+
+  const clearAllCardFilters = () => {
+    setLicenseTypeFilter('all');
+    setLinkedStatusFilter('all');
+    setExpiringFilter(false);
+  };
 
   useEffect(() => {
     loadLicenses();
@@ -258,8 +269,14 @@ export default function Subscriptions() {
     const matchesLinkedStatus = linkedStatusFilter === "all" 
       || (linkedStatusFilter === "linked" && license.user_id) 
       || (linkedStatusFilter === "unlinked" && !license.user_id);
+    
+    const matchesExpiring = !expiringFilter || (
+      license.expire_date && 
+      differenceInDays(parseISO(license.expire_date), new Date()) >= 0 &&
+      differenceInDays(parseISO(license.expire_date), new Date()) <= 7
+    );
 
-    return matchesSearch && matchesType && matchesTradingSystem && matchesCustomerId && matchesLinkedStatus;
+    return matchesSearch && matchesType && matchesTradingSystem && matchesCustomerId && matchesLinkedStatus && matchesExpiring;
   });
 
   // Get unique customer IDs for filter dropdown
@@ -351,7 +368,13 @@ export default function Subscriptions() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-card/50 border-border/50">
+        <Card 
+          className={cn(
+            "bg-card/50 border-border/50 cursor-pointer transition-all hover:border-primary/50",
+            !hasActiveCardFilter && "ring-2 ring-primary"
+          )}
+          onClick={clearAllCardFilters}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Licenses</CardTitle>
             <Key className="h-4 w-4 text-muted-foreground" />
@@ -361,7 +384,16 @@ export default function Subscriptions() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 border-border/50">
+        <Card 
+          className={cn(
+            "bg-card/50 border-border/50 cursor-pointer transition-all hover:border-primary/50",
+            licenseTypeFilter === 'full' && "ring-2 ring-primary"
+          )}
+          onClick={() => {
+            setLicenseTypeFilter(licenseTypeFilter === 'full' ? 'all' : 'full');
+            setExpiringFilter(false);
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Full Licenses</CardTitle>
             <div className="h-3 w-3 rounded-full bg-green-500" />
@@ -371,7 +403,16 @@ export default function Subscriptions() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 border-border/50">
+        <Card 
+          className={cn(
+            "bg-card/50 border-border/50 cursor-pointer transition-all hover:border-primary/50",
+            licenseTypeFilter === 'demo' && "ring-2 ring-primary"
+          )}
+          onClick={() => {
+            setLicenseTypeFilter(licenseTypeFilter === 'demo' ? 'all' : 'demo');
+            setExpiringFilter(false);
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Demo Licenses</CardTitle>
             <div className="h-3 w-3 rounded-full bg-blue-500" />
@@ -391,22 +432,59 @@ export default function Subscriptions() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 border-border/50">
+        <Card 
+          className={cn(
+            "bg-card/50 border-border/50 cursor-pointer transition-all hover:border-primary/50",
+            linkedStatusFilter === 'linked' && "ring-2 ring-primary"
+          )}
+          onClick={() => {
+            setLinkedStatusFilter(linkedStatusFilter === 'linked' ? 'all' : 'linked');
+            setExpiringFilter(false);
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Linked / Unlinked</CardTitle>
-            <LinkIcon className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Linked</CardTitle>
+            <LinkIcon className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              <span className="text-green-400">{stats.linkedLicenses}</span>
-              <span className="text-muted-foreground mx-1">/</span>
-              <span className="text-muted-foreground">{stats.unlinkedLicenses}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Linked to users / Not linked</p>
+            <div className="text-2xl font-bold text-green-400">{stats.linkedLicenses}</div>
+            <p className="text-xs text-muted-foreground">Linked to users</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/50 border-border/50">
+        <Card 
+          className={cn(
+            "bg-card/50 border-border/50 cursor-pointer transition-all hover:border-primary/50",
+            linkedStatusFilter === 'unlinked' && "ring-2 ring-primary"
+          )}
+          onClick={() => {
+            setLinkedStatusFilter(linkedStatusFilter === 'unlinked' ? 'all' : 'unlinked');
+            setExpiringFilter(false);
+          }}
+        >
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Unlinked</CardTitle>
+            <LinkIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-muted-foreground">{stats.unlinkedLicenses}</div>
+            <p className="text-xs text-muted-foreground">Not linked</p>
+          </CardContent>
+        </Card>
+
+        <Card 
+          className={cn(
+            "bg-card/50 border-border/50 cursor-pointer transition-all hover:border-primary/50",
+            expiringFilter && "ring-2 ring-primary"
+          )}
+          onClick={() => {
+            setExpiringFilter(!expiringFilter);
+            if (!expiringFilter) {
+              setLicenseTypeFilter('all');
+              setLinkedStatusFilter('all');
+            }
+          }}
+        >
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Expiring Soon</CardTitle>
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
@@ -417,6 +495,18 @@ export default function Subscriptions() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Clear Filters Button */}
+      {hasActiveCardFilter && (
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={clearAllCardFilters}>
+            <X className="h-4 w-4 mr-1" /> Clear Card Filters
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            Showing filtered results
+          </span>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex flex-col gap-4 md:flex-row">

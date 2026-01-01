@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2, Link as LinkIcon, X } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2, Link as LinkIcon, X, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -14,12 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { License } from "@/components/admin/LicenseTable";
 import { AddLicenseDialog, TRADING_SYSTEMS } from "@/components/admin/AddLicenseDialog";
 import { LicenseFlatList } from "@/components/admin/LicenseFlatList";
 import { GoogleSheetsSettingsDialog } from "@/components/admin/GoogleSheetsSettingsDialog";
 import { ImportLicenseDialog } from "@/components/admin/ImportLicenseDialog";
 import { ManageTradingSystemsDialog } from "@/components/admin/ManageTradingSystemsDialog";
+import SubscriptionTable from "@/components/admin/SubscriptionTable";
+import AddSubscriptionDialog from "@/components/admin/AddSubscriptionDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,7 +45,25 @@ interface DashboardStats {
   unlinkedLicenses: number;
 }
 
+interface SubscriptionWithUser {
+  id: string;
+  user_id: string;
+  product_key: string;
+  plan_duration: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  amount_paid: number;
+  notes: string | null;
+  created_at: string;
+  user_email?: string;
+  user_name?: string;
+}
+
 export default function Subscriptions() {
+  const [activeTab, setActiveTab] = useState("licenses");
+  
+  // License state
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -66,6 +87,12 @@ export default function Subscriptions() {
   const [deleting, setDeleting] = useState(false);
   const [tradingSystems, setTradingSystems] = useState(TRADING_SYSTEMS);
 
+  // Subscription state
+  const [subscriptions, setSubscriptions] = useState<SubscriptionWithUser[]>([]);
+  const [subscriptionsLoading, setSubscriptionsLoading] = useState(true);
+  const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState<SubscriptionWithUser | null>(null);
+
   // Check if any card filter is active
   const hasActiveCardFilter = licenseTypeFilter !== 'all' || linkedStatusFilter !== 'all' || expiringFilter;
 
@@ -78,7 +105,59 @@ export default function Subscriptions() {
   useEffect(() => {
     loadLicenses();
     loadTradingSystems();
+    loadSubscriptions();
   }, []);
+
+  const loadSubscriptions = async () => {
+    try {
+      setSubscriptionsLoading(true);
+      const { data, error } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Fetch user profiles for subscriptions
+      const userIds = data?.map(s => s.user_id) || [];
+      let userMap = new Map<string, { email: string; full_name: string | null }>();
+
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, email, full_name')
+          .in('id', userIds);
+
+        if (profiles) {
+          profiles.forEach(p => userMap.set(p.id, { email: p.email, full_name: p.full_name }));
+        }
+      }
+
+      const subscriptionsWithUsers = (data || []).map(sub => ({
+        ...sub,
+        user_email: userMap.get(sub.user_id)?.email,
+        user_name: userMap.get(sub.user_id)?.full_name || undefined,
+      }));
+
+      setSubscriptions(subscriptionsWithUsers);
+    } catch (error: any) {
+      toast.error("Failed to load subscriptions: " + error.message);
+    } finally {
+      setSubscriptionsLoading(false);
+    }
+  };
+
+  const handleEditSubscription = (subscription: SubscriptionWithUser) => {
+    setEditingSubscription(subscription);
+    setSubscriptionDialogOpen(true);
+  };
+
+  const handleSubscriptionDialogClose = (open: boolean) => {
+    setSubscriptionDialogOpen(open);
+    if (!open) {
+      setEditingSubscription(null);
+    }
+  };
 
   const loadTradingSystems = async () => {
     try {
@@ -307,64 +386,99 @@ export default function Subscriptions() {
             Manage subscriptions, EA licenses and sync to Google Sheets
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={loadLicenses} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <ImportLicenseDialog
-            trigger={
-              <Button variant="outline">
-                <Upload className="h-4 w-4 mr-2" />
-                Import
-              </Button>
-            }
-            onSuccess={loadLicenses}
-          />
-          <Button variant="outline" onClick={handleExportCSV} disabled={licenses.length === 0}>
-            <Download className="h-4 w-4 mr-2" />
-            Export CSV
-          </Button>
-          <GoogleSheetsSettingsDialog
-            trigger={
-              <Button variant="outline" size="icon" title="Google Sheets Settings">
-                <Settings className="h-4 w-4" />
-              </Button>
-            }
-          />
-          <ManageTradingSystemsDialog onSystemsUpdated={loadTradingSystems} />
-          <Button variant="outline" onClick={handleSyncToSheets} disabled={syncing}>
-            <FileSpreadsheet className={`h-4 w-4 mr-2 ${syncing ? 'animate-pulse' : ''}`} />
-            {syncing ? "Syncing..." : "Sync to Sheets"}
-          </Button>
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add License
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" disabled={licenses.length === 0 || deleting}>
-                <Trash2 className="h-4 w-4 mr-2" />
-                {deleting ? "Deleting..." : "Delete All"}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete All Licenses?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently delete all {licenses.length} licenses. This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Delete All
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
       </div>
+
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <TabsList>
+            <TabsTrigger value="licenses" className="flex items-center gap-2">
+              <Key className="h-4 w-4" />
+              Licenses ({stats.total})
+            </TabsTrigger>
+            <TabsTrigger value="subscriptions" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Subscriptions ({subscriptions.length})
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Context-aware action buttons */}
+          {activeTab === "licenses" && (
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={loadLicenses} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <ImportLicenseDialog
+                trigger={
+                  <Button variant="outline">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import
+                  </Button>
+                }
+                onSuccess={loadLicenses}
+              />
+              <Button variant="outline" onClick={handleExportCSV} disabled={licenses.length === 0}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+              <GoogleSheetsSettingsDialog
+                trigger={
+                  <Button variant="outline" size="icon" title="Google Sheets Settings">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                }
+              />
+              <ManageTradingSystemsDialog onSystemsUpdated={loadTradingSystems} />
+              <Button variant="outline" onClick={handleSyncToSheets} disabled={syncing}>
+                <FileSpreadsheet className={`h-4 w-4 mr-2 ${syncing ? 'animate-pulse' : ''}`} />
+                {syncing ? "Syncing..." : "Sync to Sheets"}
+              </Button>
+              <Button onClick={() => setDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add License
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={licenses.length === 0 || deleting}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {deleting ? "Deleting..." : "Delete All"}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete All Licenses?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently delete all {licenses.length} licenses. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAll} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Delete All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+
+          {activeTab === "subscriptions" && (
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={loadSubscriptions} disabled={subscriptionsLoading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${subscriptionsLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button onClick={() => setSubscriptionDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Subscription
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Licenses Tab Content */}
+        <TabsContent value="licenses" className="space-y-6">
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
@@ -577,12 +691,32 @@ export default function Subscriptions() {
         />
       )}
 
-      {/* Add/Edit Dialog */}
-      <AddLicenseDialog
-        open={dialogOpen}
-        onOpenChange={handleDialogClose}
-        license={editingLicense}
-        onSuccess={loadLicenses}
+        {/* Add/Edit License Dialog */}
+        <AddLicenseDialog
+          open={dialogOpen}
+          onOpenChange={handleDialogClose}
+          license={editingLicense}
+          onSuccess={loadLicenses}
+        />
+        </TabsContent>
+
+        {/* Subscriptions Tab Content */}
+        <TabsContent value="subscriptions" className="space-y-6">
+          <SubscriptionTable
+            subscriptions={subscriptions}
+            loading={subscriptionsLoading}
+            onEdit={handleEditSubscription}
+            onRefresh={loadSubscriptions}
+          />
+        </TabsContent>
+      </Tabs>
+
+      {/* Add/Edit Subscription Dialog */}
+      <AddSubscriptionDialog
+        open={subscriptionDialogOpen}
+        onOpenChange={handleSubscriptionDialogClose}
+        subscription={editingSubscription}
+        onSuccess={loadSubscriptions}
       />
     </div>
   );

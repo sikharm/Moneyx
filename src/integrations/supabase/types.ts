@@ -291,6 +291,7 @@ export type Database = {
           license_type: string
           trading_system: string | null
           updated_at: string | null
+          user_id: string | null
           user_name: string | null
           vps_expire_date: string | null
         }
@@ -305,6 +306,7 @@ export type Database = {
           license_type?: string
           trading_system?: string | null
           updated_at?: string | null
+          user_id?: string | null
           user_name?: string | null
           vps_expire_date?: string | null
         }
@@ -319,10 +321,19 @@ export type Database = {
           license_type?: string
           trading_system?: string | null
           updated_at?: string | null
+          user_id?: string | null
           user_name?: string | null
           vps_expire_date?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "license_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       partners: {
         Row: {

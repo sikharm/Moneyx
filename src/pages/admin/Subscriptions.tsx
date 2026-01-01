@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { differenceInDays, parseISO } from "date-fns";
-import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2 } from "lucide-react";
+import { RefreshCw, Plus, FileSpreadsheet, Key, Download, AlertTriangle, Users, Loader2, Settings, Upload, Trash2, Link as LinkIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -37,6 +37,8 @@ interface DashboardStats {
   demoLicenses: number;
   expiringSoon: number;
   totalCustomers: number;
+  linkedLicenses: number;
+  unlinkedLicenses: number;
 }
 
 export default function Subscriptions() {
@@ -49,10 +51,13 @@ export default function Subscriptions() {
     demoLicenses: 0,
     expiringSoon: 0,
     totalCustomers: 0,
+    linkedLicenses: 0,
+    unlinkedLicenses: 0,
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [licenseTypeFilter, setLicenseTypeFilter] = useState<string>("all");
   const [tradingSystemFilter, setTradingSystemFilter] = useState<string>("all");
+  const [linkedStatusFilter, setLinkedStatusFilter] = useState<string>("all");
   const [customerIdFilter, setCustomerIdFilter] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingLicense, setEditingLicense] = useState<License | null>(null);
@@ -92,7 +97,29 @@ export default function Subscriptions() {
       if (error) throw error;
 
       const licensesData = data || [];
-      setLicenses(licensesData);
+
+      // Fetch linked user emails for licenses that have user_id
+      const userIds = licensesData.filter(l => l.user_id).map(l => l.user_id);
+      let userEmailMap = new Map<string, string>();
+      
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, email')
+          .in('id', userIds);
+        
+        if (profiles) {
+          profiles.forEach(p => userEmailMap.set(p.id, p.email));
+        }
+      }
+
+      // Add linked_user_email to each license
+      const licensesWithEmails = licensesData.map(l => ({
+        ...l,
+        linked_user_email: l.user_id ? userEmailMap.get(l.user_id) || null : null,
+      }));
+
+      setLicenses(licensesWithEmails);
 
       // Calculate stats
       const now = new Date();
@@ -105,12 +132,16 @@ export default function Subscriptions() {
       // Count unique customers by customer_id (excluding 0)
       const uniqueCustomers = new Set(licensesData.filter(l => l.customer_id && l.customer_id > 0).map(l => l.customer_id)).size;
 
+      const linkedCount = licensesData.filter(l => l.user_id).length;
+
       setStats({
         total: licensesData.length,
         fullLicenses: licensesData.filter(l => l.license_type === 'full').length,
         demoLicenses: licensesData.filter(l => l.license_type === 'demo').length,
         expiringSoon,
         totalCustomers: uniqueCustomers,
+        linkedLicenses: linkedCount,
+        unlinkedLicenses: licensesData.length - linkedCount,
       });
     } catch (error: any) {
       toast.error("Failed to load licenses: " + error.message);
@@ -218,13 +249,17 @@ export default function Subscriptions() {
     const matchesSearch = 
       license.account_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (license.broker?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-      (license.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+      (license.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+      (license.linked_user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
     
     const matchesType = licenseTypeFilter === "all" || license.license_type === licenseTypeFilter;
     const matchesTradingSystem = tradingSystemFilter === "all" || license.trading_system === tradingSystemFilter;
     const matchesCustomerId = !customerIdFilter || String(license.customer_id || 0) === customerIdFilter;
+    const matchesLinkedStatus = linkedStatusFilter === "all" 
+      || (linkedStatusFilter === "linked" && license.user_id) 
+      || (linkedStatusFilter === "unlinked" && !license.user_id);
 
-    return matchesSearch && matchesType && matchesTradingSystem && matchesCustomerId;
+    return matchesSearch && matchesType && matchesTradingSystem && matchesCustomerId && matchesLinkedStatus;
   });
 
   // Get unique customer IDs for filter dropdown
@@ -358,6 +393,21 @@ export default function Subscriptions() {
 
         <Card className="bg-card/50 border-border/50">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Linked / Unlinked</CardTitle>
+            <LinkIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              <span className="text-green-400">{stats.linkedLicenses}</span>
+              <span className="text-muted-foreground mx-1">/</span>
+              <span className="text-muted-foreground">{stats.unlinkedLicenses}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Linked to users / Not linked</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card/50 border-border/50">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Expiring Soon</CardTitle>
             <AlertTriangle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
@@ -397,6 +447,16 @@ export default function Subscriptions() {
                 {system.label}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select value={linkedStatusFilter} onValueChange={setLinkedStatusFilter}>
+          <SelectTrigger className="md:w-[160px]">
+            <SelectValue placeholder="Linked Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="linked">Linked</SelectItem>
+            <SelectItem value="unlinked">Not Linked</SelectItem>
           </SelectContent>
         </Select>
         <Input

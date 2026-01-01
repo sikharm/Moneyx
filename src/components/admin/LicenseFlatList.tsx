@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format, differenceInDays, parseISO } from "date-fns";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, Link as LinkIcon, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -24,8 +24,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { License } from "./LicenseTable";
 import { TRADING_SYSTEMS } from "./AddLicenseDialog";
+import { LinkUserDialog } from "./LinkUserDialog";
 
 interface LicenseFlatListProps {
   licenses: License[];
@@ -35,6 +42,7 @@ interface LicenseFlatListProps {
 
 export function LicenseFlatList({ licenses, onEdit, onRefresh }: LicenseFlatListProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [linkDialogLicense, setLinkDialogLicense] = useState<License | null>(null);
 
   const handleDelete = async () => {
     if (!deleteId) return;
@@ -101,10 +109,11 @@ export function LicenseFlatList({ licenses, onEdit, onRefresh }: LicenseFlatList
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-border/50 hover:bg-transparent">
+              <TableRow className="border-border/50 hover:bg-transparent">
                   <TableHead className="text-muted-foreground w-16">Customer ID</TableHead>
                   <TableHead className="text-muted-foreground">Account ID</TableHead>
                   <TableHead className="text-muted-foreground">User Name</TableHead>
+                  <TableHead className="text-muted-foreground">Linked User</TableHead>
                   <TableHead className="text-muted-foreground">License Type</TableHead>
                   <TableHead className="text-muted-foreground">Trading System</TableHead>
                   <TableHead className="text-muted-foreground">Account Size</TableHead>
@@ -120,6 +129,25 @@ export function LicenseFlatList({ licenses, onEdit, onRefresh }: LicenseFlatList
                     <TableCell className="text-muted-foreground font-mono text-sm">{license.customer_id || 0}</TableCell>
                     <TableCell className="font-mono font-medium">{license.account_id}</TableCell>
                     <TableCell>{license.user_name || <span className="text-muted-foreground">-</span>}</TableCell>
+                    <TableCell>
+                      {license.linked_user_email ? (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1.5">
+                                <User className="h-3.5 w-3.5 text-green-500" />
+                                <span className="text-sm truncate max-w-[120px]">{license.linked_user_email}</span>
+                              </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{license.linked_user_email}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Not linked</span>
+                      )}
+                    </TableCell>
                     <TableCell>{getLicenseTypeBadge(license.license_type)}</TableCell>
                     <TableCell>{getTradingSystemLabel(license.trading_system)}</TableCell>
                     <TableCell>{formatAccountSize(license.account_size)}</TableCell>
@@ -133,6 +161,23 @@ export function LicenseFlatList({ licenses, onEdit, onRefresh }: LicenseFlatList
                     <TableCell>{license.broker || <span className="text-muted-foreground">-</span>}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setLinkDialogLicense(license)}
+                                className={`h-8 w-8 ${license.user_id ? 'text-green-500' : 'text-muted-foreground'}`}
+                              >
+                                <LinkIcon className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{license.user_id ? 'Change linked user' : 'Link to user'}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -175,6 +220,15 @@ export function LicenseFlatList({ licenses, onEdit, onRefresh }: LicenseFlatList
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Link User Dialog */}
+      <LinkUserDialog
+        open={!!linkDialogLicense}
+        onOpenChange={(open) => !open && setLinkDialogLicense(null)}
+        licenseId={linkDialogLicense?.id || ''}
+        currentUserId={linkDialogLicense?.user_id}
+        onSuccess={onRefresh}
+      />
     </>
   );
 }

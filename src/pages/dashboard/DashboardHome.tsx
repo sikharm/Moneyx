@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { formatCurrency } from '@/utils/mt5ReportParser';
 import AccountSummaryDialog from '@/components/investments/AccountSummaryDialog';
 import SubscriptionStatusCard from '@/components/dashboard/SubscriptionStatusCard';
+import LicenseStatusCard from '@/components/dashboard/LicenseStatusCard';
 
 interface MT5Account {
   id: string;
@@ -205,10 +206,9 @@ const DashboardHome = () => {
             </Card>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <SubscriptionStatusCard />
-            </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <SubscriptionStatusCard />
+            <LicenseStatusCard />
           </div>
 
           {summary.total_accounts === 0 ? (

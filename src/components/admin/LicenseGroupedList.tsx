@@ -178,7 +178,7 @@ export function LicenseGroupedList({ licenses, onEdit, onRefresh }: LicenseGroup
   return (
     <>
       <Card>
-        <Accordion type="multiple" className="w-full" defaultValue={userGroups.map(g => g.userName)}>
+        <Accordion type="multiple" className="w-full">
           {userGroups.map((group) => (
             <AccordionItem key={group.userName} value={group.userName} className="border-b last:border-b-0">
               <AccordionTrigger className="px-4 hover:no-underline hover:bg-muted/50">
